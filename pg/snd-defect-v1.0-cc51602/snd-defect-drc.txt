@@ -1,0 +1,10 @@
+** Drc report for /tank/data/design/projects/snd-defect/kicad/snd-defect/snd-defect.kicad_pcb **
+** Created on 2025-05-31 21:30:05 **
+
+** Found 0 DRC violations **
+
+** Found 0 unconnected pads **
+
+** Found 0 Footprint errors **
+
+** End of Report **
