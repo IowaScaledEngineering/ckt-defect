@@ -6,7 +6,7 @@
 #
 #*************************************************************************
 
-BASE_NAME = snd-defect
+BASE_NAME = ckt-defect
 
 GITREV := $(shell git rev-parse --short=6 HEAD)
 REV    := $(shell ./git-revision.sh)
