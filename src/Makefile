@@ -13,7 +13,7 @@ REV    := $(shell ./git-revision.sh)
 
 #BOARD     = esp32:esp32:esp32s2:CDCOnBoot=cdc,UploadMode=cdc,PSRAM=enabled,PartitionScheme=huge_app
 BOARD     = esp32:esp32:esp32s2:CDCOnBoot=cdc,UploadMode=cdc,PSRAM=enabled
-OPTIONS   = --build-property upload.maximum_size=4063232 --build-property compiler.cpp.extra_flags='-DGIT_REV=0x$(GITREV)L -DVERSION_STRING="$(REV)"' --build-property compiler.optimization_flags=-O2
+OPTIONS   = --build-property upload.maximum_size=4128768 --build-property compiler.cpp.extra_flags='-DGIT_REV=0x$(GITREV)L -DVERSION_STRING="$(REV)"' --build-property compiler.optimization_flags=-O2
 PORT      = /dev/ttyACM0
 
 ARDUINO   = arduino-cli
@@ -39,7 +39,7 @@ upload:
 	$(ARDUINO) upload -v --input-dir $(BUILD_DIR)  -b $(BOARD) -p $(PORT) $(BASE_NAME)
 
 firmware:
-	esptool.py --chip esp32s2 --port $(PORT) --baud 921600  --before default_reset --after hard_reset write_flash  -z --flash_mode dio --flash_freq 80m --flash_size 4MB 0x1000 $(BIN)/snd-squeal.ino.bootloader.bin 0x8000 $(BIN)/snd-squeal.ino.partitions.bin 0xe000 $(BIN)/boot_app0.bin 0x10000 $(BIN)/snd-squeal.ino.bin
+	esptool.py --chip esp32s2 --port $(PORT) --baud 921600  --before default_reset --after hard_reset write_flash  -z --flash_mode dio --flash_freq 80m --flash_size 4MB 0x1000 $(BIN)/ckt-defect.ino.bootloader.bin 0x8000 $(BIN)/ckt-defect.ino.partitions.bin 0xe000 $(BIN)/boot_app0.bin 0x10000 $(BIN)/ckt-defect.ino.bin
 
 terminal:
 	miniterm.py $(PORT) 115200
