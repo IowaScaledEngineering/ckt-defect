@@ -161,7 +161,7 @@ bool configKeyValueSplit(char* key, uint32_t keySz, char* value, uint32_t valueS
 
 void printMemoryUsage(void)
 {
-	Serial.printf("\n[SYS]: stack: %u heap:%d\n\n", uxTaskGetStackHighWaterMark(NULL), xPortGetFreeHeapSize());
+	Serial.printf("\n[SYS]: stack: %u heap: %u\n\n", uxTaskGetStackHighWaterMark(NULL), xPortGetFreeHeapSize());
 }
 
 
@@ -766,7 +766,7 @@ void loop()
 				}
 				break;
 			case SOUNDPLAYER_AMBIENT_INIT:
-				Serial.println("\nAmbient Mode");
+				Serial.println("Ambient Mode");
 				audioMute();
 				state = SOUNDPLAYER_AMBIENT_QUEUE;
 				break;

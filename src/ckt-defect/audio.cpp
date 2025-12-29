@@ -236,9 +236,9 @@ static void audioPump(void *args)
 				else if(wavSound->available())
 				{
 					// Sound not done, more samples available
-//					gpio_set_level(AUX2, 1);  ///////////////////////////////////////////////////////////////////////////////////////////
+					gpio_set_level(AUX2, 1);  ///////////////////////////////////////////////////////////////////////////////////////////
 					sampleValue = wavSound->getNextSample();
-//					gpio_set_level(AUX2, 0);  ///////////////////////////////////////////////////////////////////////////////////////////
+					gpio_set_level(AUX2, 0);  ///////////////////////////////////////////////////////////////////////////////////////////
 					int32_t adjustedValue = sampleValue * audioVolume / volumeLevels[VOL_STEP_NOM];
 					if(adjustedValue > 32767)
 						sampleValue = 32767;
@@ -278,16 +278,12 @@ static void audioPump(void *args)
 			case PLAYER_FLUSHING:
 				#pragma GCC diagnostic pop
 				outputValue = 0;
-				i2s_channel_write(i2s_tx_handle, &outputValue, 4, &bytesWritten, 1);
-				if(0 != bytesWritten)
+				while(flushCount < dmaBufferSize)
 				{
-					// Success
+					i2s_channel_write(i2s_tx_handle, &outputValue, 4, &bytesWritten, portMAX_DELAY);
 					flushCount++;
 				}
-				if(flushCount >= dmaBufferSize)
-				{
-					playerState = PLAYER_RESET;
-				}
+				playerState = PLAYER_RESET;
 				break;
 			
 			case PLAYER_RESET:
