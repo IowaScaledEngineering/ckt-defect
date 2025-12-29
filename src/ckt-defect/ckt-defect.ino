@@ -302,7 +302,6 @@ static void audioPump(void *args)
 	bool seamlessPlay = false;
 	uint32_t oldSampleRate = 0;
 	uint32_t flushCount = 0;
-	bool delayTask = false;
 
 	playerState = PLAYER_RESET;
 
@@ -316,10 +315,6 @@ static void audioPump(void *args)
 				{
 					// Queue not empty
 					playerState = PLAYER_INIT;
-				}
-				else
-				{
-					delayTask = true;
 				}
 				break;
 
@@ -427,10 +422,9 @@ static void audioPump(void *args)
 
 //esp_task_wdt_reset();
 
-		if(delayTask)
+		if(PLAYER_IDLE == playerState)
 		{
-			delayTask = false;
-			vTaskDelay(2 / portTICK_PERIOD_MS);  // Block execution of this task for 2ms since we're not doing anything useful at the moment (idle or waiting for a buffer to clear)
+			vTaskDelay(10 / portTICK_PERIOD_MS);  // Block execution of this task for 10ms since we're not doing anything useful at the moment
 		}
 	}
 	vTaskDelete(NULL);
