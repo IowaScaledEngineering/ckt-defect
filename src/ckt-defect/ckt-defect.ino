@@ -130,7 +130,6 @@ typedef enum
 	PLAYER_INIT,
 	PLAYER_RECONFIGURE,
 	PLAYER_PLAY,
-	PLAYER_RETRY,
 	PLAYER_FLUSH,
 	PLAYER_FLUSHING,
 	PLAYER_RESET,
@@ -368,14 +367,8 @@ static void audioPump(void *args)
 					// Combine into 32 bit word (left & right)
 					outputValue = (sampleValue<<16) | (sampleValue & 0xffff);
 					gpio_set_level(AUX3, 1);  ///////////////////////////////////////////////////////////////////////////////////////////
-					i2s_channel_write(i2s_tx_handle, &outputValue, 4, &bytesWritten, 1);
+					i2s_channel_write(i2s_tx_handle, &outputValue, 4, &bytesWritten, portMAX_DELAY);
 					gpio_set_level(AUX3, 0);  ///////////////////////////////////////////////////////////////////////////////////////////
-					if(0 == bytesWritten)
-					{
-						// Sample rejected, DMA buffer full
-						playerState = PLAYER_RETRY;
-						delayTask = true;
-					}
 				}
 				else
 				{
@@ -392,19 +385,6 @@ static void audioPump(void *args)
 						playerState = PLAYER_FLUSH;
 					}
 				}
-				break;
-
-			case PLAYER_RETRY:
-gpio_set_level(AUX2, 1);  ///////////////////////////////////////////////////////////////////////////////////////////
-				i2s_channel_write(i2s_tx_handle, &outputValue, 4, &bytesWritten, 1);
-				if(0 == bytesWritten)
-				{
-					playerState = PLAYER_RETRY;
-					delayTask = true;
-				}
-				else
-					playerState = PLAYER_PLAY;
-gpio_set_level(AUX2, 0);  ///////////////////////////////////////////////////////////////////////////////////////////
 				break;
 
 			case PLAYER_FLUSH:
