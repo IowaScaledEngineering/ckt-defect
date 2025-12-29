@@ -31,6 +31,9 @@ class Sound
 		uint32_t sampleRate;
 
 	public:
+		virtual ~Sound()
+		{
+		}
 		virtual void open(void);
 		virtual size_t available(void)
 		{

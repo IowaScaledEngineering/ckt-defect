@@ -43,17 +43,12 @@ LICENSE:
 #define EN3_INPUT       0x40
 #define EN4_INPUT       0x80
 
-extern uint16_t volumeLevels[];
-uint8_t volumeStep = 0;
-uint16_t volume = 0;
-uint8_t volumeUpCoef = 0;
-uint8_t volumeDownCoef = 0;
+uint8_t volumeStep = VOL_STEP_NOM;
 
 extern struct WavSound wavSoundNext;
 
 bool restart = false;
 
-bool unmute = false;
 uint8_t silenceDecisecsMax = 0;
 uint8_t silenceDecisecsMin = 0;
 
@@ -163,6 +158,13 @@ bool configKeyValueSplit(char* key, uint32_t keySz, char* value, uint32_t valueS
 	return true;
 }
 
+
+void printMemoryUsage(void)
+{
+	Serial.printf("\n[SYS]: stack: %u heap:%d\n\n", uxTaskGetStackHighWaterMark(NULL), xPortGetFreeHeapSize());
+}
+
+
 hw_timer_t * timer = NULL;
 volatile bool timerTick = false;
 
@@ -174,12 +176,10 @@ void IRAM_ATTR tickTimer(void)
 void setup()
 {
 	// Open serial communications and wait for port to open:
-	Serial.begin(115200);
+	Serial.begin();
 
 	pinMode(VOLDN, INPUT_PULLUP);
 	pinMode(VOLUP, INPUT_PULLUP);
-	pinMode(I2S_SD, OUTPUT);
-	gpio_set_level(I2S_SD, 0);	// Disable amplifier
 
 	pinMode(LEDA, OUTPUT);
 	pinMode(LEDB, OUTPUT);
@@ -380,7 +380,7 @@ void loop()
 	unsigned long pressTime = 0;
 	uint8_t inputStatus = 0;
 
-	uint32_t i;
+	uint32_t i, j;
 	uint32_t activeEvent;
 
 	uint32_t sampleNum;
@@ -427,7 +427,7 @@ void loop()
 
 	esp_task_wdt_reset();
 	
-	Serial.println("ISE Sound Player");
+	Serial.println("ISE Defect Detector");
 
 	Serial.print("Version: ");
 	Serial.println(VERSION_STRING);
@@ -442,8 +442,8 @@ void loop()
 	// Set defaults
 	silenceDecisecsMax = 0;
 	silenceDecisecsMin = 0;
-	volumeUpCoef = 10;
-	volumeDownCoef = 8;
+	audioSetVolumeUpCoef(10);
+	audioSetVolumeDownCoef(8);
 
 	bool enableInput[4];
 	bool oldEnableInput[4] = {0};
@@ -478,11 +478,11 @@ void loop()
 				}
 				else if (0 == strcmp(keyStr, "volumeUp"))
 				{
-					volumeUpCoef = atoi(valueStr);
+					audioSetVolumeUpCoef(atoi(valueStr));
 				}
 				else if (0 == strcmp(keyStr, "volumeDown"))
 				{
-					volumeDownCoef = atoi(valueStr);
+					audioSetVolumeDownCoef(atoi(valueStr));
 				}
 			}
 		}
@@ -558,9 +558,9 @@ void loop()
 	Serial.print(silenceDecisecsMin/10.0, 1);
 	Serial.println("s");
 	Serial.print("Volume Up Coef: ");
-	Serial.println(volumeUpCoef);
+	Serial.println(audioGetVolumeUpCoef());
 	Serial.print("Volume Down Coef: ");
-	Serial.println(volumeDownCoef);
+	Serial.println(audioGetVolumeDownCoef());
 
 	Serial.println("");
 
@@ -595,6 +595,8 @@ void loop()
 	}
 
 	audioInit();
+	
+	printMemoryUsage();
 
 	while(1)
 	{
@@ -641,28 +643,8 @@ void loop()
 
 			// Debounce
 			buttonsPressed = debounce(buttonsPressed, inputStatus);
-
-			// Process volume
-			uint16_t deltaVolume;
-			uint16_t volumeTarget;
-			volumeTarget = volumeLevels[volumeStep] * unmute;
-
-			if(volume < volumeTarget)
-			{
-				deltaVolume = (volumeTarget - volume);
-				if((deltaVolume > 0) && (deltaVolume < volumeUpCoef))
-					deltaVolume = volumeUpCoef;  // Make sure it goes all the way to min or max
-				volume += deltaVolume / volumeUpCoef;
-				audioSetVolume(volume);
-			}
-			else if(volume > volumeTarget)
-			{
-				deltaVolume = (volume - volumeTarget);
-				if((deltaVolume > 0) && (deltaVolume < volumeDownCoef))
-					deltaVolume = volumeDownCoef;  // Make sure it goes all the way to min or max
-				volume -= deltaVolume / volumeDownCoef;
-				audioSetVolume(volume);
-			}
+			
+			audioProcessVolume();
 		}
 
 		// Turn off volume LED
@@ -679,6 +661,7 @@ void loop()
 			if(volumeStep < VOL_STEP_MAX)
 			{
 				volumeStep++;
+				audioSetVolumeStep(volumeStep);
 				preferences.putUChar("volume", volumeStep);
 			}
 			Serial.print("Vol Up: ");
@@ -693,6 +676,7 @@ void loop()
 			if(volumeStep > 0)
 			{
 				volumeStep--;
+				audioSetVolumeStep(volumeStep);
 				preferences.putUChar("volume", volumeStep);
 			}
 			Serial.print("Vol Dn: ");
@@ -783,14 +767,13 @@ void loop()
 				break;
 			case SOUNDPLAYER_AMBIENT_INIT:
 				Serial.println("\nAmbient Mode");
-				unmute = false;
+				audioMute();
 				state = SOUNDPLAYER_AMBIENT_QUEUE;
 				break;
 			case SOUNDPLAYER_AMBIENT_QUEUE:
 				if(NULL == wavSoundNext.wav)
 				{
-					Serial.print("Heap free: ");
-					Serial.println(esp_get_free_heap_size());
+					printMemoryUsage();
 
 					sampleNum = random(0, ambientSounds.size());
 					if(ambientSounds.size() > 2)
@@ -813,10 +796,10 @@ void loop()
 				break;
 			case SOUNDPLAYER_AMBIENT_PLAY:
 				if(enable)
-					unmute = true;
+					audioUnmute();
 				else
-					unmute = false;
-				if(!audioPlaying())
+					audioMute();
+				if(!audioIsPlaying())
 				{
 					// Done playing, add some silence
 					silenceDecisecs = random(silenceDecisecsMin, silenceDecisecsMax);
@@ -837,12 +820,11 @@ void loop()
 
 
 			case SOUNDPLAYER_ONESHOT_QUEUE:
-				unmute = true;
-				Serial.print("\nEvent ");
+				audioUnmute();
+				printMemoryUsage();
+				Serial.print("Event ");
 				Serial.print(activeEvent+1);
 				Serial.println(": One Shot Mode");
-				Serial.print("Heap free: ");
-				Serial.println(esp_get_free_heap_size());
 
 				sampleNum = random(0, eventSounds[activeEvent].size());
 				Serial.print("Queueing... ");
@@ -855,9 +837,9 @@ void loop()
 
 
 			case SOUNDPLAYER_WAIT_FOR_END:
-				if(!audioPlaying())
+				if(!audioIsPlaying())
 				{
-					unmute = true;
+					audioUnmute();
 					state = SOUNDPLAYER_IDLE;
 				}
 				break;
@@ -865,12 +847,11 @@ void loop()
 
 
 			case SOUNDPLAYER_CONTINUOUS_INIT:
-				unmute = true;
-				Serial.print("\nEvent ");
+				audioUnmute();
+				printMemoryUsage();
+				Serial.print("Event ");
 				Serial.print(activeEvent+1);
 				Serial.println(": Continuous Mode");
-				Serial.print("Heap free: ");
-				Serial.println(esp_get_free_heap_size());
 				lastSampleNum = UINT32_MAX;
 				state = SOUNDPLAYER_CONTINUOUS_RANDOM;
 				break;
@@ -929,8 +910,8 @@ void loop()
 				break;
 
 			case SOUNDPLAYER_CONTINUOUS_MUTE:
-				unmute = false;
-				if(0 == volume)
+				audioMute();
+				if(audioIsMuted())
 				{
 					audioStopPlaying();
 					state = SOUNDPLAYER_WAIT_FOR_END;
@@ -940,12 +921,11 @@ void loop()
 
 
 			case SOUNDPLAYER_BME_BEGIN:
-				unmute = true;
-				Serial.print("\nEvent ");
+				audioUnmute();
+				printMemoryUsage();
+				Serial.print("Event ");
 				Serial.print(activeEvent+1);
 				Serial.println(": BME Mode");
-				Serial.print("Heap free: ");
-				Serial.println(esp_get_free_heap_size());
 
 				// Queue begin file if one exists
 				if(eventConfig[activeEvent].beginIndex >= 0)
@@ -962,7 +942,7 @@ void loop()
 			case SOUNDPLAYER_BME_MIDDLE:
 				// Queue middle file.
 				i = eventSounds[activeEvent].size();
-				Serial.println(i);
+//				Serial.println(i);
 				if(eventConfig[activeEvent].beginIndex >= 0)
 				{
 					// Valid begin sound
@@ -973,10 +953,10 @@ void loop()
 					// Valid end sound
 					i--;
 				}
-				Serial.println(i);
+//				Serial.println(i);
 				
 				sampleNum = random(0, i);
-				Serial.println(sampleNum);
+//				Serial.println(sampleNum);
 				
 				if((eventConfig[activeEvent].beginIndex >= 0) && (sampleNum >= eventConfig[activeEvent].beginIndex))
 				{
@@ -994,7 +974,7 @@ void loop()
 					if(sampleNum >= eventConfig[activeEvent].beginIndex)
 						sampleNum++;
 				}
-				Serial.println(sampleNum);
+//				Serial.println(sampleNum);
 				
 				wavSoundNext.wav = eventSounds[activeEvent][sampleNum];
 				wavSoundNext.seamlessPlay = true;
@@ -1028,18 +1008,31 @@ void loop()
 		{
 			restart = false;
 			Serial.print("\n*** Restarting ***\n\n");
+
+			audioTerminate();
+
+			for(i=0; i<ambientSounds.size(); i++)
+			{
+				delete ambientSounds[i];
+			}
+			
+			for(j=0; j<4; j++)
+			{
+				for(i=0; i<eventSounds[j].size(); i++)
+				{
+					delete eventSounds[j][i];
+				}
+			}
+
 			ambientSounds.clear();
 			eventSounds[0].clear();
 			eventSounds[1].clear();
 			eventSounds[2].clear();
 			eventSounds[3].clear();
+
 			break;	// Restart the loop() function
 		}
 
 	}
 
-	// Never get here but this is what we would do to clean up
-	gpio_set_level(I2S_SD, 0);	// Disable amplifier
-	//i2s_channel_disable(i2s_tx_handle);
-	//i2s_del_channel(i2s_tx_handle);
 }

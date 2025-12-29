@@ -30,6 +30,19 @@ struct WavSound {
 };
 
 void audioStopPlaying(void);
-bool audioPlaying(void);
-void audioSetVolume(uint16_t);
+bool audioIsPlaying(void);
+
+void audioSetVolumeStep(uint8_t);
+void audioSetVolumeUpCoef(uint8_t);
+uint8_t audioGetVolumeUpCoef(void);
+void audioSetVolumeDownCoef(uint8_t);
+uint8_t audioGetVolumeDownCoef(void);
+
+void audioMute(void);
+void audioUnmute(void);
+bool audioIsMuted(void);
+
+void audioProcessVolume(void);
+
 void audioInit(void);
+void audioTerminate(void);

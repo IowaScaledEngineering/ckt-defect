@@ -48,8 +48,13 @@ typedef enum
 
 PlayerState playerState;
 bool stopPlayer;
+bool killPlayer = false;
 
+bool unmute;
+uint8_t audioVolumeStep = VOL_STEP_NOM;
 uint16_t audioVolume = 0;
+uint8_t audioVolumeUpCoef = 0;
+uint8_t audioVolumeDownCoef = 0;
 uint16_t volumeLevels[] = {
 		0,      // 0
 		100,
@@ -88,6 +93,7 @@ struct WavSound wavSoundNext;
 
 uint32_t dmaBufferSize;
 
+TaskHandle_t audioPumpHandle = NULL;
 
 
 void audioStopPlaying(void)
@@ -96,15 +102,80 @@ void audioStopPlaying(void)
 }
 
 
-bool audioPlaying(void)
+bool audioIsPlaying(void)
 {
-	return !(PLAYER_IDLE == playerState);
+	return (PLAYER_IDLE != playerState);
 }
 
 
-void audioSetVolume(uint16_t newVolume)
+void audioSetVolumeStep(uint8_t newVolumeStep)
 {
-	audioVolume = newVolume;
+	audioVolumeStep = newVolumeStep;
+}
+
+
+void audioSetVolumeUpCoef(uint8_t value)
+{
+	audioVolumeUpCoef = value;
+}
+
+
+uint8_t audioGetVolumeUpCoef(void)
+{
+	return(audioVolumeUpCoef);
+}
+
+
+void audioSetVolumeDownCoef(uint8_t value)
+{
+	audioVolumeDownCoef = value;
+}
+
+
+uint8_t audioGetVolumeDownCoef(void)
+{
+	return(audioVolumeDownCoef);
+}
+
+
+void audioMute(void)
+{
+	unmute = false;
+}
+
+
+void audioUnmute(void)
+{
+	unmute = true;
+}
+
+
+bool audioIsMuted(void)
+{
+	return( (unmute == false) && (0 == audioVolume) );
+}
+
+
+void audioProcessVolume(void)
+{
+	uint16_t deltaVolume;
+	uint16_t volumeTarget;
+	volumeTarget = volumeLevels[audioVolumeStep] * unmute;
+
+	if(audioVolume < volumeTarget)
+	{
+		deltaVolume = (volumeTarget - audioVolume);
+		if((deltaVolume > 0) && (deltaVolume < audioVolumeUpCoef))
+			deltaVolume = audioVolumeUpCoef;  // Make sure it goes all the way to min or max
+		audioVolume += deltaVolume / audioVolumeUpCoef;
+	}
+	else if(audioVolume > volumeTarget)
+	{
+		deltaVolume = (audioVolume - volumeTarget);
+		if((deltaVolume > 0) && (deltaVolume < audioVolumeDownCoef))
+			deltaVolume = audioVolumeDownCoef;  // Make sure it goes all the way to min or max
+		audioVolume -= deltaVolume / audioVolumeDownCoef;
+	}
 }
 
 
@@ -123,7 +194,6 @@ static void audioPump(void *args)
 
 	while(1)
 	{
-//		esp_task_wdt_reset();
 		switch(playerState)
 		{
 			case PLAYER_IDLE:
@@ -143,6 +213,7 @@ static void audioPump(void *args)
 					playerState = PLAYER_PLAY;
 				else
 					playerState = PLAYER_RECONFIGURE;
+				stopPlayer = false;  // Needed here in case we run out of samples before muting is complete
 				break;
 
 			case PLAYER_RECONFIGURE:
@@ -215,16 +286,7 @@ static void audioPump(void *args)
 				}
 				if(flushCount >= dmaBufferSize)
 				{
-					if(NULL != wavSoundNext.wav)
-					{
-						// Queue not empty
-						playerState = PLAYER_INIT;
-					}
-					else
-					{
-						// Queue empty
-						playerState = PLAYER_RESET;
-					}
+					playerState = PLAYER_RESET;
 				}
 				break;
 			
@@ -236,12 +298,19 @@ static void audioPump(void *args)
 				break;
 		}
 
-//esp_task_wdt_reset();
+		if(killPlayer)
+		{
+			if(NULL != wavSound)
+				wavSound->close();
+			killPlayer = false;
+			break;
+		}
 
 		if(PLAYER_IDLE == playerState)
 		{
 			vTaskDelay(10 / portTICK_PERIOD_MS);  // Block execution of this task for 10ms since we're not doing anything useful at the moment
 		}
+		
 	}
 	vTaskDelete(NULL);
 }
@@ -249,6 +318,9 @@ static void audioPump(void *args)
 
 void audioInit(void)
 {
+	pinMode(I2S_SD, OUTPUT);
+	gpio_set_level(I2S_SD, 0);	// Disable amplifier
+
 	wavSoundNext.wav = NULL;
 	wavSoundNext.seamlessPlay = false;
 
@@ -292,5 +364,18 @@ void audioInit(void)
 
 	gpio_set_level(I2S_SD, 1);	// Enable amplifier
 
-	xTaskCreate(audioPump, "audioPump", 8192, NULL, 24, NULL);
+	xTaskCreate(audioPump, "audioPump", 8192, NULL, 5, &audioPumpHandle);
+}
+
+
+void audioTerminate(void)
+{
+	gpio_set_level(I2S_SD, 0);	// Disable amplifier
+	killPlayer = true;
+	while(killPlayer)
+	{
+		delay(10);  // Wait for the task to terminate
+	}
+	i2s_channel_disable(i2s_tx_handle);
+	i2s_del_channel(i2s_tx_handle);
 }
