@@ -49,8 +49,8 @@ extern struct WavSound wavSoundNext;
 
 bool restart = false;
 
-uint8_t silenceDecisecsMax = 0;
-uint8_t silenceDecisecsMin = 0;
+uint32_t silenceDecisecsMax = 0;
+uint32_t silenceDecisecsMin = 0;
 
 Preferences preferences;
 
@@ -373,6 +373,7 @@ void loop()
 
 	uint32_t silenceDecisecs;
 	unsigned long silenceStart;
+	unsigned long silenceTick;
 
 	bool ambientMode = false;
 
@@ -406,6 +407,7 @@ void loop()
 		SOUNDPLAYER_IDLE,
 		SOUNDPLAYER_AMBIENT_INIT,
 		SOUNDPLAYER_AMBIENT_QUEUE,
+		SOUNDPLAYER_AMBIENT_PLAY_WAIT,
 		SOUNDPLAYER_AMBIENT_PLAY,
 		SOUNDPLAYER_AMBIENT_SILENCE,
 		SOUNDPLAYER_ONESHOT_QUEUE,
@@ -522,31 +524,34 @@ void loop()
 
 	Serial.println("");
 
-	for(i=0; i<4; i++)
+	if(!ambientMode)
 	{
-		Serial.print("Event ");
-		Serial.print(i);
-		Serial.print(" Mode: ");
-		switch(eventConfig[i].mode)
+		for(i=0; i<4; i++)
 		{
-			case MODE_ONESHOT:
-				Serial.println("One Shot");
-				break;
-			case MODE_CONTINUOUS:
-				Serial.print("Continuous");
-				if(eventConfig[i].level)
-					Serial.print(" Level");
-				if(eventConfig[i].shuffle)
-					Serial.print(" Shuffle");
-				Serial.println("");
-				break;
-			case MODE_BME:
-				Serial.println("Beginning-Middle-End");
-				break;
+			Serial.print("Event ");
+			Serial.print(i);
+			Serial.print(" Mode: ");
+			switch(eventConfig[i].mode)
+			{
+				case MODE_ONESHOT:
+					Serial.println("One Shot");
+					break;
+				case MODE_CONTINUOUS:
+					Serial.print("Continuous");
+					if(eventConfig[i].level)
+						Serial.print(" Level");
+					if(eventConfig[i].shuffle)
+						Serial.print(" Shuffle");
+					Serial.println("");
+					break;
+				case MODE_BME:
+					Serial.println("Beginning-Middle-End");
+					break;
+			}
 		}
 	}
 
-	Serial.println("");
+	Serial.print("\n");
 
 	// Print configuration values
 	Serial.print("Volume: ");
@@ -791,8 +796,13 @@ void loop()
 					wavSoundNext.wav = ambientSounds[sampleNum];
 					wavSoundNext.seamlessPlay = false;
 					lastSampleNum = sampleNum;
-					state = SOUNDPLAYER_AMBIENT_PLAY;
+					state = SOUNDPLAYER_AMBIENT_PLAY_WAIT;
 				}
+				break;
+			case SOUNDPLAYER_AMBIENT_PLAY_WAIT:
+				// Wait for the player to start playing
+				if(audioIsPlaying())
+					state = SOUNDPLAYER_AMBIENT_PLAY;
 				break;
 			case SOUNDPLAYER_AMBIENT_PLAY:
 				if(enable)
@@ -807,12 +817,20 @@ void loop()
 					Serial.print(silenceDecisecs/10.0, 1);
 					Serial.println("s");
 					silenceStart = millis();
+					silenceTick = silenceStart;
 					state = SOUNDPLAYER_AMBIENT_SILENCE;
 				}
 				break;
 			case SOUNDPLAYER_AMBIENT_SILENCE:
+				if(millis() >= silenceTick + 1000)
+				{
+					silenceTick += 1000;
+					Serial.print("-");
+				}
 				if(millis() >= (silenceStart + 100 * silenceDecisecs))
 				{
+					if(silenceTick != silenceStart)
+						Serial.print("\n");   // We printed some ticks above, so send a newline
 					state = SOUNDPLAYER_AMBIENT_QUEUE;
 				}
 				break;
