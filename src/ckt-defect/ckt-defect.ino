@@ -5,7 +5,7 @@ File:     ckt-defect.c
 License:  GNU General Public License v3
 
 LICENSE:
-    Copyright (C) 2025 Michael Petersen
+    Copyright (C) 2026 Michael Petersen
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -35,17 +35,9 @@ LICENSE:
 // 3 sec watchdog 
 #define TWDT_TIMEOUT_MS    3000
 
-// Bit positions for inputs
-#define VOL_UP_BUTTON   0x01
-#define VOL_DN_BUTTON   0x02
-#define EN1_INPUT       0x10
-#define EN2_INPUT       0x20
-#define EN3_INPUT       0x40
-#define EN4_INPUT       0x80
-
 uint8_t volumeStep = VOL_STEP_NOM;
 
-extern struct WavSound wavSoundNext;
+extern QueueHandle_t wavSoundQueue;
 
 bool restart = false;
 
@@ -178,24 +170,7 @@ void setup()
 	// Open serial communications and wait for port to open:
 	Serial.begin();
 
-	pinMode(VOLDN, INPUT_PULLUP);
-	pinMode(VOLUP, INPUT_PULLUP);
-
-	pinMode(LEDA, OUTPUT);
-	pinMode(LEDB, OUTPUT);
-	gpio_set_level(LEDA, 0);
-	gpio_set_level(LEDB, 0);
-
-	pinMode(EN1, INPUT_PULLUP);
-	pinMode(EN2, INPUT_PULLUP);
-	pinMode(EN3, INPUT_PULLUP);
-	pinMode(EN4, INPUT_PULLUP);
-
-	pinMode(AUX1, OUTPUT);
-	pinMode(AUX2, OUTPUT);
-	pinMode(AUX3, OUTPUT);
-	pinMode(AUX4, OUTPUT);
-	pinMode(AUX5, OUTPUT);
+	pinMode((gpio_num_t)SDDET, INPUT_PULLUP);
 
 	esp_task_wdt_config_t twdt_config = {
 		.timeout_ms = TWDT_TIMEOUT_MS,
@@ -378,18 +353,19 @@ void loop()
 	bool ambientMode = false;
 
 	uint8_t buttonsPressed = 0, oldButtonsPressed = 0;
-	unsigned long pressTime = 0;
 	uint8_t inputStatus = 0;
 
+	unsigned long sdDetectTime = 0;
+
 	uint32_t i, j;
-	uint32_t activeEvent;
+	uint32_t activeEvent = 0;
 
 	uint32_t sampleNum;
 
 	std::vector<Sound *> ambientSounds;
 	std::vector<Sound *> eventSounds[4];
-	wavSoundNext.wav = NULL;
-	wavSoundNext.seamlessPlay = false;
+
+	WavSound wavSound;
 
 	EventConfig ambientConfig;  // not used, but needed for symmetry with other events
 	EventConfig eventConfig[4];
@@ -438,9 +414,10 @@ void loop()
 	Serial.println(GIT_REV, HEX);
 
 	// Read NVM configuration
-	preferences.begin("soundplayer", false);
+	preferences.begin("defectdetector", false);
 	volumeStep = preferences.getUChar("volume", VOL_STEP_NOM);
-	
+	audioSetVolumeStep(volumeStep);
+
 	// Set defaults
 	silenceDecisecsMax = 0;
 	silenceDecisecsMin = 0;
@@ -448,14 +425,17 @@ void loop()
 	audioSetVolumeDownCoef(8);
 
 	bool enableInput[4];
-	bool oldEnableInput[4] = {0};
 	bool risingInput[4];
 	bool enable;
 
 	esp_task_wdt_reset();
+	
+	SPIClass vspi = SPIClass(FSPI);
+	vspi.begin(SDCLK, SDMISO, SDMOSI, SDCS);
+	pinMode(SDCS, OUTPUT);
 
 	// Check SD card
-	if(SD.begin())
+	if(SD.begin(SDCS, vspi))
 	{
 		// Check for and read config file
 		File f = SD.open("/config.txt");
@@ -490,6 +470,7 @@ void loop()
 		}
 		f.close();
 
+		esp_task_wdt_reset();
 		if((rootDir = SD.open("/ambient")))
 		{
 			// Ambient mode, find WAV files
@@ -503,6 +484,7 @@ void loop()
 			}
 		}
 
+		esp_task_wdt_reset();
 		if(!ambientMode)
 		{
 			// Not ambient mode, check event directories
@@ -510,6 +492,7 @@ void loop()
 
 			for(i=0; i<4; i++)
 			{
+				esp_task_wdt_reset();
 				char rootDirectory[8] = "/event_";  // SD.open need preceding slash
 				rootDirectory[6] = '1' + i;
 				char directoryName[8] = "event_/";  // filename needs trailing slash
@@ -576,26 +559,28 @@ void loop()
 		Serial.print("Using SD card sounds (");
 		Serial.print(ambientSounds.size() + eventSounds[0].size() + eventSounds[1].size() + eventSounds[2].size() + eventSounds[3].size());
 		Serial.println(")");
-		// Quadruple blink blue
-		gpio_set_level(LEDA, 1); delay(250); gpio_set_level(LEDA, 0); delay(250);
-		esp_task_wdt_reset();
-		gpio_set_level(LEDA, 1); delay(250); gpio_set_level(LEDA, 0); delay(250);
-		esp_task_wdt_reset();
-		gpio_set_level(LEDA, 1); delay(250); gpio_set_level(LEDA, 0); delay(250);
-		esp_task_wdt_reset();
-		gpio_set_level(LEDA, 1); delay(250); gpio_set_level(LEDA, 0); delay(250);
 		esp_task_wdt_reset();
 	}
 	else
 	{
-		Serial.print("No valid sounds on SD card!");
+		Serial.println("No valid sounds on SD card!");
 		// Blink blue / orange
 		while(1)
 		{
-			gpio_set_level(LEDA, 1); delay(100); gpio_set_level(LEDA, 0);
-			esp_task_wdt_reset();
-			gpio_set_level(LEDB, 1); delay(100); gpio_set_level(LEDB, 0);
-			esp_task_wdt_reset();
+			if(0 == gpio_get_level((gpio_num_t)SDDET))
+			{
+				// Card inserted
+				if(millis() > sdDetectTime + 500)  //  Need 500ms of continuous insertion
+				{
+					Serial.println("SD Card Inserted");
+					restart = true;
+					break;
+				}
+			}
+			else
+			{
+				sdDetectTime = millis();
+			}
 		}
 	}
 
@@ -605,41 +590,7 @@ void loop()
 
 	while(1)
 	{
-		gpio_set_level(AUX1, 1);  ///////////////////////////////////////////////////////////////////////////////////////////
 		esp_task_wdt_reset();
-
-		// Read inputs
-		if(gpio_get_level(VOLUP))
-			inputStatus &= ~VOL_UP_BUTTON;
-		else
-			inputStatus |= VOL_UP_BUTTON;
-
-		if(gpio_get_level(VOLDN))
-			inputStatus &= ~VOL_DN_BUTTON;
-		else
-			inputStatus |= VOL_DN_BUTTON;
-
-		if(gpio_get_level(EN1))
-			inputStatus &= ~EN1_INPUT;
-		else
-			inputStatus |= EN1_INPUT;
-
-		if(gpio_get_level(EN2))
-			inputStatus &= ~EN2_INPUT;
-		else
-			inputStatus |= EN2_INPUT;
-
-		if(gpio_get_level(EN3))
-			inputStatus &= ~EN3_INPUT;
-		else
-			inputStatus |= EN3_INPUT;
-
-		if(gpio_get_level(EN4))
-			inputStatus &= ~EN4_INPUT;
-		else
-			inputStatus |= EN4_INPUT;
-
-		gpio_set_level(AUX1, 0);  ///////////////////////////////////////////////////////////////////////////////////////////
 
 		// Do things on 10ms interval
 		if(timerTick)
@@ -650,43 +601,6 @@ void loop()
 			buttonsPressed = debounce(buttonsPressed, inputStatus);
 			
 			audioProcessVolume();
-		}
-
-		// Turn off volume LED
-		uint16_t ledHoldTime = (VOL_STEP_NOM == volumeStep) ? 1000 : 100;
-		if((millis() - pressTime) > ledHoldTime)
-		{
-			gpio_set_level(LEDB, 0);
-		}
-
-		// Find rising edge of volume up button
-		if((buttonsPressed ^ oldButtonsPressed) & (buttonsPressed & VOL_UP_BUTTON))
-		{
-			pressTime = millis();
-			if(volumeStep < VOL_STEP_MAX)
-			{
-				volumeStep++;
-				audioSetVolumeStep(volumeStep);
-				preferences.putUChar("volume", volumeStep);
-			}
-			Serial.print("Vol Up: ");
-			Serial.println(volumeStep);
-			gpio_set_level(LEDB, 1);
-		}
-
-		// Find rising edge of volume down button
-		if((buttonsPressed ^ oldButtonsPressed) & (buttonsPressed & VOL_DN_BUTTON))
-		{
-			pressTime = millis();
-			if(volumeStep > 0)
-			{
-				volumeStep--;
-				audioSetVolumeStep(volumeStep);
-				preferences.putUChar("volume", volumeStep);
-			}
-			Serial.print("Vol Dn: ");
-			Serial.println(volumeStep);
-			gpio_set_level(LEDB, 1);
 		}
 
 		oldButtonsPressed = buttonsPressed;
@@ -707,30 +621,11 @@ void loop()
 			}
 		}
 
-		// Figure out if any enable inputs are pressed and light LED
-		enableInput[0] = (buttonsPressed & (EN1_INPUT)) ? true : false;
-		enableInput[1] = (buttonsPressed & (EN2_INPUT)) ? true : false;
-		enableInput[2] = (buttonsPressed & (EN3_INPUT)) ? true : false;
-		enableInput[3] = (buttonsPressed & (EN4_INPUT)) ? true : false;
-		enable = enableInput[0] || enableInput[1] || enableInput[2] || enableInput[3];
-
-		for(i=0; i<4; i++)
-		{
-			if( (1 == enableInput[i]) && (0 == oldEnableInput[i]) )
-				risingInput[i] = true;
-			else
-				risingInput[i] = false;
-			oldEnableInput[i] = enableInput[i];
-		}
-
-		if(enable)
-		{
-			gpio_set_level(LEDA, 1);
-		}
-		else
-		{
-			gpio_set_level(LEDA, 0);
-		}
+		enable = true;
+		enableInput[0] = true;
+		enableInput[1] = false;
+		enableInput[2] = false;
+		enableInput[3] = false;
 
 		switch(state)
 		{
@@ -776,7 +671,7 @@ void loop()
 				state = SOUNDPLAYER_AMBIENT_QUEUE;
 				break;
 			case SOUNDPLAYER_AMBIENT_QUEUE:
-				if(NULL == wavSoundNext.wav)
+				if(0 == uxQueueMessagesWaiting(wavSoundQueue))
 				{
 					printMemoryUsage();
 
@@ -793,8 +688,9 @@ void loop()
 					}
 					Serial.print("Queueing... ");
 					Serial.println(sampleNum);
-					wavSoundNext.wav = ambientSounds[sampleNum];
-					wavSoundNext.seamlessPlay = false;
+					wavSound.wav = ambientSounds[sampleNum];
+					wavSound.seamlessPlay = false;
+					xQueueSend(wavSoundQueue, &wavSound, portMAX_DELAY);
 					lastSampleNum = sampleNum;
 					state = SOUNDPLAYER_AMBIENT_PLAY_WAIT;
 				}
@@ -847,8 +743,9 @@ void loop()
 				sampleNum = random(0, eventSounds[activeEvent].size());
 				Serial.print("Queueing... ");
 				Serial.println(sampleNum);
-				wavSoundNext.wav = eventSounds[activeEvent][sampleNum];
-				wavSoundNext.seamlessPlay = false;
+				wavSound.wav = eventSounds[activeEvent][sampleNum];
+				wavSound.seamlessPlay = false;
+				xQueueSend(wavSoundQueue, &wavSound, portMAX_DELAY);
 				state = SOUNDPLAYER_WAIT_FOR_END;
 				break;
 				
@@ -888,8 +785,9 @@ void loop()
 				}
 				Serial.print("Queueing... ");
 				Serial.println(sampleNum);
-				wavSoundNext.wav = eventSounds[activeEvent][sampleNum];
-				wavSoundNext.seamlessPlay = false;
+				wavSound.wav = eventSounds[activeEvent][sampleNum];
+				wavSound.seamlessPlay = false;
+				xQueueSend(wavSoundQueue, &wavSound, portMAX_DELAY);
 				lastSampleNum = sampleNum;
 				state = SOUNDPLAYER_CONTINUOUS_WAIT;
 				break;
@@ -897,8 +795,9 @@ void loop()
 			case SOUNDPLAYER_CONTINUOUS_SAME:
 				Serial.print("Re-Queueing... ");
 				Serial.println(sampleNum);
-				wavSoundNext.wav = eventSounds[activeEvent][sampleNum];
-				wavSoundNext.seamlessPlay = false;
+				wavSound.wav = eventSounds[activeEvent][sampleNum];
+				wavSound.seamlessPlay = false;
+				xQueueSend(wavSoundQueue, &wavSound, portMAX_DELAY);
 				state = SOUNDPLAYER_CONTINUOUS_WAIT;
 				break;
 
@@ -906,7 +805,7 @@ void loop()
 				if(enableInput[activeEvent])
 				{
 					// Enable still active
-					if(NULL == wavSoundNext.wav)
+					if(0 == uxQueueMessagesWaiting(wavSoundQueue))
 					{
 						// Queue empty
 						if(eventConfig[activeEvent].shuffle)
@@ -918,7 +817,8 @@ void loop()
 				else
 				{
 					// Enable not active
-					wavSoundNext.wav = NULL;  // Remove anything queued so it doesn't play
+					xQueueReset(wavSoundQueue);  // Remove anything queued so it doesn't play
+
 					lastSampleNum = UINT32_MAX;
 					if(eventConfig[activeEvent].level)
 						state = SOUNDPLAYER_CONTINUOUS_MUTE;
@@ -948,14 +848,17 @@ void loop()
 				// Queue begin file if one exists
 				if(eventConfig[activeEvent].beginIndex >= 0)
 				{
-					wavSoundNext.wav = eventSounds[activeEvent][eventConfig[activeEvent].beginIndex];
-					wavSoundNext.seamlessPlay = true;
+					wavSound.wav = eventSounds[activeEvent][eventConfig[activeEvent].beginIndex];
+					wavSound.seamlessPlay = true;
+					xQueueSend(wavSoundQueue, &wavSound, portMAX_DELAY);
 				}
 				state = SOUNDPLAYER_BME_WAIT1;
 				break;
 			case SOUNDPLAYER_BME_WAIT1:
-				if(NULL == wavSoundNext.wav)
+				if(0 == uxQueueMessagesWaiting(wavSoundQueue))
+				{
 					state = SOUNDPLAYER_BME_MIDDLE;
+				}
 				break;
 			case SOUNDPLAYER_BME_MIDDLE:
 				// Queue middle file.
@@ -994,12 +897,13 @@ void loop()
 				}
 //				Serial.println(sampleNum);
 				
-				wavSoundNext.wav = eventSounds[activeEvent][sampleNum];
-				wavSoundNext.seamlessPlay = true;
+				wavSound.wav = eventSounds[activeEvent][sampleNum];
+				wavSound.seamlessPlay = true;
+				xQueueSend(wavSoundQueue, &wavSound, portMAX_DELAY);
 				state = SOUNDPLAYER_BME_WAIT2;
 				break;
 			case SOUNDPLAYER_BME_WAIT2:
-				if((enableInput[activeEvent]) && (NULL == wavSoundNext.wav))
+				if((enableInput[activeEvent]) && (0 == uxQueueMessagesWaiting(wavSoundQueue)))
 					state = SOUNDPLAYER_BME_MIDDLE;
 				else if(!enableInput[activeEvent])
 					state = SOUNDPLAYER_BME_END;
@@ -1008,19 +912,35 @@ void loop()
 				// Queue end file if it exists.  It's OK if this overwrites a queued middle since we now want it to end.
 				if(eventConfig[activeEvent].endIndex >= 0)
 				{
-					wavSoundNext.wav = eventSounds[activeEvent][eventConfig[activeEvent].endIndex];
-					wavSoundNext.seamlessPlay = true;
+					wavSound.wav = eventSounds[activeEvent][eventConfig[activeEvent].endIndex];
+					wavSound.seamlessPlay = true;
+					xQueueSend(wavSoundQueue, &wavSound, portMAX_DELAY);
 				}
 				state = SOUNDPLAYER_BME_WAIT3;
 				break;
 			case SOUNDPLAYER_BME_WAIT3:
 				// Wait until the end is playing
-				if(NULL == wavSoundNext.wav)
+				if(0 == uxQueueMessagesWaiting(wavSoundQueue))
 				{
 					state = SOUNDPLAYER_WAIT_FOR_END;
 				}
 				break;
 		}
+
+		if(1 == gpio_get_level((gpio_num_t)SDDET))
+		{
+			// Card removed
+			if(millis() > sdDetectTime + 500)  //  Need 500ms of continuous removal
+			{
+				Serial.println("SD Card Removed");
+				restart = true;
+			}
+		}
+		else
+		{
+			sdDetectTime = millis();
+		}
+
 
 		if(restart)
 		{
@@ -1047,6 +967,8 @@ void loop()
 			eventSounds[1].clear();
 			eventSounds[2].clear();
 			eventSounds[3].clear();
+
+			SD.end();
 
 			break;	// Restart the loop() function
 		}

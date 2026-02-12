@@ -22,25 +22,14 @@ LICENSE:
 #pragma once
 
 // Pins
-#define EN1        GPIO_NUM_9
-#define EN2        GPIO_NUM_10
-#define EN3        GPIO_NUM_3
-#define EN4        GPIO_NUM_21
-#define LEDA       GPIO_NUM_11
-#define LEDB       GPIO_NUM_12
-#define VOLDN      GPIO_NUM_13
-#define VOLUP      GPIO_NUM_14
-#define AUX1       GPIO_NUM_15
-#define AUX2       GPIO_NUM_16
-#define AUX3       GPIO_NUM_17
-#define AUX4       GPIO_NUM_18
-#define AUX5       GPIO_NUM_8
-#define I2S_SD     GPIO_NUM_4
-#define I2S_DOUT   GPIO_NUM_5
-#define I2S_BCLK   GPIO_NUM_6
-#define I2S_LRCLK  GPIO_NUM_7
-#define SDCLK      36
-#define SDMOSI     35
-#define SDMISO     37
-#define SDCS       34
-#define SDDET      33
+#define SDA        GPIO_NUM_15
+#define SCL        GPIO_NUM_16
+#define I2S_SD     GPIO_NUM_7
+#define I2S_DOUT   GPIO_NUM_17
+#define I2S_BCLK   GPIO_NUM_18
+#define I2S_LRCLK  GPIO_NUM_8
+#define SDCLK      37
+#define SDMOSI     38
+#define SDMISO     36
+#define SDCS       39
+#define SDDET      35

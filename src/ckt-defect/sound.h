@@ -21,6 +21,8 @@ LICENSE:
 
 #pragma once
 
+#include <SD.h>
+
 #define FILE_BUFFER_SIZE 2048
 
 class Sound
@@ -42,7 +44,6 @@ class Sound
 			else
 				return 0;
 		}
-		virtual size_t read(uint8_t *buffer, size_t numBytes);
 		virtual int16_t getNextSample(void);
 		virtual void close(void);
 		uint32_t getSampleRate(void)
@@ -125,18 +126,6 @@ class SdSound : public Sound
 				return 0;
 			}
 		}
-		size_t read(uint8_t *buffer, size_t numBytes)
-		{
-			size_t bytesToRead, bytesRead;
-			if(available() < numBytes)
-				bytesToRead = available();
-			else
-				bytesToRead = numBytes;
-
-			bytesRead = wavFile.read(buffer, bytesToRead);
-			byteCount += bytesRead;
-			return bytesRead;
-		}
 		void close(void)
 		{
 			wavFile.close();
@@ -179,17 +168,6 @@ class MemSound : public Sound
 			{
 				return 0;
 			}
-		}
-		size_t read(uint8_t *buffer, size_t numBytes)
-		{
-			size_t bytesToRead;
-			if(available() < numBytes)
-				bytesToRead = available();
-			else
-				bytesToRead = numBytes;
-			memcpy(buffer, dataPtr+byteCount, bytesToRead);
-			byteCount += bytesToRead;
-			return bytesToRead;
 		}
 		void close(void)
 		{
