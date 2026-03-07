@@ -1,7 +1,7 @@
 /*************************************************************************
-Title:    I2S Audio Functions
+Title:    Common Definitions and Functions
 Authors:  Michael Petersen <railfan@drgw.net>
-File:     audio.h
+File:     common.h
 License:  GNU General Public License v3
 
 LICENSE:
@@ -21,28 +21,17 @@ LICENSE:
 
 #pragma once
 
-#define VOL_STEP_MAX   30
+#define NUM_TRACKS     2
 #define VOL_STEP_NOM   20
 
-struct WavSound {
-	Sound *wav;
-	bool seamlessPlay;
+#include <vector>
+#include <string>
+
+const std::vector<std::string> trackNames = {
+	"Track 1",
+	"Track 2",
+	"North Track",
+	"South Track",
+	"East Track",
+	"West Track",
 };
-
-void audioStopPlaying(void);
-bool audioIsPlaying(void);
-
-void audioSetVolumeStep(uint8_t);
-void audioSetVolumeUpCoef(uint8_t);
-uint8_t audioGetVolumeUpCoef(void);
-void audioSetVolumeDownCoef(uint8_t);
-uint8_t audioGetVolumeDownCoef(void);
-
-void audioMute(void);
-void audioUnmute(void);
-bool audioIsMuted(void);
-
-void audioProcessVolume(void);
-
-void audioInit(void);
-void audioTerminate(void);

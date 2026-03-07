@@ -1,11 +1,11 @@
 /*************************************************************************
 Title:    I2S Audio Functions
 Authors:  Michael Petersen <railfan@drgw.net>
-File:     audio.c
+File:     audio.cpp
 License:  GNU General Public License v3
 
 LICENSE:
-    Copyright (C) 2025 Michael Petersen
+    Copyright (C) 2026 Michael Petersen
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by

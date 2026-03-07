@@ -21,45 +21,27 @@ LICENSE:
 
 #include <SPI.h>
 #include <SD.h>
-#include <Preferences.h>
 #include <vector>
+#include <algorithm>
+#include <string>
 #include <strings.h>
 #include "driver/i2s_std.h"
 #include "driver/gpio.h"
 #include "esp_task_wdt.h"
 
+#include "common.h"
+#include "configuration.h"
 #include "io.h"
 #include "sound.h"
 #include "audio.h"
+#include "messages.h"
 
 // 3 sec watchdog 
 #define TWDT_TIMEOUT_MS    3000
 
-uint8_t volumeStep = VOL_STEP_NOM;
-
 extern QueueHandle_t wavSoundQueue;
 
 bool restart = false;
-
-uint32_t silenceDecisecsMax = 0;
-uint32_t silenceDecisecsMin = 0;
-
-Preferences preferences;
-
-typedef enum
-{
-	MODE_ONESHOT,
-	MODE_CONTINUOUS,
-	MODE_BME,
-} ConfigMode;
-
-struct EventConfig {
-	ConfigMode mode;
-	bool shuffle;
-	bool level;
-	int32_t beginIndex;
-	int32_t endIndex;
-};
 
 struct WavData {
 	uint32_t sampleRate;
@@ -260,7 +242,7 @@ bool validateWavFile(File *wavFile, struct WavData *wavData)
 	return true;
 }
 
-void findWavFiles(File *rootDir, String dirName, std::vector<Sound *> *soundsVector, EventConfig *config)
+void findWavFiles(File *rootDir, String dirName, std::vector<Sound *> *soundsVector)
 {
 	File wavFile;
 	WavData wavData;
@@ -281,30 +263,7 @@ void findWavFiles(File *rootDir, String dirName, std::vector<Sound *> *soundsVec
 		}
 		else
 		{
-// One Shot Mode: No option file
-//
-// Beginning-Middle-End Mode: bme.opt
-//
-// Continuous Mode: continuous.opt
-//    Shuffle after each WAV: shuffle.opt
-//    Level sensitive (end immediately): level.opt
-			if(0 == strcmp(wavFile.name(), "bme.opt"))
-			{
-				config->mode = MODE_BME;
-			}
-			else if(0 == strcmp(wavFile.name(), "continuous.opt"))
-			{
-				config->mode = MODE_CONTINUOUS;
-			}
-			else if(0 == strcmp(wavFile.name(), "shuffle.opt"))
-			{
-				config->shuffle = true;
-			}
-			else if(0 == strcmp(wavFile.name(), "level.opt"))
-			{
-				config->level = true;
-			}
-			else if(validateWavFile(&wavFile, &wavData))
+			if(validateWavFile(&wavFile, &wavData))
 			{
 				// If we got here, then it looks like a valid wav file
 				String fullFileName = dirName + wavFile.name();
@@ -319,17 +278,6 @@ void findWavFiles(File *rootDir, String dirName, std::vector<Sound *> *soundsVec
 				Serial.print(wavData.dataStartPosition);
 				Serial.print(")");
 
-				if(!strcmp(wavFile.name(), "begin.wav"))
-				{
-					config->beginIndex = soundsVector->size();   // Current size will be index of the newly pushed object below
-					Serial.print(" - BME BEGIN");
-				}
-				else if(!strcmp(wavFile.name(), "end.wav"))
-				{
-					config->endIndex = soundsVector->size();   // Current size will be index of the newly pushed object below
-					Serial.print(" - BME END");
-				}
-
 				Serial.println("");
 
 				soundsVector->push_back(new SdSound(fullFileName.c_str(), wavData.wavDataSize, wavData.dataStartPosition, wavData.sampleRate));
@@ -343,68 +291,14 @@ void findWavFiles(File *rootDir, String dirName, std::vector<Sound *> *soundsVec
 void loop()
 {
 	File rootDir;
-
-	uint32_t lastSampleNum = UINT32_MAX;   // Have to initialize to something, so will never play UINT32_MAX samples first, can't be zero since it would never play anything with a single sample
-
-	uint32_t silenceDecisecs;
-	unsigned long silenceStart;
-	unsigned long silenceTick;
-
-	bool ambientMode = false;
-
-	uint8_t buttonsPressed = 0, oldButtonsPressed = 0;
-	uint8_t inputStatus = 0;
-
 	unsigned long sdDetectTime = 0;
+	
+	DetectorConfiguration cfg;
 
-	uint32_t i, j;
-	uint32_t activeEvent = 0;
-
-	uint32_t sampleNum;
-
-	std::vector<Sound *> ambientSounds;
-	std::vector<Sound *> eventSounds[4];
-
-	WavSound wavSound;
-
-	EventConfig ambientConfig;  // not used, but needed for symmetry with other events
-	EventConfig eventConfig[4];
-	for(i=0; i<4; i++)
-	{
-		eventConfig[i].mode = MODE_ONESHOT;
-		eventConfig[i].shuffle = false;
-		eventConfig[i].level = false;
-		eventConfig[i].beginIndex = -1;
-		eventConfig[i].endIndex = -1;
-	}
-
-	typedef enum
-	{
-		SOUNDPLAYER_IDLE,
-		SOUNDPLAYER_AMBIENT_INIT,
-		SOUNDPLAYER_AMBIENT_QUEUE,
-		SOUNDPLAYER_AMBIENT_PLAY_WAIT,
-		SOUNDPLAYER_AMBIENT_PLAY,
-		SOUNDPLAYER_AMBIENT_SILENCE,
-		SOUNDPLAYER_ONESHOT_QUEUE,
-		SOUNDPLAYER_WAIT_FOR_END,
-		SOUNDPLAYER_CONTINUOUS_INIT,
-		SOUNDPLAYER_CONTINUOUS_RANDOM,
-		SOUNDPLAYER_CONTINUOUS_SAME,
-		SOUNDPLAYER_CONTINUOUS_WAIT,
-		SOUNDPLAYER_CONTINUOUS_MUTE,
-		SOUNDPLAYER_BME_BEGIN,
-		SOUNDPLAYER_BME_WAIT1,
-		SOUNDPLAYER_BME_MIDDLE,
-		SOUNDPLAYER_BME_WAIT2,
-		SOUNDPLAYER_BME_END,
-		SOUNDPLAYER_BME_WAIT3,
-	} SoundplayerState;
-
-	SoundplayerState state = SOUNDPLAYER_IDLE;
+	MessageBundle trackMessages[2];  // Declare two bundles of messages, one for each track
 
 	esp_task_wdt_reset();
-	
+
 	Serial.println("ISE Defect Detector");
 
 	Serial.print("Version: ");
@@ -414,21 +308,51 @@ void loop()
 	Serial.println(GIT_REV, HEX);
 
 	// Read NVM configuration
-	preferences.begin("defectdetector", false);
-	volumeStep = preferences.getUChar("volume", VOL_STEP_NOM);
-	audioSetVolumeStep(volumeStep);
+	loadConfiguration(&cfg);
+	audioSetVolumeStep(cfg.volumeStep);
 
-	// Set defaults
-	silenceDecisecsMax = 0;
-	silenceDecisecsMin = 0;
+	printMemoryUsage();
+
+	// Set some defaults
 	audioSetVolumeUpCoef(10);
 	audioSetVolumeDownCoef(8);
 
-	bool enableInput[4];
-	bool risingInput[4];
-	bool enable;
+	// Check for config file and load data from it if present
+	// FIXME
 
-	esp_task_wdt_reset();
+	trackMessages[0].entranceMsg = "Equipment Defect Detector";
+	trackMessages[0].defects.emplace_back("defect 1 alertMsg", "defect 1 detailMsg", "defect 1 summaryMsg", 500);
+	trackMessages[0].defects.emplace_back("defect 2 alertMsg", "defect 2 detailMsg", "defect 2 summaryMsg", 100);
+	trackMessages[0].defects.emplace_back("defect 3 alertMsg", "defect 3 detailMsg", "defect 3 summaryMsg", 300);
+	trackMessages[0].integrityMsg = "This is an integrity message";
+
+	Serial.println(trackMessages[0].entranceMsg.c_str());
+	Serial.println(trackMessages[0].integrityMsg.c_str());
+	for(uint32_t i=0; i<trackMessages[0].defects.size(); i++)
+	{
+		Serial.println(trackMessages[0].defects[i].summaryMsg.c_str());
+	}
+
+	sort(trackMessages[0].defects.begin(), trackMessages[0].defects.end(), [](DefectMessage a, DefectMessage b) {
+		return a.probability < b.probability; // returns true if 'a' should come before 'b'
+		});
+	
+	for(uint32_t i=0; i<trackMessages[0].defects.size(); i++)
+	{
+		Serial.println(trackMessages[0].defects[i].summaryMsg.c_str());
+	}
+
+
+
+// FIXME *********************************
+	bool ambientMode = false;
+	std::vector<Sound *> ambientSounds;
+	WavSound wavSound;
+// ***************************************
+
+
+
+
 	
 	SPIClass vspi = SPIClass(FSPI);
 	vspi.begin(SDCLK, SDMISO, SDMOSI, SDCS);
@@ -450,15 +374,7 @@ void loop()
 					continue;
 
 				// Okay, looks like we have a valid key/value pair, see if it's something we care about
-				if (0 == strcmp(keyStr, "silenceMax"))
-				{
-					silenceDecisecsMax = atoi(valueStr);
-				}
-				else if (0 == strcmp(keyStr, "silenceMin"))
-				{
-					silenceDecisecsMin = atoi(valueStr);
-				}
-				else if (0 == strcmp(keyStr, "volumeUp"))
+				if (0 == strcmp(keyStr, "volumeUp"))
 				{
 					audioSetVolumeUpCoef(atoi(valueStr));
 				}
@@ -471,11 +387,12 @@ void loop()
 		f.close();
 
 		esp_task_wdt_reset();
+
 		if((rootDir = SD.open("/ambient")))
 		{
 			// Ambient mode, find WAV files
 			Serial.println("\nFound ambient directory");
-			findWavFiles(&rootDir, "ambient/", &ambientSounds, &ambientConfig);
+			findWavFiles(&rootDir, "ambient/", &ambientSounds);
 			rootDir.close();
 			if(ambientSounds.size() > 0)
 			{
@@ -485,81 +402,22 @@ void loop()
 		}
 
 		esp_task_wdt_reset();
-		if(!ambientMode)
-		{
-			// Not ambient mode, check event directories
-			ambientMode = false;
-
-			for(i=0; i<4; i++)
-			{
-				esp_task_wdt_reset();
-				char rootDirectory[8] = "/event_";  // SD.open need preceding slash
-				rootDirectory[6] = '1' + i;
-				char directoryName[8] = "event_/";  // filename needs trailing slash
-				directoryName[5] = '1' + i;
-				if((rootDir = SD.open(rootDirectory)))
-				{
-					findWavFiles(&rootDir, directoryName, &eventSounds[i], &eventConfig[i]);
-				}
-			}
-		}
 	}
-
-	Serial.println("");
-
-	if(!ambientMode)
-	{
-		for(i=0; i<4; i++)
-		{
-			Serial.print("Event ");
-			Serial.print(i);
-			Serial.print(" Mode: ");
-			switch(eventConfig[i].mode)
-			{
-				case MODE_ONESHOT:
-					Serial.println("One Shot");
-					break;
-				case MODE_CONTINUOUS:
-					Serial.print("Continuous");
-					if(eventConfig[i].level)
-						Serial.print(" Level");
-					if(eventConfig[i].shuffle)
-						Serial.print(" Shuffle");
-					Serial.println("");
-					break;
-				case MODE_BME:
-					Serial.println("Beginning-Middle-End");
-					break;
-			}
-		}
-	}
-
-	Serial.print("\n");
 
 	// Print configuration values
-	Serial.print("Volume: ");
-	Serial.println(volumeStep);
-	Serial.print("Silence Max: ");
-	Serial.print(silenceDecisecsMax/10.0, 1);
-	Serial.println("s");
-	Serial.print("Silence Min: ");
-	Serial.print(silenceDecisecsMin/10.0, 1);
-	Serial.println("s");
-	Serial.print("Volume Up Coef: ");
-	Serial.println(audioGetVolumeUpCoef());
-	Serial.print("Volume Down Coef: ");
-	Serial.println(audioGetVolumeDownCoef());
+	printConfiguration(&cfg);
 
 	Serial.println("");
 
 	esp_task_wdt_reset();
 
-	if(ambientMode || (eventSounds[0].size() > 0) || (eventSounds[1].size() > 0) || (eventSounds[2].size() > 0) || (eventSounds[3].size() > 0))
+
+// FIXME *********************************
+	if(ambientMode)
 	{
 		Serial.print("Using SD card sounds (");
-		Serial.print(ambientSounds.size() + eventSounds[0].size() + eventSounds[1].size() + eventSounds[2].size() + eventSounds[3].size());
+		Serial.print(ambientSounds.size());
 		Serial.println(")");
-		esp_task_wdt_reset();
 	}
 	else
 	{
@@ -583,10 +441,11 @@ void loop()
 			}
 		}
 	}
+// FIXME *********************************
+
+
 
 	audioInit();
-	
-	printMemoryUsage();
 
 	while(1)
 	{
@@ -596,14 +455,8 @@ void loop()
 		if(timerTick)
 		{
 			timerTick = false;
-
-			// Debounce
-			buttonsPressed = debounce(buttonsPressed, inputStatus);
-			
 			audioProcessVolume();
 		}
-
-		oldButtonsPressed = buttonsPressed;
 
 		// Check for serial input
 		if(Serial.available() > 0)
@@ -611,320 +464,39 @@ void loop()
 			uint8_t serialChar = Serial.read();
 			switch(serialChar)
 			{
+				case '+':
+					cfg.volumeStep++;
+					audioSetVolumeStep(cfg.volumeStep);
+					saveConfiguration(&cfg);
+					break;
+				case '-':
+					cfg.volumeStep--;
+					audioSetVolumeStep(cfg.volumeStep);
+					saveConfiguration(&cfg);
+					break;
 				case 'q':
 					restart = true;
 					break;
 				case '~':
 					Serial.print("Clearing preferences...");
-					preferences.clear();
+					resetConfiguration(&cfg);
 					break;
 			}
 		}
 
-		enable = true;
-		enableInput[0] = true;
-		enableInput[1] = false;
-		enableInput[2] = false;
-		enableInput[3] = false;
-
-		switch(state)
+		// FIXME Send some test audio
+		if(0 == uxQueueMessagesWaiting(wavSoundQueue))
 		{
-			case SOUNDPLAYER_IDLE:
-				if(ambientMode)
-				{
-					state = SOUNDPLAYER_AMBIENT_INIT;
-				}
-				else
-				{
-					// Not ambient mode, wait for inputs
-					if(enable)
-					{
-						for(i=0; i<4; i++)
-						{
-							// Find first input activated
-							if(enableInput[i] && (eventSounds[i].size() > 0))
-							{
-								if( (risingInput[i]) && (MODE_ONESHOT == eventConfig[i].mode))
-								{
-									activeEvent = i;
-									state = SOUNDPLAYER_ONESHOT_QUEUE;
-								}
-								else if(MODE_CONTINUOUS == eventConfig[i].mode)
-								{
-									activeEvent = i;
-									state = SOUNDPLAYER_CONTINUOUS_INIT;
-								}
-								else if(MODE_BME == eventConfig[i].mode)
-								{
-									activeEvent = i;
-									state = SOUNDPLAYER_BME_BEGIN;
-								}
-								break;  // Exit for loop
-							}
-						}
-					}
-				}
-				break;
-			case SOUNDPLAYER_AMBIENT_INIT:
-				Serial.println("Ambient Mode");
-				audioMute();
-				state = SOUNDPLAYER_AMBIENT_QUEUE;
-				break;
-			case SOUNDPLAYER_AMBIENT_QUEUE:
-				if(0 == uxQueueMessagesWaiting(wavSoundQueue))
-				{
-					printMemoryUsage();
+			printMemoryUsage();
 
-					sampleNum = random(0, ambientSounds.size());
-					if(ambientSounds.size() > 2)
-					{
-						// With three or more sounds, don't repeat the last one
-						while(sampleNum == lastSampleNum)
-						{
-							esp_task_wdt_reset();
-							sampleNum = random(0, ambientSounds.size());
-							Serial.println("*");
-						}
-					}
-					Serial.print("Queueing... ");
-					Serial.println(sampleNum);
-					wavSound.wav = ambientSounds[sampleNum];
-					wavSound.seamlessPlay = false;
-					xQueueSend(wavSoundQueue, &wavSound, portMAX_DELAY);
-					lastSampleNum = sampleNum;
-					state = SOUNDPLAYER_AMBIENT_PLAY_WAIT;
-				}
-				break;
-			case SOUNDPLAYER_AMBIENT_PLAY_WAIT:
-				// Wait for the player to start playing
-				if(audioIsPlaying())
-					state = SOUNDPLAYER_AMBIENT_PLAY;
-				break;
-			case SOUNDPLAYER_AMBIENT_PLAY:
-				if(enable)
-					audioUnmute();
-				else
-					audioMute();
-				if(!audioIsPlaying())
-				{
-					// Done playing, add some silence
-					silenceDecisecs = random(silenceDecisecsMin, silenceDecisecsMax);
-					Serial.print("Silence... ");
-					Serial.print(silenceDecisecs/10.0, 1);
-					Serial.println("s");
-					silenceStart = millis();
-					silenceTick = silenceStart;
-					state = SOUNDPLAYER_AMBIENT_SILENCE;
-				}
-				break;
-			case SOUNDPLAYER_AMBIENT_SILENCE:
-				if(millis() >= silenceTick + 1000)
-				{
-					silenceTick += 1000;
-					Serial.print("-");
-				}
-				if(millis() >= (silenceStart + 100 * silenceDecisecs))
-				{
-					if(silenceTick != silenceStart)
-						Serial.print("\n");   // We printed some ticks above, so send a newline
-					state = SOUNDPLAYER_AMBIENT_QUEUE;
-				}
-				break;
+			audioUnmute();
 
-
-
-			case SOUNDPLAYER_ONESHOT_QUEUE:
-				audioUnmute();
-				printMemoryUsage();
-				Serial.print("Event ");
-				Serial.print(activeEvent+1);
-				Serial.println(": One Shot Mode");
-
-				sampleNum = random(0, eventSounds[activeEvent].size());
-				Serial.print("Queueing... ");
-				Serial.println(sampleNum);
-				wavSound.wav = eventSounds[activeEvent][sampleNum];
-				wavSound.seamlessPlay = false;
-				xQueueSend(wavSoundQueue, &wavSound, portMAX_DELAY);
-				state = SOUNDPLAYER_WAIT_FOR_END;
-				break;
-				
-
-
-			case SOUNDPLAYER_WAIT_FOR_END:
-				if(!audioIsPlaying())
-				{
-					audioUnmute();
-					state = SOUNDPLAYER_IDLE;
-				}
-				break;
-
-
-
-			case SOUNDPLAYER_CONTINUOUS_INIT:
-				audioUnmute();
-				printMemoryUsage();
-				Serial.print("Event ");
-				Serial.print(activeEvent+1);
-				Serial.println(": Continuous Mode");
-				lastSampleNum = UINT32_MAX;
-				state = SOUNDPLAYER_CONTINUOUS_RANDOM;
-				break;
-
-			case SOUNDPLAYER_CONTINUOUS_RANDOM:
-				sampleNum = random(0, eventSounds[activeEvent].size());
-				if(eventSounds[activeEvent].size() > 2)
-				{
-					// With three or more sounds, don't repeat the last one
-					while(sampleNum == lastSampleNum)
-					{
-						esp_task_wdt_reset();
-						sampleNum = random(0, eventSounds[activeEvent].size());
-						Serial.println("*");
-					}
-				}
-				Serial.print("Queueing... ");
-				Serial.println(sampleNum);
-				wavSound.wav = eventSounds[activeEvent][sampleNum];
-				wavSound.seamlessPlay = false;
-				xQueueSend(wavSoundQueue, &wavSound, portMAX_DELAY);
-				lastSampleNum = sampleNum;
-				state = SOUNDPLAYER_CONTINUOUS_WAIT;
-				break;
-
-			case SOUNDPLAYER_CONTINUOUS_SAME:
-				Serial.print("Re-Queueing... ");
-				Serial.println(sampleNum);
-				wavSound.wav = eventSounds[activeEvent][sampleNum];
-				wavSound.seamlessPlay = false;
-				xQueueSend(wavSoundQueue, &wavSound, portMAX_DELAY);
-				state = SOUNDPLAYER_CONTINUOUS_WAIT;
-				break;
-
-			case SOUNDPLAYER_CONTINUOUS_WAIT:
-				if(enableInput[activeEvent])
-				{
-					// Enable still active
-					if(0 == uxQueueMessagesWaiting(wavSoundQueue))
-					{
-						// Queue empty
-						if(eventConfig[activeEvent].shuffle)
-							state = SOUNDPLAYER_CONTINUOUS_RANDOM;
-						else
-							state = SOUNDPLAYER_CONTINUOUS_SAME;
-					}
-				}
-				else
-				{
-					// Enable not active
-					xQueueReset(wavSoundQueue);  // Remove anything queued so it doesn't play
-
-					lastSampleNum = UINT32_MAX;
-					if(eventConfig[activeEvent].level)
-						state = SOUNDPLAYER_CONTINUOUS_MUTE;
-					else
-						state = SOUNDPLAYER_WAIT_FOR_END;
-				}
-				break;
-
-			case SOUNDPLAYER_CONTINUOUS_MUTE:
-				audioMute();
-				if(audioIsMuted())
-				{
-					audioStopPlaying();
-					state = SOUNDPLAYER_WAIT_FOR_END;
-				}
-				break;
-
-
-
-			case SOUNDPLAYER_BME_BEGIN:
-				audioUnmute();
-				printMemoryUsage();
-				Serial.print("Event ");
-				Serial.print(activeEvent+1);
-				Serial.println(": BME Mode");
-
-				// Queue begin file if one exists
-				if(eventConfig[activeEvent].beginIndex >= 0)
-				{
-					wavSound.wav = eventSounds[activeEvent][eventConfig[activeEvent].beginIndex];
-					wavSound.seamlessPlay = true;
-					xQueueSend(wavSoundQueue, &wavSound, portMAX_DELAY);
-				}
-				state = SOUNDPLAYER_BME_WAIT1;
-				break;
-			case SOUNDPLAYER_BME_WAIT1:
-				if(0 == uxQueueMessagesWaiting(wavSoundQueue))
-				{
-					state = SOUNDPLAYER_BME_MIDDLE;
-				}
-				break;
-			case SOUNDPLAYER_BME_MIDDLE:
-				// Queue middle file.
-				i = eventSounds[activeEvent].size();
-//				Serial.println(i);
-				if(eventConfig[activeEvent].beginIndex >= 0)
-				{
-					// Valid begin sound
-					i--;
-				}
-				if(eventConfig[activeEvent].endIndex >= 0)
-				{
-					// Valid end sound
-					i--;
-				}
-//				Serial.println(i);
-				
-				sampleNum = random(0, i);
-//				Serial.println(sampleNum);
-				
-				if((eventConfig[activeEvent].beginIndex >= 0) && (sampleNum >= eventConfig[activeEvent].beginIndex))
-				{
-					// Skip begin sound
-					sampleNum++;
-					// Check that it isn't now the end sound
-					if(sampleNum >= eventConfig[activeEvent].endIndex)
-						sampleNum++;
-				}
-				else if((eventConfig[activeEvent].endIndex >= 0) && (sampleNum >= eventConfig[activeEvent].endIndex))
-				{
-					// Skip end sound
-					sampleNum++;
-					// Check that it isn't now the begin sound
-					if(sampleNum >= eventConfig[activeEvent].beginIndex)
-						sampleNum++;
-				}
-//				Serial.println(sampleNum);
-				
-				wavSound.wav = eventSounds[activeEvent][sampleNum];
-				wavSound.seamlessPlay = true;
-				xQueueSend(wavSoundQueue, &wavSound, portMAX_DELAY);
-				state = SOUNDPLAYER_BME_WAIT2;
-				break;
-			case SOUNDPLAYER_BME_WAIT2:
-				if((enableInput[activeEvent]) && (0 == uxQueueMessagesWaiting(wavSoundQueue)))
-					state = SOUNDPLAYER_BME_MIDDLE;
-				else if(!enableInput[activeEvent])
-					state = SOUNDPLAYER_BME_END;
-				break;
-			case SOUNDPLAYER_BME_END:
-				// Queue end file if it exists.  It's OK if this overwrites a queued middle since we now want it to end.
-				if(eventConfig[activeEvent].endIndex >= 0)
-				{
-					wavSound.wav = eventSounds[activeEvent][eventConfig[activeEvent].endIndex];
-					wavSound.seamlessPlay = true;
-					xQueueSend(wavSoundQueue, &wavSound, portMAX_DELAY);
-				}
-				state = SOUNDPLAYER_BME_WAIT3;
-				break;
-			case SOUNDPLAYER_BME_WAIT3:
-				// Wait until the end is playing
-				if(0 == uxQueueMessagesWaiting(wavSoundQueue))
-				{
-					state = SOUNDPLAYER_WAIT_FOR_END;
-				}
-				break;
+			uint32_t sampleNum = random(0, ambientSounds.size());
+			Serial.print("Queueing... ");
+			Serial.println(sampleNum);
+			wavSound.wav = ambientSounds[sampleNum];
+			wavSound.seamlessPlay = false;
+			xQueueSend(wavSoundQueue, &wavSound, portMAX_DELAY);
 		}
 
 		if(1 == gpio_get_level((gpio_num_t)SDDET))
@@ -949,24 +521,13 @@ void loop()
 
 			audioTerminate();
 
-			for(i=0; i<ambientSounds.size(); i++)
+// FIXME Send some test audio
+			for(uint32_t i=0; i<ambientSounds.size(); i++)
 			{
 				delete ambientSounds[i];
 			}
-			
-			for(j=0; j<4; j++)
-			{
-				for(i=0; i<eventSounds[j].size(); i++)
-				{
-					delete eventSounds[j][i];
-				}
-			}
-
 			ambientSounds.clear();
-			eventSounds[0].clear();
-			eventSounds[1].clear();
-			eventSounds[2].clear();
-			eventSounds[3].clear();
+// FIXME Send some test audio
 
 			SD.end();
 

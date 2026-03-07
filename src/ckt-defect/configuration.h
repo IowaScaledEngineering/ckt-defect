@@ -1,7 +1,7 @@
 /*************************************************************************
-Title:    I2S Audio Functions
+Title:    Defect Detector Configuration
 Authors:  Michael Petersen <railfan@drgw.net>
-File:     audio.h
+File:     configuration.h
 License:  GNU General Public License v3
 
 LICENSE:
@@ -21,28 +21,24 @@ LICENSE:
 
 #pragma once
 
-#define VOL_STEP_MAX   30
-#define VOL_STEP_NOM   20
+#include <math.h>
+#include "common.h"
 
-struct WavSound {
-	Sound *wav;
-	bool seamlessPlay;
+struct DetectorConfiguration {
+	uint8_t volumeStep;
+
+	bool milepostEnable[NUM_TRACKS];
+	float_t milepost[NUM_TRACKS];
+
+	bool trackNameEnable[NUM_TRACKS];
+	uint8_t trackNameId[NUM_TRACKS];
+
+	bool speedEnable[NUM_TRACKS];
+
+	bool axleEnable[NUM_TRACKS];
 };
 
-void audioStopPlaying(void);
-bool audioIsPlaying(void);
-
-void audioSetVolumeStep(uint8_t);
-void audioSetVolumeUpCoef(uint8_t);
-uint8_t audioGetVolumeUpCoef(void);
-void audioSetVolumeDownCoef(uint8_t);
-uint8_t audioGetVolumeDownCoef(void);
-
-void audioMute(void);
-void audioUnmute(void);
-bool audioIsMuted(void);
-
-void audioProcessVolume(void);
-
-void audioInit(void);
-void audioTerminate(void);
+void loadConfiguration(DetectorConfiguration* cfg);
+void saveConfiguration(DetectorConfiguration* cfg);
+void printConfiguration(DetectorConfiguration* cfg);
+void resetConfiguration(DetectorConfiguration* cfg);
