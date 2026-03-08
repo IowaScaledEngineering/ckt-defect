@@ -158,6 +158,27 @@ bool audioIsMuted(void)
 }
 
 
+bool audioQueueEmpty(void)
+{
+	if(0 == uxQueueMessagesWaiting(wavSoundQueue))
+		return true;
+	else
+		return false;
+}
+
+
+void audioQueuePush(WavSound* wavSound)
+{
+	xQueueSend(wavSoundQueue, wavSound, portMAX_DELAY);
+}
+
+
+BaseType_t audioQueuePop(WavSound* wavSound)
+{
+	return xQueueReceive(wavSoundQueue, wavSound, portMAX_DELAY);
+}
+
+
 void audioProcessVolume(void)
 {
 	uint16_t deltaVolume;
@@ -199,7 +220,7 @@ static void audioPump(void *args)
 		switch(playerState)
 		{
 			case PLAYER_IDLE:
-				if(0 != uxQueueMessagesWaiting(wavSoundQueue))
+				if(!audioQueueEmpty())
 				{
 					// Queue not empty
 					playerState = PLAYER_INIT;
@@ -207,7 +228,7 @@ static void audioPump(void *args)
 				break;
 
 			case PLAYER_INIT:
-				if(xQueueReceive(wavSoundQueue, &wavSound, portMAX_DELAY))  // Should only get here when there is something in the queue, so portMAX_DELAY is fine
+				if(audioQueuePop(&wavSound))  // Should only get here when there is something in the queue, so portMAX_DELAY is fine
 				{
 					wavSound.wav->open();         // Open the sound
 					if(wavSound.wav->getSampleRate() == oldSampleRate)
@@ -261,7 +282,7 @@ static void audioPump(void *args)
 				{
 					// Sound done, no samples available
 					wavSound.wav->close();
-					if((uxQueueMessagesWaiting(wavSoundQueue)) && (wavSound.seamlessPlay))
+					if(!audioQueueEmpty() && wavSound.seamlessPlay)
 					{
 						// Queue not empty and seamless playing, so grab next
 						playerState = PLAYER_INIT;

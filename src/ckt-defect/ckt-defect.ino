@@ -43,8 +43,6 @@ LICENSE:
 // 3 sec watchdog 
 #define TWDT_TIMEOUT_MS    3000
 
-extern QueueHandle_t wavSoundQueue;
-
 bool restart = false;
 
 struct WavData {
@@ -568,7 +566,7 @@ void loop()
 		}
 
 		// FIXME Send some test audio
-		if(0 == uxQueueMessagesWaiting(wavSoundQueue))
+		if(audioQueueEmpty())
 		{
 			printMemoryUsage();
 
@@ -579,7 +577,7 @@ void loop()
 			Serial.println(sampleNum);
 			wavSound.wav = ambientSounds[sampleNum];
 			wavSound.seamlessPlay = false;
-			xQueueSend(wavSoundQueue, &wavSound, portMAX_DELAY);
+			audioQueuePush(&wavSound);
 		}
 
 		if(1 == gpio_get_level((gpio_num_t)SDDET))

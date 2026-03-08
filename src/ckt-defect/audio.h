@@ -39,6 +39,10 @@ void audioMute(void);
 void audioUnmute(void);
 bool audioIsMuted(void);
 
+bool audioQueueEmpty(void);
+void audioQueuePush(WavSound* wavSound);
+BaseType_t audioQueuePop(WavSound* wavSound);
+
 void audioProcessVolume(void);
 
 void audioInit(void);
