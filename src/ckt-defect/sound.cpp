@@ -28,7 +28,6 @@ Sound::~Sound()
 
 void Sound::open(void)
 {
-	Serial.print("Open: ");
 }
 
 int16_t Sound::getNextSample(void)
@@ -60,8 +59,8 @@ uint32_t Sound::getSampleRate(void)
 SdSound::SdSound(const char *fname, size_t numBytes, size_t offset, uint16_t sr)
 {
 	fileName = strdup(fname);
-//	soundName = fname;
-//	soundName.erase(soundName.find('.'));   // Find the . and remove it and everything after
+	soundName = fname;
+	soundName.erase(soundName.find('.'));   // Find the . and remove it and everything after
 	dataOffset = offset;
 	dataSize = numBytes;
 	sampleRate = sr;
@@ -75,7 +74,7 @@ void SdSound::open(void)
 	wavFile = SD.open(String("/") + fileName);
 	wavFile.seek(dataOffset);
 	Serial.print("Open: ");
-	Serial.println(fileName);
+	Serial.println(soundName.c_str());
 	byteCount = 0;
 	fileBufferLength = 0;
 	fileBufferPosition = 0;
@@ -146,7 +145,7 @@ MemSound::~MemSound()
 void MemSound::open(void)
 {
 	Serial.print("OpenMem: ");
-//	Serial.println(soundName.c_str());
+	Serial.println(soundName.c_str());
 	byteCount = 0;
 }
 int16_t MemSound::getNextSample(void)
