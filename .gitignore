@@ -1,7 +1,7 @@
 *~
 *.wav
 src/build
-.vscode
+run.sh
 
 # Kicad stuff
 fp-info-cache

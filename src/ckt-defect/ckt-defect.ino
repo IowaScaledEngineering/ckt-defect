@@ -362,6 +362,11 @@ void loop()
 			tmpMessage += " total axles #axles";
 		}
 
+		if(cfg.speedEnable)
+		{
+			tmpMessage += " train speed #speed m p h";
+		}
+
 		if(cfg.temperatureEnable)
 		{
 			tmpMessage += " temperature #temp degrees";
