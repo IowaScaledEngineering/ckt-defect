@@ -27,7 +27,6 @@ LICENSE:
 #include <string>
 #include <sstream>
 #include <iomanip>
-#include <strings.h>
 #include <math.h>
 #include "driver/i2s_std.h"
 #include "driver/gpio.h"

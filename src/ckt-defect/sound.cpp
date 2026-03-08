@@ -56,9 +56,9 @@ uint32_t Sound::getSampleRate(void)
 
 
 
-SdSound::SdSound(const char *fname, size_t numBytes, size_t offset, uint16_t sr)
+SdSound::SdSound(const std::string& fname, size_t numBytes, size_t offset, uint16_t sr)
 {
-	fileName = strdup(fname);
+	fileName = "/" + fname;
 	soundName = fname;
 	soundName.erase(soundName.find('.'));   // Find the . and remove it and everything after
 	dataOffset = offset;
@@ -67,11 +67,10 @@ SdSound::SdSound(const char *fname, size_t numBytes, size_t offset, uint16_t sr)
 }
 SdSound::~SdSound()
 {
-	free(fileName);
 }
 void SdSound::open(void)
 {
-	wavFile = SD.open(String("/") + fileName);
+	wavFile = SD.open(fileName.c_str());
 	wavFile.seek(dataOffset);
 	Serial.print("Open: ");
 	Serial.println(soundName.c_str());
@@ -131,7 +130,7 @@ void SdSound::close(void)
 
 
 
-MemSound::MemSound(const char *name, const uint8_t *sound, size_t numBytes, uint16_t sr)
+MemSound::MemSound(const std::string& name, const uint8_t *sound, size_t numBytes, uint16_t sr)
 {
 	soundName = name;
 	dataPtr = sound;
@@ -140,7 +139,7 @@ MemSound::MemSound(const char *name, const uint8_t *sound, size_t numBytes, uint
 }
 MemSound::~MemSound()
 {
-	// No need to free dataPtr since it is const
+	// No need to free dataPtr since it points to const data
 }
 void MemSound::open(void)
 {

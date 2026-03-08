@@ -44,7 +44,7 @@ class Sound
 
 class SdSound : public Sound
 {
-	char *fileName;
+	std::string fileName;
 	size_t dataOffset;
 	File wavFile;
 	uint8_t fileBuffer[FILE_BUFFER_SIZE];
@@ -53,7 +53,7 @@ class SdSound : public Sound
 	int16_t sampleValue;
 
 	public:
-		SdSound(const char *fname, size_t numBytes, size_t offset, uint16_t sr);
+		SdSound(const std::string& fname, size_t numBytes, size_t offset, uint16_t sr);
 		~SdSound();
 		void open(void);
 		size_t fileBufferAvailable(void);
@@ -68,7 +68,7 @@ class MemSound : public Sound
 	int16_t sampleValue;
 
 	public:
-		MemSound(const char *name, const uint8_t *sound, size_t numBytes, uint16_t sr);
+		MemSound(const std::string& name, const uint8_t *sound, size_t numBytes, uint16_t sr);
 		~MemSound();
 		void open(void);
 		int16_t getNextSample(void);
