@@ -21,9 +21,6 @@ LICENSE:
 
 #pragma once
 
-#define VOL_STEP_MAX   30
-#define VOL_STEP_NOM   20
-
 struct WavSound {
 	Sound *wav;
 	bool seamlessPlay;

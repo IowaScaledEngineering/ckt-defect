@@ -19,11 +19,13 @@ LICENSE:
 
 *************************************************************************/
 
+#include <Arduino.h>
 #include <SPI.h>
 #include <SD.h>
 #include "driver/i2s_std.h"
 #include "driver/gpio.h"
 
+#include "common.h"
 #include "io.h"
 #include "sound.h"
 #include "audio.h"

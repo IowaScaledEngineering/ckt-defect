@@ -19,8 +19,19 @@ LICENSE:
 
 *************************************************************************/
 
+#include <Arduino.h>
 #include <Preferences.h>
+#include <math.h>
+
+#include "common.h"
 #include "configuration.h"
+
+#define MILEPOST_EN_DEFAULT     true
+#define TRACK_NAME_EN_DEFAULT   true
+#define SPEED_EN_DEFAULT        true
+#define AXLE_EN_DEFAULT         true
+#define TEMPERATURE_EN_DEFAULT  true
+#define MILEPOST_DEFAULT        346.9
 
 #define PREF_NAMESPACE   "defectdetector"
 
@@ -34,25 +45,19 @@ void loadConfiguration(DetectorConfiguration* cfg)
 
 	cfg->volumeStep = preferences.getUChar("vol", VOL_STEP_NOM);
 
+	cfg->milepostEnable = preferences.getBool("mpEn", MILEPOST_EN_DEFAULT);
+	cfg->trackNameEnable = preferences.getBool("trkNameEn", TRACK_NAME_EN_DEFAULT);
+	cfg->speedEnable = preferences.getBool("spdEn", SPEED_EN_DEFAULT);
+	cfg->axleEnable = preferences.getBool("axleEn", AXLE_EN_DEFAULT);
+	cfg->temperatureEnable = preferences.getBool("tmpEn", TEMPERATURE_EN_DEFAULT);
+
 	for(uint32_t i=0; i<NUM_TRACKS; i++)
 	{
-		key = "mpEn" + String(i);
-		cfg->milepostEnable[i] = preferences.getBool(key.c_str(), true);
-
 		key = "mp" + String(i);
-		cfg->milepost[i] = preferences.getFloat(key.c_str(), 123.4);
-
-		key = "trkNameEn" + String(i);
-		cfg->trackNameEnable[i] = preferences.getBool(key.c_str(), true);
+		cfg->milepost[i] = preferences.getFloat(key.c_str(), MILEPOST_DEFAULT);
 
 		key = "trkNameId" + String(i);
-		cfg->trackNameId[i] = preferences.getUChar(key.c_str(), 0);
-
-		key = "spdEn" + String(i);
-		cfg->speedEnable[i] = preferences.getBool(key.c_str(), true);
-
-		key = "axleEn" + String(i);
-		cfg->axleEnable[i] = preferences.getBool(key.c_str(), true);
+		cfg->trackNameId[i] = preferences.getUChar(key.c_str(), i);
 	}
 
 	preferences.end();
@@ -69,31 +74,30 @@ void saveConfiguration(DetectorConfiguration* cfg)
 	if(cfg->volumeStep != preferences.getUChar("vol", VOL_STEP_NOM))
 		preferences.putUChar("vol", cfg->volumeStep);
 
+	if(cfg->milepostEnable != preferences.getBool("mpEn", MILEPOST_EN_DEFAULT))
+		preferences.putBool("mpEn", cfg->milepostEnable);
+
+	if(cfg->trackNameEnable != preferences.getBool("trkNameEn", TRACK_NAME_EN_DEFAULT))
+		preferences.putBool("trkNameEn", cfg->trackNameEnable);
+
+	if(cfg->speedEnable != preferences.getBool("spdEn", SPEED_EN_DEFAULT))
+		preferences.putBool("spdEn", cfg->speedEnable);
+
+	if(cfg->axleEnable != preferences.getBool("axleEn", AXLE_EN_DEFAULT))
+		preferences.putBool("axleEn", cfg->axleEnable);
+
+	if(cfg->temperatureEnable != preferences.getBool("tmpEn", TEMPERATURE_EN_DEFAULT))
+		preferences.putBool("tmpEn", cfg->temperatureEnable);
+
 	for(uint32_t i=0; i<NUM_TRACKS; i++)
 	{
-		key = "mpEn" + String(i);
-		if(cfg->milepostEnable[i] != preferences.getBool(key.c_str(), true))
-			preferences.putBool(key.c_str(), cfg->milepostEnable[i]);
-
 		key = "mp" + String(i);
-		if(cfg->milepost[i] != preferences.getFloat(key.c_str(), 123.4))
+		if(cfg->milepost[i] != preferences.getFloat(key.c_str(), MILEPOST_DEFAULT))
 			preferences.putFloat(key.c_str(), cfg->milepost[i]);
 
-		key = "trkNameEn" + String(i);
-		if(cfg->trackNameEnable[i] != preferences.getBool(key.c_str(), true))
-			preferences.putBool(key.c_str(), cfg->trackNameEnable[i]);
-
 		key = "trkNameId" + String(i);
-		if(cfg->trackNameId[i] != preferences.getUChar(key.c_str(), 0))
+		if(cfg->trackNameId[i] != preferences.getUChar(key.c_str(), i))
 			preferences.putUChar(key.c_str(), cfg->trackNameId[i]);
-
-		key = "spdEn" + String(i);
-		if(cfg->speedEnable[i] != preferences.getBool(key.c_str(), true))
-			preferences.putBool(key.c_str(), cfg->speedEnable[i]);
-
-		key = "axleEn" + String(i);
-		if(cfg->axleEnable[i] != preferences.getBool(key.c_str(), true))
-			preferences.putBool(key.c_str(), cfg->axleEnable[i]);
 	}
 
 	preferences.end();
@@ -106,31 +110,36 @@ void printConfiguration(DetectorConfiguration* cfg)
 	Serial.print("Volume: ");
 	Serial.println(cfg->volumeStep);
 
+	Serial.print("Milepost Enable: ");
+	Serial.println(cfg->milepostEnable);
+
+	Serial.print("Track Name Enable: ");
+	Serial.println(cfg->trackNameEnable);
+
+	Serial.print("Speed Enable: ");
+	Serial.println(cfg->speedEnable);
+
+	Serial.print("Axle Enable: ");
+	Serial.println(cfg->axleEnable);
+
+	Serial.print("Temperature Enable: ");
+	Serial.println(cfg->temperatureEnable);
+
 	for(uint32_t i=0; i<NUM_TRACKS; i++)
 	{
+		Serial.print('\n');
+
 		Serial.print("Track ");
 		Serial.println(i+1);
 
-		Serial.print("Milepost Enable: ");
-		Serial.println(cfg->milepostEnable[i]);
-
-		Serial.print("Milepost: ");
+		Serial.print("   Milepost: ");
 		Serial.println(cfg->milepost[i]);
 
-		Serial.print("Track Name Enable: ");
-		Serial.println(cfg->trackNameEnable[i]);
-
-		Serial.print("Track Name ID: ");
+		Serial.print("   Track Name ID: ");
 		if(cfg->trackNameId[i] < trackNames.size())
 			Serial.println(trackNames[cfg->trackNameId[i]].c_str());
 		else
 			Serial.println("ERROR!");
-
-		Serial.print("Speed Enable: ");
-		Serial.println(cfg->speedEnable[i]);
-
-		Serial.print("Axle Enable: ");
-		Serial.println(cfg->axleEnable[i]);
 	}
 }
 

@@ -19,12 +19,16 @@ LICENSE:
 
 *************************************************************************/
 
+#include <Arduino.h>
 #include <SPI.h>
 #include <SD.h>
 #include <vector>
 #include <algorithm>
 #include <string>
+#include <sstream>
+#include <iomanip>
 #include <strings.h>
+#include <math.h>
 #include "driver/i2s_std.h"
 #include "driver/gpio.h"
 #include "esp_task_wdt.h"
@@ -320,27 +324,89 @@ void loop()
 	// Check for config file and load data from it if present
 	// FIXME
 
-	trackMessages[0].entranceMsg = "Equipment Defect Detector";
-	trackMessages[0].defects.emplace_back("defect 1 alertMsg", "defect 1 detailMsg", "defect 1 summaryMsg", 500);
-	trackMessages[0].defects.emplace_back("defect 2 alertMsg", "defect 2 detailMsg", "defect 2 summaryMsg", 100);
-	trackMessages[0].defects.emplace_back("defect 3 alertMsg", "defect 3 detailMsg", "defect 3 summaryMsg", 300);
-	trackMessages[0].integrityMsg = "This is an integrity message";
 
-	Serial.println(trackMessages[0].entranceMsg.c_str());
-	Serial.println(trackMessages[0].integrityMsg.c_str());
-	for(uint32_t i=0; i<trackMessages[0].defects.size(); i++)
+	// If no config file, set default messages
+	for(uint32_t i=0; i<NUM_TRACKS; i++)
 	{
-		Serial.println(trackMessages[0].defects[i].summaryMsg.c_str());
+		// Entrance Message
+		trackMessages[i].entranceMsg = "Equipment Defect Detector";
+		if(cfg.milepostEnable)
+		{
+			std::stringstream milepost;
+			milepost << std::fixed << std::setprecision(1) << cfg.milepost[i];
+			trackMessages[i].entranceMsg += " milepost " + milepost.str();
+		}
+		if(cfg.trackNameEnable)
+		{
+			uint8_t id = cfg.trackNameId[i];
+			if(id >= trackNames.size())
+				id = trackNames.size() - 1;
+			trackMessages[i].entranceMsg += " " + trackNames[id];
+
+		}
+
+		// Defect Messages
+		std::string tmpMessage;
+		if(cfg.axleEnable)
+		{
+			tmpMessage = " axle #defectaxle";
+		}
+		trackMessages[i].defects.emplace_back("hot journal" + tmpMessage, "hot journal" + tmpMessage, "Hot Journal", 500);
+		trackMessages[i].defects.emplace_back("dragging equipment near" + tmpMessage, "dragging equipment near" + tmpMessage, "Dragging Equipment", 100);
+		trackMessages[i].defects.emplace_back("high impact wheel detected" + tmpMessage, "high impact wheel detected" + tmpMessage, "High Impact Wheel", 200);
+
+		// Create Footer
+		tmpMessage.clear();
+		if(cfg.axleEnable)
+		{
+			tmpMessage += " total axles #axles";
+		}
+
+		if(cfg.temperatureEnable)
+		{
+			tmpMessage += " temperature #temp";
+		}
+
+		// Clean Exit Message
+		trackMessages[i].exitCleanMsg = trackMessages[i].entranceMsg + " no defects repeat no defects" + tmpMessage;
+
+		// Defect Exit Message
+		trackMessages[i].exitDefectMsg = trackMessages[i].entranceMsg + " you have a defect #defectdetails" + tmpMessage;
+
+		// Detector Integrity Message
+		trackMessages[i].integrityMsg = trackMessages[i].entranceMsg + tmpMessage + " integrity failure";
+		trackMessages[i].integrityProbability = 50;
+		
+		// Too Slow Message
+		trackMessages[i].tooSlowMsg = trackMessages[i].entranceMsg + " train too slow";
+		
+		// Detector Blocked Message
+		trackMessages[i].detectorBlockedMsg = trackMessages[i].entranceMsg + " detector blocked";
 	}
 
-	sort(trackMessages[0].defects.begin(), trackMessages[0].defects.end(), [](DefectMessage a, DefectMessage b) {
-		return a.probability < b.probability; // returns true if 'a' should come before 'b'
-		});
+
+	// Sort defect messages by probability
+	for(uint32_t i=0; i<NUM_TRACKS; i++)
+	{
+		sort(trackMessages[i].defects.begin(), trackMessages[i].defects.end(), [](DefectMessage a, DefectMessage b) {
+			return a.probability < b.probability; // returns true if 'a' should come before 'b'
+			});
+	}
+
+	// Print configuration values
+	printConfiguration(&cfg);
+
+	for(uint32_t i=0; i<NUM_TRACKS; i++)
+	{
+		Serial.print('\n');
+
+		Serial.print("Track ");
+		Serial.println(i+1);
+
+		printMessages(&trackMessages[i]);
+	}
+	Serial.print('\n');
 	
-	for(uint32_t i=0; i<trackMessages[0].defects.size(); i++)
-	{
-		Serial.println(trackMessages[0].defects[i].summaryMsg.c_str());
-	}
 
 
 
@@ -404,11 +470,6 @@ void loop()
 		esp_task_wdt_reset();
 	}
 
-	// Print configuration values
-	printConfiguration(&cfg);
-
-	Serial.println("");
-
 	esp_task_wdt_reset();
 
 
@@ -441,7 +502,7 @@ void loop()
 			}
 		}
 	}
-// FIXME *********************************
+// *********************************
 
 
 
@@ -464,6 +525,23 @@ void loop()
 			uint8_t serialChar = Serial.read();
 			switch(serialChar)
 			{
+				// FIXME
+				case 'a':
+					cfg.trackNameId[0]++;
+					saveConfiguration(&cfg);
+					break;
+				// FIXME
+				case 'z':
+					cfg.trackNameId[0]-- ;
+					saveConfiguration(&cfg);
+					break;
+
+				// FIXME
+				case 'm':
+					cfg.milepost[0] += 0.26;
+					saveConfiguration(&cfg);
+					break;
+
 				case '+':
 					cfg.volumeStep++;
 					audioSetVolumeStep(cfg.volumeStep);
@@ -521,13 +599,13 @@ void loop()
 
 			audioTerminate();
 
-// FIXME Send some test audio
+// FIXME
 			for(uint32_t i=0; i<ambientSounds.size(); i++)
 			{
 				delete ambientSounds[i];
 			}
 			ambientSounds.clear();
-// FIXME Send some test audio
+// FIXME
 
 			SD.end();
 

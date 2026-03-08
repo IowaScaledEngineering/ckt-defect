@@ -22,6 +22,8 @@ LICENSE:
 #pragma once
 
 #define NUM_TRACKS     2
+
+#define VOL_STEP_MAX   30
 #define VOL_STEP_NOM   20
 
 #include <vector>
@@ -30,6 +32,8 @@ LICENSE:
 const std::vector<std::string> trackNames = {
 	"Track 1",
 	"Track 2",
+	"Main 1",
+	"Main 2",
 	"North Track",
 	"South Track",
 	"East Track",

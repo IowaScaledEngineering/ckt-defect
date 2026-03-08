@@ -21,21 +21,18 @@ LICENSE:
 
 #pragma once
 
-#include <math.h>
-#include "common.h"
-
 struct DetectorConfiguration {
 	uint8_t volumeStep;
 
-	bool milepostEnable[NUM_TRACKS];
+	bool milepostEnable;
 	float_t milepost[NUM_TRACKS];
 
-	bool trackNameEnable[NUM_TRACKS];
+	bool trackNameEnable;
 	uint8_t trackNameId[NUM_TRACKS];
 
-	bool speedEnable[NUM_TRACKS];
-
-	bool axleEnable[NUM_TRACKS];
+	bool speedEnable;
+	bool axleEnable;
+	bool temperatureEnable;
 };
 
 void loadConfiguration(DetectorConfiguration* cfg);

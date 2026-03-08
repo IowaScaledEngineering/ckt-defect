@@ -42,5 +42,4 @@ struct MessageBundle {
 	std::string detectorBlockedMsg;                // if axle stops in front of detector for longer than timeout
 };
 
-//MessageBundle trackMessages[2]
-//trackMessages[0].defects[4].alertMsg
+void printMessages(MessageBundle* msgs);
