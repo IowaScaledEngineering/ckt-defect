@@ -21,6 +21,7 @@ LICENSE:
 
 #pragma once
 
+#include <SD.h>
 #include <string>
 
 #define FILE_BUFFER_SIZE 2048

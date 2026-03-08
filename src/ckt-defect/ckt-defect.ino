@@ -38,6 +38,7 @@ LICENSE:
 #include "sound.h"
 #include "audio.h"
 #include "messages.h"
+#include "vocab.h"
 
 // 3 sec watchdog 
 #define TWDT_TIMEOUT_MS    3000
@@ -386,6 +387,16 @@ void loop()
 		trackMessages[i].detectorBlockedMsg = trackMessages[i].entranceMsg + " detector blocked";
 	}
 
+// FIXME *********************************
+	bool ambientMode = false;
+	std::vector<Sound *> ambientSounds;
+	WavSound wavSound;
+// ***************************************
+
+	// If no SD vocab, load the internal ones
+	loadVocab(ambientSounds);
+
+
 
 	// Sort defect messages by probability
 	for(uint32_t i=0; i<NUM_TRACKS; i++)
@@ -411,12 +422,6 @@ void loop()
 	
 
 
-
-// FIXME *********************************
-	bool ambientMode = false;
-	std::vector<Sound *> ambientSounds;
-	WavSound wavSound;
-// ***************************************
 
 
 
@@ -575,7 +580,7 @@ void loop()
 			Serial.print("Queueing... ");
 			Serial.println(sampleNum);
 			wavSound.wav = ambientSounds[sampleNum];
-			wavSound.seamlessPlay = false;
+			wavSound.seamlessPlay = true;
 			audioQueuePush(&wavSound);
 		}
 
