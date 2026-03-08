@@ -22,6 +22,7 @@ LICENSE:
 #pragma once
 
 #include <SD.h>
+#include <string>
 
 #define FILE_BUFFER_SIZE 2048
 
@@ -31,25 +32,15 @@ class Sound
 		size_t dataSize;
 		size_t byteCount;
 		uint32_t sampleRate;
+		std::string soundName;
 
 	public:
-		virtual ~Sound()
-		{
-		}
+		virtual ~Sound();
 		virtual void open(void);
-		virtual size_t available(void)
-		{
-			if(dataSize > byteCount)
-				return(dataSize - byteCount);
-			else
-				return 0;
-		}
 		virtual int16_t getNextSample(void);
 		virtual void close(void);
-		uint32_t getSampleRate(void)
-		{
-			return sampleRate;
-		}
+		size_t available(void);
+		uint32_t getSampleRate(void);
 };
 
 class SdSound : public Sound
@@ -63,73 +54,12 @@ class SdSound : public Sound
 	int16_t sampleValue;
 
 	public:
-		SdSound(const char *fname, size_t numBytes, size_t offset, uint16_t sr)
-		{
-			fileName = strdup(fname);
-			dataOffset = offset;
-			dataSize = numBytes;
-			sampleRate = sr;
-		}
-		~SdSound()
-		{
-			free(fileName);
-		}
-		void open(void)
-		{
-			wavFile = SD.open(String("/") + fileName);
-			wavFile.seek(dataOffset);
-			Serial.print("Open: ");
-			Serial.println(fileName);
-			byteCount = 0;
-			fileBufferLength = 0;
-			fileBufferPosition = 0;
-		}
-		size_t fileBufferAvailable(void)
-		{
-			if(fileBufferLength > fileBufferPosition)
-				return(fileBufferLength - fileBufferPosition);
-			else
-				return 0;
-		}
-		int16_t getNextSample(void)
-		{
-			size_t bytesToRead, bytesRead;
-
-			if( (fileBufferAvailable() < 2) && available() )
-			{
-				// We're out of bytes (or had an odd number for some strange reason)
-				// and there's more of the file to grab, so grab it
-				if(available() < FILE_BUFFER_SIZE)
-				{
-					bytesToRead = available();
-				}
-				else
-				{
-					bytesToRead = FILE_BUFFER_SIZE;
-				}
-				bytesRead = wavFile.read(fileBuffer, bytesToRead);
-				fileBufferLength = bytesRead;
-				fileBufferPosition = 0;
-			}
-
-			if(fileBufferAvailable() >= 2)
-			{
-				// We have at least 2 bytes in the local buffer
-				sampleValue = *((int16_t *)(fileBuffer+fileBufferPosition));
-				fileBufferPosition += 2;
-				byteCount += 2;
-				return sampleValue;
-			}
-			else
-			{
-				// We got called even though there was nothing to send
-				return 0;
-			}
-		}
-		void close(void)
-		{
-			wavFile.close();
-		}
+		SdSound(const char *fname, size_t numBytes, size_t offset, uint16_t sr);
+		~SdSound();
+		void open(void);
+		size_t fileBufferAvailable(void);
+		int16_t getNextSample(void);
+		void close(void);
 };
 
 class MemSound : public Sound
@@ -139,38 +69,9 @@ class MemSound : public Sound
 	int16_t sampleValue;
 
 	public:
-		MemSound(uint8_t num, const uint8_t *sound, size_t numBytes, uint16_t sr)
-		{
-			soundNum = num;
-			dataPtr = sound;
-			dataSize = numBytes;
-			sampleRate = sr;
-		}
-		~MemSound()
-		{
-			// No need to free dataPtr since it is const
-		}
-		void open(void)
-		{
-			Serial.print("Open: Internal ");
-			Serial.println(soundNum);
-			byteCount = 0;
-		}
-		int16_t getNextSample(void)
-		{
-			if(available() >= 2)
-			{
-				sampleValue = *((int16_t *)(dataPtr+byteCount));
-				byteCount += 2;
-				return sampleValue;
-			}
-			else
-			{
-				return 0;
-			}
-		}
-		void close(void)
-		{
-			return;
-		}
+		MemSound(const char *name, const uint8_t *sound, size_t numBytes, uint16_t sr);
+		~MemSound();
+		void open(void);
+		int16_t getNextSample(void);
+		void close(void);
 };
