@@ -293,11 +293,14 @@ void findWavFiles(File *rootDir, String dirName, std::vector<Sound *> *soundsVec
 void loop()
 {
 	File rootDir;
-	unsigned long sdDetectTime = 0;
+//	unsigned long sdDetectTime = 0;
 	
 	DetectorConfiguration cfg;
 
 	MessageBundle trackMessages[2];  // Declare two bundles of messages, one for each track
+
+	std::vector<Sound *> vocab;
+	WavSound wavSound;
 
 	esp_task_wdt_reset();
 
@@ -387,14 +390,9 @@ void loop()
 		trackMessages[i].detectorBlockedMsg = trackMessages[i].entranceMsg + " detector blocked";
 	}
 
-// FIXME *********************************
-	bool ambientMode = false;
-	std::vector<Sound *> ambientSounds;
-	WavSound wavSound;
-// ***************************************
 
 	// If no SD vocab, load the internal ones
-	loadVocab(ambientSounds);
+	loadVocab(vocab);
 
 
 
@@ -426,7 +424,6 @@ void loop()
 
 
 
-	
 	SPIClass vspi = SPIClass(FSPI);
 	vspi.begin(SDCLK, SDMISO, SDMOSI, SDCS);
 	pinMode(SDCS, OUTPUT);
@@ -465,53 +462,14 @@ void loop()
 		{
 			// Ambient mode, find WAV files
 			Serial.println("\nFound ambient directory");
-			findWavFiles(&rootDir, "ambient/", &ambientSounds);
+			findWavFiles(&rootDir, "ambient/", &vocab);
 			rootDir.close();
-			if(ambientSounds.size() > 0)
-			{
-				// Only set Ambient mode if sounds are found
-				ambientMode = true;
-			}
 		}
 
 		esp_task_wdt_reset();
 	}
 
 	esp_task_wdt_reset();
-
-
-// FIXME *********************************
-	if(ambientMode)
-	{
-		Serial.print("Using SD card sounds (");
-		Serial.print(ambientSounds.size());
-		Serial.println(")");
-	}
-	else
-	{
-		Serial.println("No valid sounds on SD card!");
-		// Blink blue / orange
-		while(1)
-		{
-			if(0 == gpio_get_level((gpio_num_t)SDDET))
-			{
-				// Card inserted
-				if(millis() > sdDetectTime + 500)  //  Need 500ms of continuous insertion
-				{
-					Serial.println("SD Card Inserted");
-					restart = true;
-					break;
-				}
-			}
-			else
-			{
-				sdDetectTime = millis();
-			}
-		}
-	}
-// *********************************
-
-
 
 	audioInit();
 
@@ -576,14 +534,15 @@ void loop()
 
 			audioUnmute();
 
-			uint32_t sampleNum = random(0, ambientSounds.size());
+			uint32_t sampleNum = random(0, vocab.size());
 			Serial.print("Queueing... ");
 			Serial.println(sampleNum);
-			wavSound.wav = ambientSounds[sampleNum];
+			wavSound.wav = vocab[sampleNum];
 			wavSound.seamlessPlay = true;
 			audioQueuePush(&wavSound);
 		}
 
+/*
 		if(1 == gpio_get_level((gpio_num_t)SDDET))
 		{
 			// Card removed
@@ -597,7 +556,7 @@ void loop()
 		{
 			sdDetectTime = millis();
 		}
-
+*/
 
 		if(restart)
 		{
@@ -607,11 +566,11 @@ void loop()
 			audioTerminate();
 
 // FIXME
-			for(uint32_t i=0; i<ambientSounds.size(); i++)
+			for(uint32_t i=0; i<vocab.size(); i++)
 			{
-				delete ambientSounds[i];
+				delete vocab[i];
 			}
-			ambientSounds.clear();
+			vocab.clear();
 // FIXME
 
 			SD.end();
