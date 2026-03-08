@@ -364,7 +364,7 @@ void loop()
 
 		if(cfg.temperatureEnable)
 		{
-			tmpMessage += " temperature #temp";
+			tmpMessage += " temperature #temp degrees";
 		}
 
 		// Clean Exit Message
@@ -378,7 +378,7 @@ void loop()
 		trackMessages[i].integrityProbability = 50;
 		
 		// Too Slow Message
-		trackMessages[i].tooSlowMsg = trackMessages[i].entranceMsg + " train too slow";
+		trackMessages[i].tooSlowMsg = trackMessages[i].entranceMsg + " train 2 slow";
 		
 		// Detector Blocked Message
 		trackMessages[i].detectorBlockedMsg = trackMessages[i].entranceMsg + " detector blocked";
