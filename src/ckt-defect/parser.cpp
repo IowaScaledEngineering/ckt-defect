@@ -20,6 +20,7 @@ LICENSE:
 *************************************************************************/
 
 #include <Arduino.h>
+#include <sstream>
 
 #include "common.h"
 #include "sound.h"
@@ -79,6 +80,12 @@ static void parseTask(void *args)
 				{
 					Serial.print("Parsing: ");
 					Serial.println(msgPtr->c_str());
+					std::istringstream iss(*msgPtr);
+					std::string token;
+					while (iss >> token)
+					{
+						Serial.println(token.c_str());
+					}
 				}
 				parserState = PARSER_IDLE;
 				break;
@@ -96,6 +103,6 @@ static void parseTask(void *args)
 
 void parserInit(void)
 {
-	parserQueue = xQueueCreate(10, sizeof(std::string *));
+	parserQueue = xQueueCreate(5, sizeof(std::string *));   /// FIXME?  How many queued messages do we want before the main loop blocks?
 	xTaskCreate(parseTask, "parseTask", 8192, NULL, 5, &parseTaskHandle);
 }

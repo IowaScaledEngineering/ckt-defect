@@ -546,8 +546,7 @@ void loop()
 			wavSound.seamlessPlay = true;
 			audioQueuePush(&wavSound);
 
-			sampleNum = random(0, trackMessages[0].defects.size());
-			std::string* ptr = &trackMessages[0].defects[0].detailMsg;
+			std::string* ptr = &trackMessages[0].entranceMsg;
 			parserQueuePush(&ptr);
 		}
 
