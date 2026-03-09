@@ -1,7 +1,7 @@
 /*************************************************************************
-Title:    Message Parser
+Title:    Common Definitions and Functions
 Authors:  Michael Petersen <railfan@drgw.net>
-File:     parser.cpp
+File:     common.cpp
 License:  GNU General Public License v3
 
 LICENSE:
@@ -19,15 +19,15 @@ LICENSE:
 
 *************************************************************************/
 
-#pragma once
+#include <string>
+#include <algorithm> // Required for std::transform
+#include <cctype>    // Required for std::tolower
 
 #include "common.h"
-#include "sound.h"
-#include "audio.h"
-#include "parser.h"
 
-bool parserQueueEmpty(void);
-void parserQueuePush(std::string** msgPtr);
-BaseType_t parserQueuePop(std::string** msgPtr);
-void parserInit(void);
-void parserTerminate(void);
+void toLowercase(std::string& str)
+{
+	std::transform(str.begin(), str.end(), str.begin(),
+		[](unsigned char c){ return std::tolower(c); }
+	);
+}

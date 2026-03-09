@@ -325,7 +325,7 @@ static void audioPump(void *args)
 			if(NULL != wavSound.wav)
 				wavSound.wav->close();
 			killPlayer = false;
-			break;
+			break;  // Escape the while loop
 		}
 
 		if(PLAYER_IDLE == playerState)
@@ -385,7 +385,7 @@ void audioInit(void)
 
 	gpio_set_level(I2S_SD, 1);	// Enable amplifier
 
-	xTaskCreate(audioPump, "audioPump", 8192, NULL, 5, &audioPumpHandle);
+	xTaskCreate(audioPump, "audioPump", 8192, NULL, AUDIO_TASK_PRIORITY, &audioPumpHandle);
 }
 
 
@@ -397,6 +397,8 @@ void audioTerminate(void)
 	{
 		delay(10);  // Wait for the task to terminate
 	}
+	xQueueReset(wavSoundQueue);  // Empty the queue
+	vQueueDelete(wavSoundQueue);  // Delete the queue
 	i2s_channel_disable(i2s_tx_handle);
 	i2s_del_channel(i2s_tx_handle);
 }

@@ -25,6 +25,7 @@ LICENSE:
 #include "common.h"
 #include "sound.h"
 #include "audio.h"
+#include "vocab.h"
 #include "parser.h"
 
 QueueHandle_t parserQueue;
@@ -36,6 +37,8 @@ typedef enum
 } ParserState;
 
 ParserState parserState;
+
+bool killParser = false;
 
 TaskHandle_t parseTaskHandle = NULL;
 
@@ -62,6 +65,8 @@ static void parseTask(void *args)
 {
 	std::string* msgPtr;
 	parserState = PARSER_IDLE;
+	WavSound wavSound;
+	wavSound.seamlessPlay = true;
 
 	while(1)
 	{
@@ -85,10 +90,26 @@ static void parseTask(void *args)
 					while (iss >> token)
 					{
 						Serial.println(token.c_str());
+						while(!audioQueueEmpty())
+						{
+							vTaskDelay(1 / portTICK_PERIOD_MS);   // Wait 1ms
+						}
+						if(NULL != (wavSound.wav = vocabGetWord(token)))
+						{
+							audioQueuePush(&wavSound);
+						}
+						if(killParser)
+							break;  // Escape this while loop
 					}
 				}
 				parserState = PARSER_IDLE;
 				break;
+		}
+
+		if(killParser)
+		{
+			killParser = false;
+			break;  // Escape the while loop
 		}
 
 		if(PARSER_IDLE == parserState)
@@ -103,6 +124,17 @@ static void parseTask(void *args)
 
 void parserInit(void)
 {
-	parserQueue = xQueueCreate(5, sizeof(std::string *));   /// FIXME?  How many queued messages do we want before the main loop blocks?
-	xTaskCreate(parseTask, "parseTask", 8192, NULL, 5, &parseTaskHandle);
+	parserQueue = xQueueCreate(1, sizeof(std::string *));   /// FIXME?  How many queued messages do we want before the main loop blocks?
+	xTaskCreate(parseTask, "parseTask", 8192, NULL, PARSER_TASK_PRIORITY, &parseTaskHandle);
+}
+
+void parserTerminate(void)
+{
+	killParser = true;
+	while(killParser)
+	{
+		delay(10);
+	}
+	xQueueReset(parserQueue);  // Empty the queue
+	vQueueDelete(parserQueue);  // Delete the queue
 }

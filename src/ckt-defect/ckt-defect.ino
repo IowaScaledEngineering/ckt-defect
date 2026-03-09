@@ -300,8 +300,6 @@ void loop()
 
 	MessageBundle trackMessages[2];  // Declare two bundles of messages, one for each track
 
-	WavSound wavSound;
-
 	esp_task_wdt_reset();
 
 	Serial.println("ISE Defect Detector");
@@ -395,6 +393,22 @@ void loop()
 	loadInternalVocab();
 
 
+	// Sanitize message strings
+	for(uint32_t i=0; i<NUM_TRACKS; i++)
+	{
+		toLowercase(trackMessages[i].entranceMsg);
+		for(uint32_t j=0; j<trackMessages[i].defects.size(); j++)
+		{
+			toLowercase(trackMessages[i].defects[j].alertMsg);
+			toLowercase(trackMessages[i].defects[j].detailMsg);
+			toLowercase(trackMessages[i].defects[j].summaryMsg);
+		}
+		toLowercase(trackMessages[i].exitCleanMsg);
+		toLowercase(trackMessages[i].exitDefectMsg);
+		toLowercase(trackMessages[i].integrityMsg);
+		toLowercase(trackMessages[i].tooSlowMsg);
+		toLowercase(trackMessages[i].detectorBlockedMsg);
+	}
 
 	// Sort defect messages by probability
 	for(uint32_t i=0; i<NUM_TRACKS; i++)
@@ -531,19 +545,12 @@ void loop()
 			}
 		}
 
+		audioUnmute();
+
 		// FIXME Send some test audio
-		if(audioQueueEmpty())
+		if(parserQueueEmpty())
 		{
 			printMemoryUsage();
-
-			audioUnmute();
-
-			uint32_t sampleNum = random(0, vocabGetSize());
-			Serial.print("Queueing... ");
-			Serial.println(sampleNum);
-			wavSound.wav = vocabGetWord("milepost");
-			wavSound.seamlessPlay = true;
-			audioQueuePush(&wavSound);
 
 			std::string* ptr = &trackMessages[0].entranceMsg;
 			parserQueuePush(&ptr);
@@ -570,7 +577,10 @@ void loop()
 			restart = false;
 			Serial.print("\n*** Restarting ***\n\n");
 
+			//  Terminate the parser first, then the audio, due to queue dependencies
+			parserTerminate();
 			audioTerminate();
+
 			vocabReset();
 
 			SD.end();

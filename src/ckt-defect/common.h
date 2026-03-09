@@ -26,6 +26,9 @@ LICENSE:
 #define VOL_STEP_MAX   30
 #define VOL_STEP_NOM   20
 
+#define AUDIO_TASK_PRIORITY   5
+#define PARSER_TASK_PRIORITY  4
+
 #include <vector>
 #include <string>
 
@@ -39,3 +42,5 @@ const std::vector<std::string> trackNames = {
 	"East Track",
 	"West Track",
 };
+
+void toLowercase(std::string& str);
