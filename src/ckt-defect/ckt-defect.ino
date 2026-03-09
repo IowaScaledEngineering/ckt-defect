@@ -38,6 +38,7 @@ LICENSE:
 #include "sound.h"
 #include "audio.h"
 #include "messages.h"
+#include "parser.h"
 #include "vocab.h"
 
 // 3 sec watchdog 
@@ -469,9 +470,13 @@ void loop()
 		esp_task_wdt_reset();
 	}
 
+
+
+
 	esp_task_wdt_reset();
 
 	audioInit();
+	parserInit();
 
 	while(1)
 	{
@@ -540,6 +545,10 @@ void loop()
 			wavSound.wav = vocab[sampleNum];
 			wavSound.seamlessPlay = true;
 			audioQueuePush(&wavSound);
+
+			sampleNum = random(0, trackMessages[0].defects.size());
+			std::string* ptr = &trackMessages[0].defects[0].detailMsg;
+			parserQueuePush(&ptr);
 		}
 
 /*
