@@ -300,7 +300,6 @@ void loop()
 
 	MessageBundle trackMessages[2];  // Declare two bundles of messages, one for each track
 
-	std::vector<Sound *> vocab;
 	WavSound wavSound;
 
 	esp_task_wdt_reset();
@@ -393,7 +392,7 @@ void loop()
 
 
 	// If no SD vocab, load the internal ones
-	loadVocab(vocab);
+	loadInternalVocab();
 
 
 
@@ -463,7 +462,7 @@ void loop()
 		{
 			// Ambient mode, find WAV files
 			Serial.println("\nFound ambient directory");
-			findWavFiles(&rootDir, "ambient/", &vocab);
+//			findWavFiles(&rootDir, "ambient/", &vocab);
 			rootDir.close();
 		}
 
@@ -539,10 +538,10 @@ void loop()
 
 			audioUnmute();
 
-			uint32_t sampleNum = random(0, vocab.size());
+			uint32_t sampleNum = random(0, vocabGetSize());
 			Serial.print("Queueing... ");
 			Serial.println(sampleNum);
-			wavSound.wav = vocab[sampleNum];
+			wavSound.wav = vocabGetWord("milepost");
 			wavSound.seamlessPlay = true;
 			audioQueuePush(&wavSound);
 
@@ -572,14 +571,7 @@ void loop()
 			Serial.print("\n*** Restarting ***\n\n");
 
 			audioTerminate();
-
-// FIXME
-			for(uint32_t i=0; i<vocab.size(); i++)
-			{
-				delete vocab[i];
-			}
-			vocab.clear();
-// FIXME
+			vocabReset();
 
 			SD.end();
 

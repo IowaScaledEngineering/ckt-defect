@@ -52,7 +52,10 @@ uint32_t Sound::getSampleRate(void)
 	return sampleRate;
 }
 
-
+std::string Sound::getName(void) const
+{
+	return soundName;
+}
 
 
 

@@ -41,6 +41,7 @@ class Sound
 		virtual void close(void);
 		size_t available(void);
 		uint32_t getSampleRate(void);
+		std::string getName(void) const;
 };
 
 class SdSound : public Sound

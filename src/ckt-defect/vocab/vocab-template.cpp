@@ -1,7 +1,7 @@
 /*************************************************************************
 Title:    Defect Detector Vocabulary
 Authors:  Michael Petersen <railfan@drgw.net>
-File:     vocab.h
+File:     vocab.cpp
 License:  GNU General Public License v3
 
 LICENSE:
@@ -19,8 +19,40 @@ LICENSE:
 
 *************************************************************************/
 
-#pragma once
+#include "vocab.h"
 
-#include "sound.h"
+std::vector<Sound *> vocab;
 
-void loadVocab(std::vector<Sound *>& vec);
+void vocabReset(void)
+{
+	for(uint32_t i=0; i<vocab.size(); i++)
+	{
+		delete vocab[i];
+	}
+	vocab.clear();
+}
+
+size_t vocabGetSize(void)
+{
+	return vocab.size();
+}
+
+Sound* vocabGetWord(const std::string& word)
+{
+	auto it = std::find_if(vocab.begin(), vocab.end(),
+		[&word](const Sound* obj)
+		{
+			return obj->getName() == word;
+		}
+	);
+
+	if (it != vocab.end())
+	{
+		return *it;
+	}
+	else
+	{
+		return NULL;
+	}
+}
+

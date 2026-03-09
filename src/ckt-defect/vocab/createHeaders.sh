@@ -12,21 +12,21 @@ do
 done < $1
 
 
-cp vocab.h.template ../vocab.h
+cp vocab-template.h ../vocab.h
 
-cp vocab.cpp.template ../vocab.cpp
+cp vocab-template.cpp ../vocab.cpp
 while read -r line
 do
     echo \#include \"vocab/include/$line.h\" >> ../vocab.cpp
 done < $1
 
 echo >> ../vocab.cpp
-echo "void loadVocab(std::vector<Sound *>& vec)" >> ../vocab.cpp
+echo "void loadInternalVocab(void)" >> ../vocab.cpp
 echo { >> ../vocab.cpp
 
 while read -r line
 do
-    echo -e "\tvec.push_back(new MemSound(\"$line\", vocab_${line}, vocab_${line}_len, 16000));" >> ../vocab.cpp
+    echo -e "\tvocab.push_back(new MemSound(\"$line\", vocab_${line}, vocab_${line}_len, 16000));" >> ../vocab.cpp
 done < $1
 
 echo } >> ../vocab.cpp

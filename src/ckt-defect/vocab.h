@@ -23,4 +23,8 @@ LICENSE:
 
 #include "sound.h"
 
-void loadVocab(std::vector<Sound *>& vec);
+void vocabReset(void);
+size_t vocabGetSize(void);
+Sound* vocabGetWord(const std::string& word);
+
+void loadInternalVocab(void);
