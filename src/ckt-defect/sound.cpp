@@ -75,8 +75,8 @@ void SdSound::open(void)
 {
 	wavFile = SD.open(fileName.c_str());
 	wavFile.seek(dataOffset);
-	Serial.print("Open: ");
-	Serial.println(soundName.c_str());
+//	Serial.print("Open: ");
+//	Serial.println(soundName.c_str());
 	byteCount = 0;
 	fileBufferLength = 0;
 	fileBufferPosition = 0;
@@ -146,8 +146,8 @@ MemSound::~MemSound()
 }
 void MemSound::open(void)
 {
-	Serial.print("OpenMem: ");
-	Serial.println(soundName.c_str());
+//	Serial.print("OpenMem: ");
+//	Serial.println(soundName.c_str());
 	byteCount = 0;
 }
 int16_t MemSound::getNextSample(void)

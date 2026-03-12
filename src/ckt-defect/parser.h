@@ -26,8 +26,13 @@ LICENSE:
 #include "audio.h"
 #include "parser.h"
 
+struct ParserObject {
+	std::string* msg;      // Pointer to the message string
+	bool deleteWhenDone;   // If true, message pointed to by msg will be deleted
+};
+
 bool parserQueueEmpty(void);
-void parserQueuePush(std::string** msgPtr);
-BaseType_t parserQueuePop(std::string** msgPtr);
+void parserQueuePush(ParserObject* obj);
+BaseType_t parserQueuePop(ParserObject* obj);
 void parserInit(void);
 void parserTerminate(void);

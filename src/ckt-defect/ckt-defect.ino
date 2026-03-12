@@ -297,8 +297,9 @@ void loop()
 //	unsigned long sdDetectTime = 0;
 	
 	DetectorConfiguration cfg;
-
 	MessageBundle trackMessages[2];  // Declare two bundles of messages, one for each track
+
+	bool tmp = true;
 
 	esp_task_wdt_reset();
 
@@ -550,10 +551,27 @@ void loop()
 		// FIXME Send some test audio
 		if(parserQueueEmpty())
 		{
+			ParserObject obj;
+
 			printMemoryUsage();
 
-			std::string* ptr = &trackMessages[0].entranceMsg;
-			parserQueuePush(&ptr);
+			if(tmp)
+			{
+				obj.msg = &trackMessages[0].entranceMsg;
+				obj.deleteWhenDone = false;
+			}
+			else
+			{
+				obj.msg = new std::string("no defects repeat no defects");
+				obj.deleteWhenDone = true;
+			}
+
+			Serial.print("Sending msg: ");
+			Serial.println(obj.msg->c_str());
+
+			parserQueuePush(&obj);
+			
+			tmp = !tmp;
 		}
 
 /*
