@@ -1,0 +1,9 @@
+Output signal level (dBV) = input signal level (dBFS) + 2.1dB + selected amplifier gain (dB)
+
+0dBFS = 0dBV = 1Vrms
+
+0dBV + 2.1dB = 2.1dBV = 1.27Vrms = 1.8V amplitude
+
+Gain = 3dB --> 5.1dBV  = 1.80Vrms = 2.54V amplitude
+Gain = 6dB --> 8.1dBV  = 2.54Vrms = 3.59V amplitude
+Gain = 9dB --> 11.1dBV = 3.59Vrms = 5.08V amplitude
