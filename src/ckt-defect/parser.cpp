@@ -113,7 +113,7 @@ static void parseTask(void *args)
 					}
 					if(obj.deleteWhenDone)
 					{
-						Serial.println("Deleted msg");
+//						Serial.println("Deleted msg");
 						delete obj.msg;
 					}
 				}
