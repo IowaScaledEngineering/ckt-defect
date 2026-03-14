@@ -22,6 +22,8 @@ LICENSE:
 #include <SD.h>
 #include "sound.h"
 
+int16_t sineWave[8] = {0, 12539, 23170, 30273, 32767, 30273, 23170, 12539};
+
 Sound::~Sound()
 {
 }
@@ -165,5 +167,46 @@ int16_t MemSound::getNextSample(void)
 }
 void MemSound::close(void)
 {
+	return;
+}
+
+
+
+
+
+
+ToneSound::ToneSound(size_t samples, uint16_t sr)
+{
+	soundName = "tone";
+	dataSize = samples * 2;
+	sampleRate = sr;
+}
+ToneSound::~ToneSound()
+{
+	// Do nothing
+}
+void ToneSound::open(void)
+{
+	byteCount = 0;
+	invert = false;
+}
+int16_t ToneSound::getNextSample(void)
+{
+	if(available() >= 2)
+	{
+		sampleValue = (invert ? -1 : 1) * sineWave[(byteCount/2) % 8] / 2;
+		if(7 == ((byteCount/2) % 8))
+			invert = !invert;
+		byteCount += 2;
+		return sampleValue;
+	}
+	else
+	{
+		return 0;
+	}
+}
+void ToneSound::close(void)
+{
+	delete this;  // Danger, danger, danger!
 	return;
 }

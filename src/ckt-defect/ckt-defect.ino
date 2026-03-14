@@ -584,6 +584,7 @@ void loop()
 				msgPtr = &trackMessages[0].defects[0].detailMsg;
 				msg = transformMessage(msgPtr, &cfg, &data, 0);
 				data.defects.emplace_back(*msg);
+				delete msg;
 				msgPtr = &trackMessages[0].defects[0].alertMsg;
 				Serial.print("Pre msg: ");
 				Serial.println(msgPtr->c_str());
@@ -601,6 +602,7 @@ void loop()
 				msgPtr = &trackMessages[0].defects[1].detailMsg;
 				msg = transformMessage(msgPtr, &cfg, &data, 0);
 				data.defects.emplace_back(*msg);
+				delete msg;
 				msgPtr = &trackMessages[0].defects[1].alertMsg;
 				Serial.print("Pre msg: ");
 				Serial.println(msgPtr->c_str());

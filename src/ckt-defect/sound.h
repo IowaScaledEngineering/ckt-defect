@@ -76,3 +76,16 @@ class MemSound : public Sound
 		int16_t getNextSample(void);
 		void close(void);
 };
+
+class ToneSound : public Sound
+{
+	int16_t sampleValue;
+	bool invert;
+
+	public:
+		ToneSound(size_t samples, uint16_t sr);
+		~ToneSound();
+		void open(void);
+		int16_t getNextSample(void);
+		void close(void);
+};

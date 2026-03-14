@@ -92,20 +92,30 @@ static void parseTask(void *args)
 					{
 //						Serial.println(token.c_str());
 
+						// Transform special case tokens
 						if("." == token)
 						{
 							// Handle '.' as 'point'
 							token = "point";
 						}
 
+
 						while(!audioQueueEmpty())
 						{
 							vTaskDelay(1 / portTICK_PERIOD_MS);   // Wait 1ms
 						}
-						if(NULL != (wavSound.wav = vocabGetWord(token)))
+
+						if("#tone" == token)
+						{
+							wavSound.wav = new ToneSound(16000, 16000);   // 1sec @ 16kHz
+							audioQueuePush(&wavSound);
+						}
+						else if(NULL != (wavSound.wav = vocabGetWord(token)))
 						{
 							audioQueuePush(&wavSound);
 						}
+
+
 						if(killParser)
 						{
 							break;  // Escape this while loop
