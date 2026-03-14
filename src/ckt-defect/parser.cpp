@@ -84,13 +84,20 @@ static void parseTask(void *args)
 			case PARSER_DO_SOMETHING:
 				if(parserQueuePop(&obj))  // Should only get here when there is something in the queue, so portMAX_DELAY is fine
 				{
-					Serial.print("Parsing: ");
+//					Serial.print("Parsing: ");
 					Serial.println(obj.msg->c_str());
 					std::istringstream iss(*(obj.msg));
 					std::string token;
 					while (iss >> token)
 					{
 //						Serial.println(token.c_str());
+
+						if("." == token)
+						{
+							// Handle '.' as 'point'
+							token = "point";
+						}
+
 						while(!audioQueueEmpty())
 						{
 							vTaskDelay(1 / portTICK_PERIOD_MS);   // Wait 1ms

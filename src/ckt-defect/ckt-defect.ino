@@ -298,9 +298,8 @@ void loop()
 	
 	DetectorConfiguration cfg;
 	MessageBundle trackMessages[2];  // Declare two bundles of messages, one for each track
-
-	bool tmp = true;
-
+	DataBundle data;
+	
 	esp_task_wdt_reset();
 
 	Serial.println("ISE Defect Detector");
@@ -332,16 +331,11 @@ void loop()
 		trackMessages[i].entranceMsg = "Equipment Defect Detector";
 		if(cfg.milepostEnable)
 		{
-			std::stringstream milepost;
-			milepost << std::fixed << std::setprecision(1) << cfg.milepost[i];
-			trackMessages[i].entranceMsg += " milepost " + milepost.str();
+			trackMessages[i].entranceMsg += " milepost #mp";
 		}
 		if(cfg.trackNameEnable)
 		{
-			uint8_t id = cfg.trackNameId[i];
-			if(id >= trackNames.size())
-				id = trackNames.size() - 1;
-			trackMessages[i].entranceMsg += " " + trackNames[id];
+			trackMessages[i].entranceMsg += " #trk";
 
 		}
 
@@ -394,6 +388,7 @@ void loop()
 	loadInternalVocab();
 
 
+/*
 	// Sanitize message strings
 	for(uint32_t i=0; i<NUM_TRACKS; i++)
 	{
@@ -410,6 +405,7 @@ void loop()
 		toLowercase(trackMessages[i].tooSlowMsg);
 		toLowercase(trackMessages[i].detectorBlockedMsg);
 	}
+*/
 
 	// Sort defect messages by probability
 	for(uint32_t i=0; i<NUM_TRACKS; i++)
@@ -555,23 +551,19 @@ void loop()
 
 			printMemoryUsage();
 
-			if(tmp)
-			{
-				obj.msg = &trackMessages[0].entranceMsg;
-				obj.deleteWhenDone = false;
-			}
-			else
-			{
-				obj.msg = new std::string("no defects repeat no defects");
-				obj.deleteWhenDone = true;
-			}
+			Serial.print("Pre msg: ");
+			Serial.println(trackMessages[0].entranceMsg.c_str());
+
+			std::string* msg = transformMessage(&trackMessages[0].entranceMsg, &cfg, &data, 0);
+			obj.msg = msg;
+			obj.deleteWhenDone = true;
 
 			Serial.print("Sending msg: ");
 			Serial.println(obj.msg->c_str());
 
 			parserQueuePush(&obj);
-			
-			tmp = !tmp;
+
+			cfg.milepost[0] += 10;
 		}
 
 /*

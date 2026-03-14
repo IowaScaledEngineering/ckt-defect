@@ -20,6 +20,8 @@ LICENSE:
 *************************************************************************/
 
 #include <Arduino.h>
+#include <sstream>
+#include <iomanip>
 
 #include "common.h"
 #include "messages.h"
@@ -61,4 +63,52 @@ void printMessages(MessageBundle* msgs)
 	Serial.println(msgs->tooSlowMsg.c_str());
 	Serial.print("Blocked: ");
 	Serial.println(msgs->detectorBlockedMsg.c_str());
+}
+
+std::string* transformMessage(std::string* inputMessage, DetectorConfiguration *cfg, DataBundle *data, uint8_t trackNum)
+{
+	std::string* outputMessage = new std::string();
+	std::istringstream iss(*inputMessage);
+	std::string token;
+	bool first = true;
+	
+	while (iss >> token)
+	{
+		if(!first)
+		{
+			(*outputMessage) += " ";
+		}
+	
+		first = false;
+		
+		if("#mp" == token)
+		{
+			std::ostringstream milepost;
+			milepost << std::fixed << std::setprecision(1) << cfg->milepost[trackNum];
+			for(char c : milepost.str())
+			{
+				(*outputMessage).push_back(c);
+				(*outputMessage).push_back(' ');
+			}
+			if(!outputMessage->empty())
+			{
+				// Remove last space
+				(*outputMessage).pop_back();
+			}
+		}
+		else if("#trk" == token)
+		{
+			uint8_t id = cfg->trackNameId[trackNum];
+			if(id >= trackNames.size())
+				id = trackNames.size() - 1;
+			(*outputMessage) += trackNames[id];
+		}
+		else
+		{
+			// Default, just pass it through
+			(*outputMessage) += token;
+		}
+	}
+	toLowercase(*outputMessage);
+	return outputMessage;
 }

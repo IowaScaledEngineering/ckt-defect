@@ -24,6 +24,9 @@ LICENSE:
 #include <vector>
 #include <string>
 
+#include "configuration.h"
+#include "data.h"
+
 struct DefectMessage {
 	std::string alertMsg;    // Played instantly when defect detected (e.g. words, silence, or tone)
 	std::string detailMsg;   // Played in exit message after defect(s) detected 
@@ -43,3 +46,4 @@ struct MessageBundle {
 };
 
 void printMessages(MessageBundle* msgs);
+std::string* transformMessage(std::string* inputMessage, DetectorConfiguration *cfg, DataBundle *data, uint8_t trackNum);
