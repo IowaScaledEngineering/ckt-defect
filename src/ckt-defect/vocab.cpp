@@ -91,6 +91,7 @@ Sound* vocabGetWord(const std::string& word)
 #include "vocab/include/near.h"
 #include "vocab/include/no.h"
 #include "vocab/include/north.h"
+#include "vocab/include/out.h"
 #include "vocab/include/p.h"
 #include "vocab/include/point.h"
 #include "vocab/include/repeat.h"
@@ -142,6 +143,7 @@ void loadInternalVocab(void)
 	vocab.push_back(new MemSound("near", vocab_near, vocab_near_len, 16000));
 	vocab.push_back(new MemSound("no", vocab_no, vocab_no_len, 16000));
 	vocab.push_back(new MemSound("north", vocab_north, vocab_north_len, 16000));
+	vocab.push_back(new MemSound("out", vocab_out, vocab_out_len, 16000));
 	vocab.push_back(new MemSound("p", vocab_p, vocab_p_len, 16000));
 	vocab.push_back(new MemSound("point", vocab_point, vocab_point_len, 16000));
 	vocab.push_back(new MemSound("repeat", vocab_repeat, vocab_repeat_len, 16000));

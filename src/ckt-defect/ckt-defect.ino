@@ -377,7 +377,7 @@ void loop()
 		trackMessages[i].exitCleanMsg = trackMessages[i].entranceMsg + " no defects repeat no defects" + tmpMessage;
 
 		// Defect Exit Message
-		trackMessages[i].exitDefectMsg = trackMessages[i].entranceMsg + " you have a defect #defectlist" + tmpMessage;
+		trackMessages[i].exitDefectMsg = trackMessages[i].entranceMsg + " you have a defect #defectlist" + tmpMessage + " detector out";
 
 		// Detector Integrity Message
 		trackMessages[i].integrityMsg = trackMessages[i].entranceMsg + tmpMessage + " integrity failure";
