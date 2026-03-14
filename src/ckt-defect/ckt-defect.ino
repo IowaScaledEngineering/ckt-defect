@@ -299,6 +299,13 @@ void loop()
 	DetectorConfiguration cfg;
 	MessageBundle trackMessages[2];  // Declare two bundles of messages, one for each track
 	DataBundle data;
+
+	uint8_t state = 255;  // Start in default
+	uint8_t returnState = 0;
+	ParserObject obj;
+	std::string* msg;
+	std::string* msgPtr;
+	uint32_t startTime;
 	
 	esp_task_wdt_reset();
 
@@ -331,11 +338,11 @@ void loop()
 		trackMessages[i].entranceMsg = "Equipment Defect Detector";
 		if(cfg.milepostEnable)
 		{
-			trackMessages[i].entranceMsg += " milepost #mp";
+			trackMessages[i].entranceMsg += " milepost #milepost";
 		}
 		if(cfg.trackNameEnable)
 		{
-			trackMessages[i].entranceMsg += " #trk";
+			trackMessages[i].entranceMsg += " #track";
 
 		}
 
@@ -343,11 +350,11 @@ void loop()
 		std::string tmpMessage;
 		if(cfg.axleEnable)
 		{
-			tmpMessage = " axle #defectaxle";
+			tmpMessage = " axle #axle";
 		}
-		trackMessages[i].defects.emplace_back("hot journal" + tmpMessage, "hot journal" + tmpMessage, "Hot Journal", 500);
-		trackMessages[i].defects.emplace_back("dragging equipment near" + tmpMessage, "dragging equipment near" + tmpMessage, "Dragging Equipment", 100);
-		trackMessages[i].defects.emplace_back("high impact wheel detected" + tmpMessage, "high impact wheel detected" + tmpMessage, "High Impact Wheel", 200);
+		trackMessages[i].defects.emplace_back("#tone hot journal" + tmpMessage, "hot journal" + tmpMessage, "Hot Journal", 500);
+		trackMessages[i].defects.emplace_back("#tone dragging equipment near" + tmpMessage, "dragging equipment near" + tmpMessage, "Dragging Equipment", 100);
+		trackMessages[i].defects.emplace_back("#tone high impact wheel detected" + tmpMessage, "high impact wheel detected" + tmpMessage, "High Impact Wheel", 200);
 
 		// Create Footer
 		tmpMessage.clear();
@@ -358,7 +365,7 @@ void loop()
 
 		if(cfg.speedEnable)
 		{
-			tmpMessage += " train speed #speed m p h";
+			tmpMessage += " train speed #speed";
 		}
 
 		if(cfg.temperatureEnable)
@@ -370,7 +377,7 @@ void loop()
 		trackMessages[i].exitCleanMsg = trackMessages[i].entranceMsg + " no defects repeat no defects" + tmpMessage;
 
 		// Defect Exit Message
-		trackMessages[i].exitDefectMsg = trackMessages[i].entranceMsg + " you have a defect #defectdetails" + tmpMessage;
+		trackMessages[i].exitDefectMsg = trackMessages[i].entranceMsg + " you have a defect #defectlist" + tmpMessage;
 
 		// Detector Integrity Message
 		trackMessages[i].integrityMsg = trackMessages[i].entranceMsg + tmpMessage + " integrity failure";
@@ -545,26 +552,120 @@ void loop()
 		audioUnmute();
 
 		// FIXME Send some test audio
-		if(parserQueueEmpty())
+
+		switch(state)
 		{
-			ParserObject obj;
+			case 0:
+				data.temperature = 97;
+				data.defectAxle[0] = 0;
+				data.totalAxles[0] = 0;
+				data.speed[0] = 0;
+				if(millis() - startTime >= 1000)
+					state++;
+				break;
 
-			printMemoryUsage();
 
-			Serial.print("Pre msg: ");
-			Serial.println(trackMessages[0].entranceMsg.c_str());
+			case 1:
+				msgPtr = &trackMessages[0].entranceMsg;
+				Serial.print("Pre msg: ");
+				Serial.println(msgPtr->c_str());
+				msg = transformMessage(msgPtr, &cfg, &data, 0);
+				returnState = state + 1;
+				state = 100;
+				break;
+			case 2:
+				data.speed[0] = 37;
+				if(millis() - startTime >= 10000)
+					state++;
+				break;
 
-			std::string* msg = transformMessage(&trackMessages[0].entranceMsg, &cfg, &data, 0);
-			obj.msg = msg;
-			obj.deleteWhenDone = true;
+			case 3:
+				data.defectAxle[0] = 29;
+				msgPtr = &trackMessages[0].defects[0].detailMsg;
+				msg = transformMessage(msgPtr, &cfg, &data, 0);
+				data.defects.emplace_back(*msg);
+				msgPtr = &trackMessages[0].defects[0].alertMsg;
+				Serial.print("Pre msg: ");
+				Serial.println(msgPtr->c_str());
+				msg = transformMessage(msgPtr, &cfg, &data, 0);
+				returnState = state + 1;
+				state = 100;
+				break;
+			case 4:
+				if(millis() - startTime >= 7000)
+					state++;
+				break;
 
-			Serial.print("Sending msg: ");
-			Serial.println(obj.msg->c_str());
+			case 5:
+				data.defectAxle[0] = 108;
+				msgPtr = &trackMessages[0].defects[1].detailMsg;
+				msg = transformMessage(msgPtr, &cfg, &data, 0);
+				data.defects.emplace_back(*msg);
+				msgPtr = &trackMessages[0].defects[1].alertMsg;
+				Serial.print("Pre msg: ");
+				Serial.println(msgPtr->c_str());
+				msg = transformMessage(msgPtr, &cfg, &data, 0);
+				returnState = state + 1;
+				state = 100;
+				break;
+			case 6:
+				if(millis() - startTime >= 10000)
+					state++;
+				break;
 
-			parserQueuePush(&obj);
+			case 7:
+				data.totalAxles[0] = 184;
+				msgPtr = &trackMessages[0].exitDefectMsg;
+				Serial.print("Pre msg: ");
+				Serial.println(msgPtr->c_str());
+				msg = transformMessage(msgPtr, &cfg, &data, 0);
+				returnState = state + 1;
+				state = 100;
+				break;
+			case 8:
+				if(millis() - startTime >= 30000)
+					state++;
+				break;
 
-			cfg.milepost[0] += 10;
+			case 9:
+				startTime = millis();
+				data.defects.clear();
+				state++;
+				break;
+			case 10:
+				if(millis() - startTime >= 1000)
+					state++;
+				break;
+			case 11:
+				Serial.println("Done.");
+				printMemoryUsage();
+				state = 0;
+				break;
+
+
+
+			case 100:
+				if(parserQueueEmpty())
+				{
+					startTime = millis();
+					printMemoryUsage();
+					obj.msg = msg;
+					obj.deleteWhenDone = true;
+					Serial.print("Sending msg: ");
+					Serial.println(obj.msg->c_str());
+					parserQueuePush(&obj);
+					state = returnState;
+				}
+				break;
+
+			case 255:
+			default:
+				startTime = millis();
+				state = 0;
+				break;
 		}
+
+
 
 /*
 		if(1 == gpio_get_level((gpio_num_t)SDDET))

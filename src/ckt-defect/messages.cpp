@@ -65,6 +65,24 @@ void printMessages(MessageBundle* msgs)
 	Serial.println(msgs->detectorBlockedMsg.c_str());
 }
 
+void insertNumber(std::string& str, float_t num, uint8_t precision)
+{
+	std::ostringstream tmpString;
+	tmpString << std::fixed << std::setprecision(precision) << num;
+	for(char c : tmpString.str())
+	{
+		str.push_back(c);
+		str.push_back(' ');
+	}
+	if(!str.empty())
+	{
+		// Remove last space
+		str.pop_back();
+	}
+}
+
+
+
 std::string* transformMessage(std::string* inputMessage, DetectorConfiguration *cfg, DataBundle *data, uint8_t trackNum)
 {
 	std::string* outputMessage = new std::string();
@@ -81,27 +99,42 @@ std::string* transformMessage(std::string* inputMessage, DetectorConfiguration *
 	
 		first = false;
 		
-		if("#mp" == token)
+		if("#milepost" == token)
 		{
-			std::ostringstream milepost;
-			milepost << std::fixed << std::setprecision(1) << cfg->milepost[trackNum];
-			for(char c : milepost.str())
-			{
-				(*outputMessage).push_back(c);
-				(*outputMessage).push_back(' ');
-			}
-			if(!outputMessage->empty())
-			{
-				// Remove last space
-				(*outputMessage).pop_back();
-			}
+			insertNumber(*outputMessage, cfg->milepost[trackNum], 1);
 		}
-		else if("#trk" == token)
+		else if("#track" == token)
 		{
 			uint8_t id = cfg->trackNameId[trackNum];
 			if(id >= trackNames.size())
 				id = trackNames.size() - 1;
 			(*outputMessage) += trackNames[id];
+		}
+		else if("#axle" == token)
+		{
+			insertNumber(*outputMessage, data->defectAxle[trackNum], 0);
+		}
+		else if("#axles" == token)
+		{
+			insertNumber(*outputMessage, data->totalAxles[trackNum], 0);
+		}
+		else if("#speed" == token)
+		{
+			insertNumber(*outputMessage, data->speed[trackNum], 0);
+		}
+		else if("#temp" == token)
+		{
+			insertNumber(*outputMessage, data->temperature, 0);
+		}
+		else if("#defectlist" == token)
+		{
+			for(auto const& defect : data->defects)
+			{
+				(*outputMessage) += defect;
+				(*outputMessage).push_back(' ');
+			}
+			// Remove last space
+			(*outputMessage).pop_back();
 		}
 		else
 		{

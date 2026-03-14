@@ -85,7 +85,7 @@ static void parseTask(void *args)
 				if(parserQueuePop(&obj))  // Should only get here when there is something in the queue, so portMAX_DELAY is fine
 				{
 //					Serial.print("Parsing: ");
-					Serial.println(obj.msg->c_str());
+//					Serial.println(obj.msg->c_str());
 					std::istringstream iss(*(obj.msg));
 					std::string token;
 					while (iss >> token)
