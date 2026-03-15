@@ -23,14 +23,17 @@ LICENSE:
 #define   PINB   11
 
 //  Timing in ms
-#define   WHEEL       50
-#define   TRUCK      150
+#define   WHEEL       49
+#define   TRUCK      148
 #define   BOLSTER   1285
-#define   COUPLER    395
+#define   COUPLER    396
+#define   DELAY      198
 
 uint8_t buttonsPressed = 0;
 
 unsigned long debounceMillis = 0;
+
+uint8_t shifter[(DELAY+4) / 8];
 
 void setup()
 {
@@ -73,86 +76,124 @@ void loop()
 	
 	if( (millis() - debounceMillis) >= 10 )
 	{
+		// Every 10ms
 		inputStatus = !digitalRead(A0);
 		buttonsPressed = debounce(buttonsPressed, inputStatus);
+		debounceMillis += 10;
 	}
 
-	if(buttonsPressed)
+	switch(stateA)
 	{
-		switch(stateA)
-		{
-			case 0:
+		case 0:
+			if(buttonsPressed)
+				stateA++;
+			break;
+		case 1:
+			digitalWrite(PINA, 1);
+			millisA = millis();
+			stateA++;
+			break;
+		case 2:
+			if( (millis() - millisA) >= (WHEEL) )
+			{
+				digitalWrite(PINA, 0);
+				millisA = millis();
+				stateA++;
+			}
+			break;
+		case 3:
+			if( (millis() - millisA) >= (TRUCK-WHEEL) )
+			{
 				digitalWrite(PINA, 1);
 				millisA = millis();
 				stateA++;
-				break;
-			case 1:
-				if( (millis() - millisA) >= (WHEEL) )
-				{
-					digitalWrite(PINA, 0);
-					millisA = millis();
-					stateA++;
-				}
-				break;
-			case 2:
-				if( (millis() - millisA) >= (TRUCK-WHEEL) )
-				{
-					digitalWrite(PINA, 1);
-					millisA = millis();
-					stateA++;
-				}
-				break;
-			case 3:
-				if( (millis() - millisA) >= (WHEEL) )
-				{
-					digitalWrite(PINA, 0);
-					millisA = millis();
-					stateA++;
-				}
-				break;
-			case 4:
-				if( (millis() - millisA) >= (BOLSTER - (WHEEL + TRUCK)) )
-				{
-					digitalWrite(PINA, 1);
-					millisA = millis();
-					stateA++;
-				}
-				break;
-			case 5:
-				if( (millis() - millisA) >= (WHEEL) )
-				{
-					digitalWrite(PINA, 0);
-					millisA = millis();
-					stateA++;
-				}
-				break;
-			case 6:
-				if( (millis() - millisA) >= (TRUCK-WHEEL) )
-				{
-					digitalWrite(PINA, 1);
-					millisA = millis();
-					stateA++;
-				}
-				break;
-			case 7:
-				if( (millis() - millisA) >= (WHEEL) )
-				{
-					digitalWrite(PINA, 0);
-					millisA = millis();
-					stateA++;
-				}
-				break;
-			case 8:
-				if( (millis() - millisA) >= (COUPLER - (WHEEL + TRUCK)) )
-				{
-					stateA++;
-				}
-				break;
+			}
+			break;
+		case 4:
+			if( (millis() - millisA) >= (WHEEL) )
+			{
+				digitalWrite(PINA, 0);
+				millisA = millis();
+				stateA++;
+			}
+			break;
+		case 5:
+			if( (millis() - millisA) >= (BOLSTER - (WHEEL + TRUCK)) )
+			{
+				digitalWrite(PINA, 1);
+				millisA = millis();
+				stateA++;
+			}
+			break;
+		case 6:
+			if( (millis() - millisA) >= (WHEEL) )
+			{
+				digitalWrite(PINA, 0);
+				millisA = millis();
+				stateA++;
+			}
+			break;
+		case 7:
+			if( (millis() - millisA) >= (TRUCK-WHEEL) )
+			{
+				digitalWrite(PINA, 1);
+				millisA = millis();
+				stateA++;
+			}
+			break;
+		case 8:
+			if( (millis() - millisA) >= (WHEEL) )
+			{
+				digitalWrite(PINA, 0);
+				millisA = millis();
+				stateA++;
+			}
+			break;
+		case 9:
+			if( (millis() - millisA) >= (COUPLER - (WHEEL + TRUCK)) )
+			{
+				stateA++;
+			}
+			break;
 
-			default:
-				stateA = 0;
-				break;
+		default:
+			stateA = 0;
+			break;
+	}
+
+	if( (millis() - millisB) >= 1 )
+	{
+		// Every 1ms
+
+		for(uint8_t i = 0; i<sizeof(shifter); i++)
+		{
+			if(0 == i)
+			{
+				// First byte, pull off bit and drive PINB
+				if(shifter[i] & 0x01)
+					digitalWrite(PINB, 1);
+				else
+					digitalWrite(PINB, 0);
+			}
+			
+			shifter[i] = shifter[i] >> 1;
+
+			if(i < (sizeof(shifter) - 1))
+			{
+				// Not the last byte
+				if(shifter[i+1] & 0x01)
+					shifter[i] |= 0x80;
+			}
+			else
+			{
+				// Last byte, add PINA current state
+				if(digitalRead(PINA))
+					shifter[i] |= 0x80;
+			}
 		}
+
+		millisB += 1;
+	}
 
 
 
@@ -179,5 +220,4 @@ void loop()
 		delay(COUPLER - (WHEEL + TRUCK));
 */
 
-	}
 }
