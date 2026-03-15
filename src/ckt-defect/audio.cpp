@@ -340,7 +340,15 @@ static void audioPump(void *args)
 
 void audioInit(void)
 {
-	pinMode(I2S_SD, OUTPUT);
+	gpio_config_t io_conf = {};
+
+	io_conf.intr_type = GPIO_INTR_DISABLE;
+	io_conf.mode = GPIO_MODE_OUTPUT;
+	io_conf.pin_bit_mask = (1ULL << I2S_SD);
+	io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
+	io_conf.pull_up_en = GPIO_PULLUP_DISABLE;
+	gpio_config(&io_conf); // Apply configuration
+
 	gpio_set_level(I2S_SD, 0);	// Disable amplifier
 
 	wavSoundQueue = xQueueCreate(1, sizeof(WavSound));

@@ -32,6 +32,8 @@ LICENSE:
 #include "driver/gpio.h"
 #include "esp_task_wdt.h"
 
+#include <SerLCD.h>
+
 #include "common.h"
 #include "configuration.h"
 #include "io.h"
@@ -149,28 +151,6 @@ void IRAM_ATTR tickTimer(void)
 {
 	timerTick = true;
 }
-
-void setup()
-{
-	// Open serial communications and wait for port to open:
-	Serial.begin();
-
-	pinMode((gpio_num_t)SDDET, INPUT_PULLUP);
-
-	esp_task_wdt_config_t twdt_config = {
-		.timeout_ms = TWDT_TIMEOUT_MS,
-		.idle_core_mask = (1 << CONFIG_FREERTOS_NUMBER_OF_CORES) - 1,    // Bitmask of all cores
-		.trigger_panic = false,
-	};
-	esp_task_wdt_init(&twdt_config);
-    	esp_task_wdt_add(NULL); //add current thread to WDT watch
-	esp_task_wdt_reset();
-
-	timer = timerBegin(1000000);                  // 1MHz = 1us
-	timerAttachInterrupt(timer, &tickTimer);
-	timerAlarm(timer, 10000, true, 0);            // 1us * 10000 = 10ms, autoreload, unlimited reloads
-}
-
 
 bool validateWavFile(File *wavFile, struct WavData *wavData)
 {
@@ -291,14 +271,40 @@ void findWavFiles(File *rootDir, String dirName, std::vector<Sound *> *soundsVec
 }
 
 
+void setup()
+{
+	Serial.begin();
+
+	ioSetup();
+
+	Wire.begin(SDA, SCL);
+
+	esp_task_wdt_config_t twdt_config = {
+		.timeout_ms = TWDT_TIMEOUT_MS,
+		.idle_core_mask = (1 << CONFIG_FREERTOS_NUMBER_OF_CORES) - 1,    // Bitmask of all cores
+		.trigger_panic = false,
+	};
+	esp_task_wdt_init(&twdt_config);
+    	esp_task_wdt_add(NULL); //add current thread to WDT watch
+	esp_task_wdt_reset();
+
+	timer = timerBegin(1000000);                  // 1MHz = 1us
+	timerAttachInterrupt(timer, &tickTimer);
+	timerAlarm(timer, 10000, true, 0);            // 1us * 10000 = 10ms, autoreload, unlimited reloads
+}
+
+
 void loop()
 {
 	File rootDir;
-//	unsigned long sdDetectTime = 0;
 	
 	DetectorConfiguration cfg;
 	MessageBundle trackMessages[2];  // Declare two bundles of messages, one for each track
 	DataBundle data;
+
+	SerLCD lcd;
+	lcd.begin(Wire);
+	lcd.clear();
 
 	uint8_t state = 255;  // Start in default
 	uint8_t returnState = 0;
@@ -306,6 +312,9 @@ void loop()
 	std::string* msg;
 	std::string* msgPtr;
 	uint32_t startTime;
+
+	bool sdCardInserted = false;
+	unsigned long sdDetectTime = 0;
 	
 	esp_task_wdt_reset();
 
@@ -316,6 +325,9 @@ void loop()
 
 	Serial.print("Git Rev: ");
 	Serial.println(GIT_REV, HEX);
+
+	lcd.setCursor(0, 0);
+	lcd.print("ISE Defect Detector");
 
 	// Read NVM configuration
 	loadConfiguration(&cfg);
@@ -444,7 +456,6 @@ void loop()
 
 	SPIClass vspi = SPIClass(FSPI);
 	vspi.begin(SDCLK, SDMISO, SDMOSI, SDCS);
-	pinMode(SDCS, OUTPUT);
 
 	// Check SD card
 	if(SD.begin(SDCS, vspi))
@@ -667,23 +678,42 @@ void loop()
 				break;
 		}
 
+		lcd.setCursor(0, 1);
+		lcd.print(millis() / 1000);
 
-
-/*
-		if(1 == gpio_get_level((gpio_num_t)SDDET))
+		if(sdCardInserted)
 		{
-			// Card removed
-			if(millis() > sdDetectTime + 500)  //  Need 500ms of continuous removal
+			if(1 == gpio_get_level(SDDET))
 			{
-				Serial.println("SD Card Removed");
-				restart = true;
+				// Card removed
+				if(millis() > sdDetectTime + 500)  //  Need 500ms of continuous removal
+				{
+					Serial.println("SD Card Removed");
+					sdCardInserted = false;
+				}
+			}
+			else
+			{
+				sdDetectTime = millis();
 			}
 		}
 		else
 		{
-			sdDetectTime = millis();
+			if(0 == gpio_get_level(SDDET))
+			{
+				// Card inserted
+				if(millis() > sdDetectTime + 500)  //  Need 500ms of continuous insertion
+				{
+					Serial.println("SD Card Inserted");
+					sdCardInserted = true;
+				}
+			}
+			else
+			{
+				sdDetectTime = millis();
+			}
 		}
-*/
+
 
 		if(restart)
 		{
