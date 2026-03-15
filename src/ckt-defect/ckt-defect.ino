@@ -513,8 +513,8 @@ void loop()
 		// Do things on 10ms interval
 		if(timerTick)
 		{
-			timerTick = false;
 			audioProcessVolume();
+			timerTick = false;
 		}
 
 		// Check for serial input
@@ -523,23 +523,6 @@ void loop()
 			uint8_t serialChar = Serial.read();
 			switch(serialChar)
 			{
-				// FIXME
-				case 'a':
-					cfg.trackNameId[0]++;
-					saveConfiguration(&cfg);
-					break;
-				// FIXME
-				case 'z':
-					cfg.trackNameId[0]-- ;
-					saveConfiguration(&cfg);
-					break;
-
-				// FIXME
-				case 'm':
-					cfg.milepost[0] += 0.26;
-					saveConfiguration(&cfg);
-					break;
-
 				case '+':
 					cfg.volumeStep++;
 					audioSetVolumeStep(cfg.volumeStep);

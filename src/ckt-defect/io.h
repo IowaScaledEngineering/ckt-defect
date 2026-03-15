@@ -45,4 +45,9 @@ LICENSE:
 #define TRKA         GPIO_NUM_12
 #define TRKB         GPIO_NUM_34
 
+#define AUX          GPIO_NUM_1
+
 void ioSetup(void);
+
+void enableAuxRelay(void);
+void disableAuxRelay(void);

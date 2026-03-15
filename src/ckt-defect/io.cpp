@@ -81,5 +81,20 @@ void ioSetup(void)
 	gpio_config(&io_conf);
 	io_conf.pin_bit_mask = (1ULL << TRKB);
 	gpio_config(&io_conf);
+
+	// AUX: output
+	io_conf.pin_bit_mask = (1ULL << AUX);
+	io_conf.mode = GPIO_MODE_OUTPUT;
+	io_conf.pull_up_en = GPIO_PULLUP_DISABLE;
+	gpio_config(&io_conf);
 }
 
+void enableAuxRelay(void)
+{
+	gpio_set_level(AUX, 1);
+}
+
+void disableAuxRelay(void)
+{
+	gpio_set_level(AUX, 0);
+}
