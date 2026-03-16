@@ -47,7 +47,21 @@ LICENSE:
 
 #define AUX          GPIO_NUM_1
 
+#define TP0          GPIO_NUM_4
+#define TP1          GPIO_NUM_5
+#define TP2          GPIO_NUM_6
+#define TP3          GPIO_NUM_40
+#define TP4          GPIO_NUM_41
+#define TP5          GPIO_NUM_42
+
 void ioSetup(void);
 
 void enableAuxRelay(void);
 void disableAuxRelay(void);
+
+void ioProcessInputs(void);
+bool isTrackADetected(void);
+bool isTrackBDetected(void);
+
+void setTestPoint(gpio_num_t tp);
+void clrTestPoint(gpio_num_t tp);

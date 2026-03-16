@@ -55,24 +55,6 @@ struct WavData {
 };
 
 
-
-uint8_t debounce(uint8_t debouncedState, uint8_t newInputs)
-{
-	static uint8_t clock_A = 0, clock_B = 0;
-	uint8_t delta = newInputs ^ debouncedState; // Find all of the changes
-	uint8_t changes;
-
-	clock_A ^= clock_B; //Increment the counters
-	clock_B  = ~clock_B;
-
-	clock_A &= delta; //Reset the counters if no changes
-	clock_B &= delta; //were detected.
-
-	changes = ~((~delta) | clock_A | clock_B);
-	debouncedState ^= changes;
-	return(debouncedState);
-}
-
 char* rtrim(char* in)
 {
 	char* endPtr = in + strlen(in) - 1;
@@ -513,8 +495,11 @@ void loop()
 		// Do things on 10ms interval
 		if(timerTick)
 		{
+setTestPoint(TP2);
 			audioProcessVolume();
+			ioProcessInputs();
 			timerTick = false;
+clrTestPoint(TP2);
 		}
 
 		// Check for serial input
@@ -661,9 +646,22 @@ void loop()
 				break;
 		}
 
+/*
 		lcd.setCursor(0, 1);
 		lcd.print(millis() / 1000);
 
+		lcd.setCursor(2,3);
+		if(isTrackADetected())
+			lcd.print("TrackA");
+		else
+			lcd.print("      ");
+		
+		lcd.setCursor(12,3);
+		if(isTrackBDetected())
+			lcd.print("TrackB");
+		else
+			lcd.print("      ");
+*/
 		if(sdCardInserted)
 		{
 			if(1 == gpio_get_level(SDDET))

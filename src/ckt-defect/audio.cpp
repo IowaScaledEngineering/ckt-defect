@@ -276,7 +276,9 @@ static void audioPump(void *args)
 						sampleValue = adjustedValue;
 					// Combine into 32 bit word (left & right)
 					outputValue = (sampleValue<<16) | (sampleValue & 0xffff);
+setTestPoint(TP0);
 					i2s_channel_write(i2s_tx_handle, &outputValue, 4, &bytesWritten, portMAX_DELAY);
+clrTestPoint(TP0);
 				}
 				else
 				{

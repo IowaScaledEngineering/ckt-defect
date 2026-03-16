@@ -24,6 +24,11 @@ LICENSE:
 #include "common.h"
 #include "io.h"
 
+#define INPUT_TRKA    0x01
+#define INPUT_TRKB    0x02
+
+static uint8_t debouncedInputs = 0;
+
 void ioSetup(void)
 {
 	gpio_config_t io_conf = {};
@@ -87,6 +92,23 @@ void ioSetup(void)
 	io_conf.mode = GPIO_MODE_OUTPUT;
 	io_conf.pull_up_en = GPIO_PULLUP_DISABLE;
 	gpio_config(&io_conf);
+
+	// TPn: output
+	io_conf.mode = GPIO_MODE_OUTPUT;
+	io_conf.pull_up_en = GPIO_PULLUP_DISABLE;
+
+	io_conf.pin_bit_mask = (1ULL << TP0);
+	gpio_config(&io_conf);
+	io_conf.pin_bit_mask = (1ULL << TP1);
+	gpio_config(&io_conf);
+	io_conf.pin_bit_mask = (1ULL << TP2);
+	gpio_config(&io_conf);
+	io_conf.pin_bit_mask = (1ULL << TP3);
+	gpio_config(&io_conf);
+	io_conf.pin_bit_mask = (1ULL << TP4);
+	gpio_config(&io_conf);
+	io_conf.pin_bit_mask = (1ULL << TP5);
+	gpio_config(&io_conf);
 }
 
 void enableAuxRelay(void)
@@ -97,4 +119,63 @@ void enableAuxRelay(void)
 void disableAuxRelay(void)
 {
 	gpio_set_level(AUX, 0);
+}
+
+
+uint8_t debounce(uint8_t debouncedState, uint8_t newInputs)
+{
+	static uint8_t clock_A = 0, clock_B = 0;
+	uint8_t delta = newInputs ^ debouncedState; // Find all of the changes
+	uint8_t changes;
+
+	clock_A ^= clock_B; //Increment the counters
+	clock_B  = ~clock_B;
+
+	clock_A &= delta; //Reset the counters if no changes
+	clock_B &= delta; //were detected.
+
+	changes = ~((~delta) | clock_A | clock_B);
+	debouncedState ^= changes;
+	return(debouncedState);
+}
+
+
+void ioProcessInputs(void)
+{
+	uint8_t inputStatus = 0;
+	
+	if(gpio_get_level(TRKA))
+		inputStatus &= ~INPUT_TRKA;
+	else
+		inputStatus |= INPUT_TRKA;
+	
+	if(gpio_get_level(TRKB))
+		inputStatus &= ~INPUT_TRKB;
+	else
+		inputStatus |= INPUT_TRKB;
+	
+	debouncedInputs = debounce(debouncedInputs, inputStatus);
+}
+
+
+bool isTrackADetected(void)
+{
+	return debouncedInputs & INPUT_TRKA;
+}
+
+bool isTrackBDetected(void)
+{
+	return debouncedInputs & INPUT_TRKB;
+}
+
+
+
+void setTestPoint(gpio_num_t tp)
+{
+	gpio_set_level(tp, 1);
+}
+
+void clrTestPoint(gpio_num_t tp)
+{
+	gpio_set_level(tp, 0);
 }

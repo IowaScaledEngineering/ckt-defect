@@ -23,6 +23,7 @@ LICENSE:
 #include <sstream>
 
 #include "common.h"
+#include "io.h"
 #include "sound.h"
 #include "audio.h"
 #include "vocab.h"
@@ -100,10 +101,12 @@ static void parseTask(void *args)
 						}
 
 
+setTestPoint(TP1);
 						while(!audioQueueEmpty())
 						{
 							vTaskDelay(1 / portTICK_PERIOD_MS);   // Wait 1ms
 						}
+clrTestPoint(TP1);
 
 						if("#tone" == token)
 						{
