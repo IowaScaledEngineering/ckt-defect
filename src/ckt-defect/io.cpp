@@ -29,7 +29,7 @@ LICENSE:
 
 static uint8_t debouncedInputs = 0;
 
-void ioSetup(void)
+void ioInit(void)
 {
 	gpio_config_t io_conf = {};
 	io_conf.intr_type = GPIO_INTR_DISABLE;
@@ -68,6 +68,7 @@ void ioSetup(void)
 	// AXLE_nn: input
 	io_conf.mode = GPIO_MODE_INPUT;
 	io_conf.pull_up_en = GPIO_PULLUP_DISABLE;
+	io_conf.intr_type = GPIO_INTR_NEGEDGE;
 
 	io_conf.pin_bit_mask = (1ULL << AXLE_A1);
 	gpio_config(&io_conf);
@@ -78,6 +79,8 @@ void ioSetup(void)
 	io_conf.pin_bit_mask = (1ULL << AXLE_B2);
 	gpio_config(&io_conf);
 	
+	io_conf.intr_type = GPIO_INTR_DISABLE;  // Reset back to disable
+
 	// TRKn: input with pullup
 	io_conf.mode = GPIO_MODE_INPUT;
 	io_conf.pull_up_en = GPIO_PULLUP_ENABLE;

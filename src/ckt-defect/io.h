@@ -54,7 +54,7 @@ LICENSE:
 #define TP4          GPIO_NUM_41
 #define TP5          GPIO_NUM_42
 
-void ioSetup(void);
+void ioInit(void);
 
 void enableAuxRelay(void);
 void disableAuxRelay(void);

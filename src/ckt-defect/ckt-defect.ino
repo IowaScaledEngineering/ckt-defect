@@ -42,6 +42,7 @@ LICENSE:
 #include "messages.h"
 #include "parser.h"
 #include "vocab.h"
+#include "axle.h"
 
 // 3 sec watchdog 
 #define TWDT_TIMEOUT_MS    3000
@@ -257,7 +258,7 @@ void setup()
 {
 	Serial.begin();
 
-	ioSetup();
+	ioInit();
 
 	Wire.begin(SDA, SCL);
 
@@ -487,6 +488,7 @@ void loop()
 
 	audioInit();
 	parserInit();
+	axleInit();
 
 	while(1)
 	{
@@ -644,6 +646,26 @@ clrTestPoint(TP2);
 				startTime = millis();
 				state = 0;
 				break;
+		}
+
+
+		if( (4 == axleGetNumTimes(AXLE_A1)) && (4 == axleGetNumTimes(AXLE_A2)) )
+		{
+			// Both queues are full with 4 items each
+			unsigned long time;
+			
+			Serial.println("Axle A1 Times:");
+			for(uint32_t i=0; i<4; i++)
+			{
+				axleGetTime(AXLE_A1, &time);
+				Serial.println(time);
+			}
+			Serial.println("Axle A2 Times:");
+			for(uint32_t i=0; i<4; i++)
+			{
+				axleGetTime(AXLE_A2, &time);
+				Serial.println(time);
+			}
 		}
 
 /*
