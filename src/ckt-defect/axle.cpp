@@ -33,7 +33,7 @@ QueueHandle_t axle_B2_Queue;
 void IRAM_ATTR axle_A1_isr(void *arg)
 {
 	BaseType_t xHigherPriorityTaskWoken;
-	unsigned long time = millis();
+	unsigned long time = micros();
 	xQueueSendFromISR(axle_A1_Queue, &time, &xHigherPriorityTaskWoken);
 	portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 }
@@ -41,21 +41,21 @@ void IRAM_ATTR axle_A1_isr(void *arg)
 void IRAM_ATTR axle_A2_isr(void *arg)
 {
 	BaseType_t xHigherPriorityTaskWoken;
-	unsigned long time = millis();
+	unsigned long time = micros();
 	xQueueSendFromISR(axle_A2_Queue, &time, &xHigherPriorityTaskWoken);
 	portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 }
 void IRAM_ATTR axle_B1_isr(void *arg)
 {
 	BaseType_t xHigherPriorityTaskWoken;
-	unsigned long time = millis();
+	unsigned long time = micros();
 	xQueueSendFromISR(axle_B1_Queue, &time, &xHigherPriorityTaskWoken);
 	portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 }
 void IRAM_ATTR axle_B2_isr(void *arg)
 {
 	BaseType_t xHigherPriorityTaskWoken;
-	unsigned long time = millis();
+	unsigned long time = micros();
 	xQueueSendFromISR(axle_B2_Queue, &time, &xHigherPriorityTaskWoken);
 	portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 }
