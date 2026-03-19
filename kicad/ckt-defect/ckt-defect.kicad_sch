@@ -14036,16 +14036,16 @@
 			)
 		)
 		(pin "14"
-			(uuid "816b761b-6bd7-4d39-96fe-89709bb837da")
+			(uuid "816b761b-6bd7-4d39-96fe-89709bb837db")
 		)
 		(pin "12"
-			(uuid "00bae02e-3047-4ed5-a9f9-8fc194c5ca61")
+			(uuid "00bae02e-3047-4ed5-a9f9-8fc194c5ca62")
 		)
 		(pin "13"
-			(uuid "1ff06bb2-2cec-43ce-80fe-0521fd02c9e7")
+			(uuid "1ff06bb2-2cec-43ce-80fe-0521fd02c9e8")
 		)
 		(pin "10"
-			(uuid "c6bc474f-10ff-436f-b127-95df6df434eb")
+			(uuid "c6bc474f-10ff-436f-b127-95df6df434ec")
 		)
 		(pin "2"
 			(uuid "a2e909c1-5e33-4af5-8b7a-2d0b2d8ca1cd")
@@ -14054,28 +14054,28 @@
 			(uuid "e2615c5d-d24e-4d77-94b2-8f56e20a0b21")
 		)
 		(pin "8"
-			(uuid "746d8308-abae-483a-9e3b-e5b9c65097e7")
+			(uuid "746d8308-abae-483a-9e3b-e5b9c65097e8")
 		)
 		(pin "7"
-			(uuid "1e547cf6-bf76-429a-88d3-44b0a9b8e01b")
+			(uuid "1e547cf6-bf76-429a-88d3-44b0a9b8e01c")
 		)
 		(pin "3"
-			(uuid "3af7ee0f-659c-40d3-ac3f-b2fc47fcae07")
+			(uuid "3af7ee0f-659c-40d3-ac3f-b2fc47fcae08")
 		)
 		(pin "4"
-			(uuid "01af50a3-6fcb-43a3-b765-4292f10afe04")
+			(uuid "01af50a3-6fcb-43a3-b765-4292f10afe05")
 		)
 		(pin "5"
-			(uuid "b322270c-bbef-47d1-a789-fe0ceaf8dcbb")
+			(uuid "b322270c-bbef-47d1-a789-fe0ceaf8dcbc")
 		)
 		(pin "6"
-			(uuid "60a46cd3-1d20-4171-8ef0-3e884702423e")
+			(uuid "60a46cd3-1d20-4171-8ef0-3e884702423f")
 		)
 		(pin "9"
-			(uuid "272b3cd9-12f6-4e85-ab09-408faeda6cd3")
+			(uuid "272b3cd9-12f6-4e85-ab09-408faeda6cd4")
 		)
 		(pin "11"
-			(uuid "39335366-544e-420b-b0c0-ec290c534885")
+			(uuid "39335366-544e-420b-b0c0-ec290c534886")
 		)
 		(instances
 			(project "ckt-defect"
@@ -14490,16 +14490,16 @@
 			)
 		)
 		(pin "14"
-			(uuid "816b761b-6bd7-4d39-96fe-89709bb837da")
+			(uuid "816b761b-6bd7-4d39-96fe-89709bb837dc")
 		)
 		(pin "12"
-			(uuid "00bae02e-3047-4ed5-a9f9-8fc194c5ca61")
+			(uuid "00bae02e-3047-4ed5-a9f9-8fc194c5ca63")
 		)
 		(pin "13"
-			(uuid "1ff06bb2-2cec-43ce-80fe-0521fd02c9e7")
+			(uuid "1ff06bb2-2cec-43ce-80fe-0521fd02c9e9")
 		)
 		(pin "10"
-			(uuid "c6bc474f-10ff-436f-b127-95df6df434eb")
+			(uuid "c6bc474f-10ff-436f-b127-95df6df434ed")
 		)
 		(pin "2"
 			(uuid "116537b5-7fa6-4574-8f4b-927ca41e6aad")
@@ -14508,28 +14508,28 @@
 			(uuid "5a4fdf80-a221-47e4-9ac1-07dfd0fc6b58")
 		)
 		(pin "8"
-			(uuid "746d8308-abae-483a-9e3b-e5b9c65097e7")
+			(uuid "746d8308-abae-483a-9e3b-e5b9c65097e9")
 		)
 		(pin "7"
-			(uuid "1e547cf6-bf76-429a-88d3-44b0a9b8e01b")
+			(uuid "1e547cf6-bf76-429a-88d3-44b0a9b8e01d")
 		)
 		(pin "3"
-			(uuid "3af7ee0f-659c-40d3-ac3f-b2fc47fcae07")
+			(uuid "3af7ee0f-659c-40d3-ac3f-b2fc47fcae09")
 		)
 		(pin "4"
-			(uuid "01af50a3-6fcb-43a3-b765-4292f10afe04")
+			(uuid "01af50a3-6fcb-43a3-b765-4292f10afe06")
 		)
 		(pin "5"
-			(uuid "b322270c-bbef-47d1-a789-fe0ceaf8dcbb")
+			(uuid "b322270c-bbef-47d1-a789-fe0ceaf8dcbd")
 		)
 		(pin "6"
-			(uuid "60a46cd3-1d20-4171-8ef0-3e884702423e")
+			(uuid "60a46cd3-1d20-4171-8ef0-3e8847024240")
 		)
 		(pin "9"
-			(uuid "272b3cd9-12f6-4e85-ab09-408faeda6cd3")
+			(uuid "272b3cd9-12f6-4e85-ab09-408faeda6cd5")
 		)
 		(pin "11"
-			(uuid "39335366-544e-420b-b0c0-ec290c534885")
+			(uuid "39335366-544e-420b-b0c0-ec290c534887")
 		)
 		(instances
 			(project "ckt-defect"
@@ -14671,16 +14671,16 @@
 		)
 	)
 	(symbol
-		(lib_id "power:+3.3V")
-		(at 20.955 129.54 180)
+		(lib_id "power:+5V")
+		(at 118.745 129.54 180)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(uuid "55ab022f-2439-4cfb-9c27-448a420f3e8a")
-		(property "Reference" "#PWR041"
-			(at 20.955 125.73 0)
+		(uuid "5879b6c3-e6da-44e2-adee-b8bf8134f142")
+		(property "Reference" "#PWR031"
+			(at 118.745 125.73 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14688,8 +14688,8 @@
 				(hide yes)
 			)
 		)
-		(property "Value" "+3.3V"
-			(at 20.955 133.35 0)
+		(property "Value" "+5V"
+			(at 118.745 133.35 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14697,7 +14697,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 20.955 129.54 0)
+			(at 118.745 129.54 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14706,7 +14706,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 20.955 129.54 0)
+			(at 118.745 129.54 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14715,7 +14715,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 20.955 129.54 0)
+			(at 118.745 129.54 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14723,12 +14723,12 @@
 			)
 		)
 		(pin "1"
-			(uuid "9225cecb-ee88-4023-aa51-0c915e1d6892")
+			(uuid "6fc211c5-33b3-4213-bbb5-d67d2894e466")
 		)
 		(instances
 			(project "ckt-defect"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55"
-					(reference "#PWR041")
+					(reference "#PWR031")
 					(unit 1)
 				)
 			)
@@ -16159,6 +16159,70 @@
 		)
 	)
 	(symbol
+		(lib_id "power:+5V")
+		(at 152.4 133.985 180)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "74fba42e-5b53-44ba-8143-c997b404f05d")
+		(property "Reference" "#PWR020"
+			(at 152.4 130.175 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "+5V"
+			(at 152.4 137.795 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 152.4 133.985 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 152.4 133.985 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 152.4 133.985 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "1ee33d53-d6b7-42fc-8696-0a1a27375d90")
+		)
+		(instances
+			(project "ckt-defect"
+				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55"
+					(reference "#PWR020")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Connector_Generic_MountingPin:Conn_01x04_MountingPin")
 		(at 280.035 30.48 0)
 		(unit 1)
@@ -16488,70 +16552,6 @@
 		)
 	)
 	(symbol
-		(lib_id "power:+3.3V")
-		(at 118.745 129.54 180)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "800bfb11-66a6-46dd-9367-4db6d74f051b")
-		(property "Reference" "#PWR031"
-			(at 118.745 125.73 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "+3.3V"
-			(at 118.745 133.35 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 118.745 129.54 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 118.745 129.54 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" ""
-			(at 118.745 129.54 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "2e1d0090-e93b-4e35-9f3b-8b8d6f720291")
-		)
-		(instances
-			(project "ckt-defect"
-				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55"
-					(reference "#PWR031")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "power:GND")
 		(at 331.47 66.04 0)
 		(unit 1)
@@ -16736,13 +16736,13 @@
 			(uuid "07b50f8a-2c3d-43ad-acbc-2cc138ab1a2c")
 		)
 		(pin "12"
-			(uuid "00bae02e-3047-4ed5-a9f9-8fc194c5ca61")
+			(uuid "00bae02e-3047-4ed5-a9f9-8fc194c5ca64")
 		)
 		(pin "13"
-			(uuid "1ff06bb2-2cec-43ce-80fe-0521fd02c9e7")
+			(uuid "1ff06bb2-2cec-43ce-80fe-0521fd02c9ea")
 		)
 		(pin "10"
-			(uuid "c6bc474f-10ff-436f-b127-95df6df434eb")
+			(uuid "c6bc474f-10ff-436f-b127-95df6df434ee")
 		)
 		(pin "2"
 			(uuid "d6232b95-b96d-4151-95da-17ab4197f364")
@@ -16751,34 +16751,98 @@
 			(uuid "9331efba-4dbd-4a8d-bef6-65bc0a813f9b")
 		)
 		(pin "8"
-			(uuid "746d8308-abae-483a-9e3b-e5b9c65097e7")
+			(uuid "746d8308-abae-483a-9e3b-e5b9c65097ea")
 		)
 		(pin "7"
 			(uuid "24a9b8ba-2bad-4920-81cb-a3a975425a3b")
 		)
 		(pin "3"
-			(uuid "3af7ee0f-659c-40d3-ac3f-b2fc47fcae07")
+			(uuid "3af7ee0f-659c-40d3-ac3f-b2fc47fcae0a")
 		)
 		(pin "4"
-			(uuid "01af50a3-6fcb-43a3-b765-4292f10afe04")
+			(uuid "01af50a3-6fcb-43a3-b765-4292f10afe07")
 		)
 		(pin "5"
-			(uuid "b322270c-bbef-47d1-a789-fe0ceaf8dcbb")
+			(uuid "b322270c-bbef-47d1-a789-fe0ceaf8dcbe")
 		)
 		(pin "6"
-			(uuid "60a46cd3-1d20-4171-8ef0-3e884702423e")
+			(uuid "60a46cd3-1d20-4171-8ef0-3e8847024241")
 		)
 		(pin "9"
-			(uuid "272b3cd9-12f6-4e85-ab09-408faeda6cd3")
+			(uuid "272b3cd9-12f6-4e85-ab09-408faeda6cd6")
 		)
 		(pin "11"
-			(uuid "39335366-544e-420b-b0c0-ec290c534885")
+			(uuid "39335366-544e-420b-b0c0-ec290c534888")
 		)
 		(instances
 			(project ""
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55"
 					(reference "U6")
 					(unit 7)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:+5V")
+		(at 152.4 105.41 180)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "857c6aae-c5b1-4378-aabe-b6ff434909e8")
+		(property "Reference" "#PWR027"
+			(at 152.4 101.6 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "+5V"
+			(at 152.4 109.22 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 152.4 105.41 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 152.4 105.41 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 152.4 105.41 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "df4f0a73-fd8c-443d-8505-503fea9d57cd")
+		)
+		(instances
+			(project "ckt-defect"
+				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55"
+					(reference "#PWR027")
+					(unit 1)
 				)
 			)
 		)
@@ -16966,115 +17030,51 @@
 			)
 		)
 		(pin "14"
-			(uuid "816b761b-6bd7-4d39-96fe-89709bb837da")
+			(uuid "816b761b-6bd7-4d39-96fe-89709bb837dd")
 		)
 		(pin "12"
-			(uuid "00bae02e-3047-4ed5-a9f9-8fc194c5ca61")
+			(uuid "00bae02e-3047-4ed5-a9f9-8fc194c5ca65")
 		)
 		(pin "13"
-			(uuid "1ff06bb2-2cec-43ce-80fe-0521fd02c9e7")
+			(uuid "1ff06bb2-2cec-43ce-80fe-0521fd02c9eb")
 		)
 		(pin "10"
-			(uuid "c6bc474f-10ff-436f-b127-95df6df434eb")
+			(uuid "c6bc474f-10ff-436f-b127-95df6df434ef")
 		)
 		(pin "2"
-			(uuid "d6232b95-b96d-4151-95da-17ab4197f364")
+			(uuid "d6232b95-b96d-4151-95da-17ab4197f365")
 		)
 		(pin "1"
-			(uuid "9331efba-4dbd-4a8d-bef6-65bc0a813f9b")
+			(uuid "9331efba-4dbd-4a8d-bef6-65bc0a813f9c")
 		)
 		(pin "8"
-			(uuid "746d8308-abae-483a-9e3b-e5b9c65097e7")
+			(uuid "746d8308-abae-483a-9e3b-e5b9c65097eb")
 		)
 		(pin "7"
-			(uuid "1e547cf6-bf76-429a-88d3-44b0a9b8e01b")
+			(uuid "1e547cf6-bf76-429a-88d3-44b0a9b8e01e")
 		)
 		(pin "3"
-			(uuid "3af7ee0f-659c-40d3-ac3f-b2fc47fcae07")
+			(uuid "3af7ee0f-659c-40d3-ac3f-b2fc47fcae0b")
 		)
 		(pin "4"
-			(uuid "01af50a3-6fcb-43a3-b765-4292f10afe04")
+			(uuid "01af50a3-6fcb-43a3-b765-4292f10afe08")
 		)
 		(pin "5"
-			(uuid "b322270c-bbef-47d1-a789-fe0ceaf8dcbb")
+			(uuid "b322270c-bbef-47d1-a789-fe0ceaf8dcbf")
 		)
 		(pin "6"
-			(uuid "60a46cd3-1d20-4171-8ef0-3e884702423e")
+			(uuid "60a46cd3-1d20-4171-8ef0-3e8847024242")
 		)
 		(pin "9"
-			(uuid "272b3cd9-12f6-4e85-ab09-408faeda6cd3")
+			(uuid "272b3cd9-12f6-4e85-ab09-408faeda6cd7")
 		)
 		(pin "11"
-			(uuid "39335366-544e-420b-b0c0-ec290c534885")
+			(uuid "39335366-544e-420b-b0c0-ec290c534889")
 		)
 		(instances
 			(project "ckt-defect"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55"
 					(reference "U6")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:+3.3V")
-		(at 152.4 105.41 180)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "888d2302-666e-4bbc-835a-5ae647185f48")
-		(property "Reference" "#PWR020"
-			(at 152.4 101.6 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "+3.3V"
-			(at 152.4 109.22 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 152.4 105.41 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 152.4 105.41 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" ""
-			(at 152.4 105.41 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "ef238eac-0aa3-4e86-903c-5da5b8ff5d0d")
-		)
-		(instances
-			(project "ckt-defect"
-				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55"
-					(reference "#PWR020")
 					(unit 1)
 				)
 			)
@@ -17217,70 +17217,6 @@
 			(project ""
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55"
 					(reference "C17")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:+3.3V")
-		(at 152.4 133.985 180)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "8e25a9be-cfe9-4c91-8c78-1a6e0150792f")
-		(property "Reference" "#PWR027"
-			(at 152.4 130.175 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "+3.3V"
-			(at 152.4 137.795 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 152.4 133.985 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 152.4 133.985 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" ""
-			(at 152.4 133.985 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "262cf4e5-3e12-4ea6-a052-9689e9dc522b")
-		)
-		(instances
-			(project "ckt-defect"
-				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55"
-					(reference "#PWR027")
 					(unit 1)
 				)
 			)
@@ -17736,134 +17672,6 @@
 			(project ""
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55"
 					(reference "U5")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:+3.3V")
-		(at 53.34 129.54 180)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "9c71cbbd-641d-4099-871e-1a83074c4051")
-		(property "Reference" "#PWR039"
-			(at 53.34 125.73 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "+3.3V"
-			(at 53.34 133.35 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 53.34 129.54 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 53.34 129.54 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" ""
-			(at 53.34 129.54 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "2a6cc0e2-e0cd-4e1d-adc1-a44a72187ae8")
-		)
-		(instances
-			(project "ckt-defect"
-				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55"
-					(reference "#PWR039")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:+3.3V")
-		(at 85.725 129.54 180)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "9d018f65-5dc3-4f33-90c9-73df6155bcf1")
-		(property "Reference" "#PWR032"
-			(at 85.725 125.73 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "+3.3V"
-			(at 85.725 133.35 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 85.725 129.54 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 85.725 129.54 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" ""
-			(at 85.725 129.54 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "f868f71f-94b2-456c-9171-731953bf6c28")
-		)
-		(instances
-			(project "ckt-defect"
-				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55"
-					(reference "#PWR032")
 					(unit 1)
 				)
 			)
@@ -18378,6 +18186,70 @@
 			(project ""
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55"
 					(reference "K1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:+5V")
+		(at 85.725 129.54 180)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "a5759275-6506-4a31-9a34-aac252655391")
+		(property "Reference" "#PWR032"
+			(at 85.725 125.73 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "+5V"
+			(at 85.725 133.35 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 85.725 129.54 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 85.725 129.54 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 85.725 129.54 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "c01c14f4-c33b-464e-bd5e-39ef92bb4188")
+		)
+		(instances
+			(project "ckt-defect"
+				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55"
+					(reference "#PWR032")
 					(unit 1)
 				)
 			)
@@ -19733,28 +19605,28 @@
 			)
 		)
 		(pin "14"
-			(uuid "816b761b-6bd7-4d39-96fe-89709bb837db")
+			(uuid "816b761b-6bd7-4d39-96fe-89709bb837de")
 		)
 		(pin "12"
-			(uuid "00bae02e-3047-4ed5-a9f9-8fc194c5ca62")
+			(uuid "00bae02e-3047-4ed5-a9f9-8fc194c5ca66")
 		)
 		(pin "13"
-			(uuid "1ff06bb2-2cec-43ce-80fe-0521fd02c9e8")
+			(uuid "1ff06bb2-2cec-43ce-80fe-0521fd02c9ec")
 		)
 		(pin "10"
-			(uuid "c6bc474f-10ff-436f-b127-95df6df434ec")
+			(uuid "c6bc474f-10ff-436f-b127-95df6df434f0")
 		)
 		(pin "2"
-			(uuid "3fa1e280-e6b0-43be-ad2c-d8aa93aada0b")
+			(uuid "3fa1e280-e6b0-43be-ad2c-d8aa93aada0c")
 		)
 		(pin "1"
-			(uuid "0a26da06-a3b1-4441-bd96-25b7d5d41b12")
+			(uuid "0a26da06-a3b1-4441-bd96-25b7d5d41b13")
 		)
 		(pin "8"
-			(uuid "746d8308-abae-483a-9e3b-e5b9c65097e8")
+			(uuid "746d8308-abae-483a-9e3b-e5b9c65097ec")
 		)
 		(pin "7"
-			(uuid "1e547cf6-bf76-429a-88d3-44b0a9b8e01c")
+			(uuid "1e547cf6-bf76-429a-88d3-44b0a9b8e01f")
 		)
 		(pin "3"
 			(uuid "e9c6e015-fb05-4798-bda8-d926ff0f3d26")
@@ -19763,16 +19635,16 @@
 			(uuid "b586d80a-7402-49d5-a41b-d370761699d3")
 		)
 		(pin "5"
-			(uuid "b322270c-bbef-47d1-a789-fe0ceaf8dcbc")
+			(uuid "b322270c-bbef-47d1-a789-fe0ceaf8dcc0")
 		)
 		(pin "6"
-			(uuid "60a46cd3-1d20-4171-8ef0-3e884702423f")
+			(uuid "60a46cd3-1d20-4171-8ef0-3e8847024243")
 		)
 		(pin "9"
-			(uuid "272b3cd9-12f6-4e85-ab09-408faeda6cd4")
+			(uuid "272b3cd9-12f6-4e85-ab09-408faeda6cd8")
 		)
 		(pin "11"
-			(uuid "39335366-544e-420b-b0c0-ec290c534886")
+			(uuid "39335366-544e-420b-b0c0-ec290c53488a")
 		)
 		(instances
 			(project "ckt-defect"
@@ -20094,28 +19966,28 @@
 			)
 		)
 		(pin "14"
-			(uuid "816b761b-6bd7-4d39-96fe-89709bb837db")
+			(uuid "816b761b-6bd7-4d39-96fe-89709bb837df")
 		)
 		(pin "12"
-			(uuid "00bae02e-3047-4ed5-a9f9-8fc194c5ca62")
+			(uuid "00bae02e-3047-4ed5-a9f9-8fc194c5ca67")
 		)
 		(pin "13"
-			(uuid "1ff06bb2-2cec-43ce-80fe-0521fd02c9e8")
+			(uuid "1ff06bb2-2cec-43ce-80fe-0521fd02c9ed")
 		)
 		(pin "10"
-			(uuid "c6bc474f-10ff-436f-b127-95df6df434ec")
+			(uuid "c6bc474f-10ff-436f-b127-95df6df434f1")
 		)
 		(pin "2"
-			(uuid "3fa1e280-e6b0-43be-ad2c-d8aa93aada0b")
+			(uuid "3fa1e280-e6b0-43be-ad2c-d8aa93aada0d")
 		)
 		(pin "1"
-			(uuid "0a26da06-a3b1-4441-bd96-25b7d5d41b12")
+			(uuid "0a26da06-a3b1-4441-bd96-25b7d5d41b14")
 		)
 		(pin "8"
-			(uuid "746d8308-abae-483a-9e3b-e5b9c65097e8")
+			(uuid "746d8308-abae-483a-9e3b-e5b9c65097ed")
 		)
 		(pin "7"
-			(uuid "1e547cf6-bf76-429a-88d3-44b0a9b8e01c")
+			(uuid "1e547cf6-bf76-429a-88d3-44b0a9b8e020")
 		)
 		(pin "3"
 			(uuid "96083c6a-7cf6-4206-8e91-2a333c79602e")
@@ -20124,22 +19996,86 @@
 			(uuid "37218023-44ca-4238-9438-cad67d8d99cf")
 		)
 		(pin "5"
-			(uuid "b322270c-bbef-47d1-a789-fe0ceaf8dcbc")
+			(uuid "b322270c-bbef-47d1-a789-fe0ceaf8dcc1")
 		)
 		(pin "6"
-			(uuid "60a46cd3-1d20-4171-8ef0-3e884702423f")
+			(uuid "60a46cd3-1d20-4171-8ef0-3e8847024244")
 		)
 		(pin "9"
-			(uuid "272b3cd9-12f6-4e85-ab09-408faeda6cd4")
+			(uuid "272b3cd9-12f6-4e85-ab09-408faeda6cd9")
 		)
 		(pin "11"
-			(uuid "39335366-544e-420b-b0c0-ec290c534886")
+			(uuid "39335366-544e-420b-b0c0-ec290c53488b")
 		)
 		(instances
 			(project "ckt-defect"
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55"
 					(reference "U6")
 					(unit 6)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:+5V")
+		(at 20.955 129.54 180)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "d3486e28-d693-445c-af65-5a86e835c9c9")
+		(property "Reference" "#PWR041"
+			(at 20.955 125.73 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "+5V"
+			(at 20.955 133.35 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 20.955 129.54 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 20.955 129.54 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 20.955 129.54 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "38f10219-df84-42dd-bb6b-f6330b90ea3c")
+		)
+		(instances
+			(project "ckt-defect"
+				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55"
+					(reference "#PWR041")
+					(unit 1)
 				)
 			)
 		)
@@ -20565,6 +20501,70 @@
 			(project ""
 				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55"
 					(reference "#PWR018")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:+5V")
+		(at 53.34 129.54 180)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "e12ce614-deb4-4a78-b506-917d26b2b1f1")
+		(property "Reference" "#PWR039"
+			(at 53.34 125.73 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "+5V"
+			(at 53.34 133.35 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 53.34 129.54 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 53.34 129.54 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 53.34 129.54 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "5b0d31e3-5ad5-4fb4-8a16-9c0af868ce8a")
+		)
+		(instances
+			(project "ckt-defect"
+				(path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55"
+					(reference "#PWR039")
 					(unit 1)
 				)
 			)
