@@ -25,48 +25,156 @@ LICENSE:
 #include "io.h"
 #include "axle.h"
 
-QueueHandle_t axle_A1_Queue;
-QueueHandle_t axle_A2_Queue;
-QueueHandle_t axle_B1_Queue;
-QueueHandle_t axle_B2_Queue;
+uint32_t axleCount[NUM_TRACKS];
+unsigned long firstAxleTime[NUM_TRACKS];
+unsigned long currentAxleTime[NUM_TRACKS];
+unsigned long entranceDeltaMicros[NUM_TRACKS];
+unsigned long exitDeltaMicros[NUM_TRACKS];
+
+typedef enum
+{
+	AXLE_IDLE,
+	AXLE_1_SPEED,
+	AXLE_1_COUNT,
+	AXLE_2_SPEED,
+	AXLE_2_COUNT,
+} AxleState;
+
+AxleState axleState[NUM_TRACKS];
+
+/*
+   ISR Notes:
+
+   Capture time first thing to avoid jitter from the state machine.
+
+   Exit time can give weird intermediate results, if the truck wheelbase is
+      shorter than the sensor distance.  But, in the end, it will always
+      give the delta of the last wheel (assuming no backup moves, in which
+      case it's screwed up anyway).
+   
+   The state machines will always end up stuck in either the AXLE_1_COUNT or
+      AXLE_2_COUNT states.  axleReset() should be called to clean up once
+      timeout is detected in the main loop and the information is read.
+*/
 
 void IRAM_ATTR axle_A1_isr(void *arg)
 {
-	BaseType_t xHigherPriorityTaskWoken;
 	unsigned long time = micros();
-	xQueueSendFromISR(axle_A1_Queue, &time, &xHigherPriorityTaskWoken);
-	portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+	switch(axleState[0])
+	{
+		case AXLE_IDLE:
+			axleCount[0]++;
+			firstAxleTime[0] = time;
+			currentAxleTime[0] = time;
+			axleState[0] = AXLE_1_SPEED;
+			break;
+		#pragma GCC diagnostic push
+		#pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
+		case AXLE_1_SPEED:
+		case AXLE_1_COUNT:
+		#pragma GCC diagnostic pop
+			axleCount[0]++;
+			currentAxleTime[0] = time;
+			break;
+		case AXLE_2_SPEED:
+			entranceDeltaMicros[0] = time - firstAxleTime[0];
+			axleState[0] = AXLE_2_COUNT;
+			break;
+		case AXLE_2_COUNT:
+			exitDeltaMicros[0] = time - currentAxleTime[0];
+			break;
+	}
 }
 
 void IRAM_ATTR axle_A2_isr(void *arg)
 {
-	BaseType_t xHigherPriorityTaskWoken;
 	unsigned long time = micros();
-	xQueueSendFromISR(axle_A2_Queue, &time, &xHigherPriorityTaskWoken);
-	portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+	switch(axleState[0])
+	{
+		case AXLE_IDLE:
+			axleCount[0]++;
+			firstAxleTime[0] = time;
+			currentAxleTime[0] = time;
+			axleState[0] = AXLE_2_SPEED;
+			break;
+		#pragma GCC diagnostic push
+		#pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
+		case AXLE_2_SPEED:
+		case AXLE_2_COUNT:
+		#pragma GCC diagnostic pop
+			axleCount[0]++;
+			currentAxleTime[0] = time;
+			break;
+		case AXLE_1_SPEED:
+			entranceDeltaMicros[0] = time - firstAxleTime[0];
+			axleState[0] = AXLE_1_COUNT;
+			break;
+		case AXLE_1_COUNT:
+			exitDeltaMicros[0] = time - currentAxleTime[0];
+			break;
+	}
 }
+
 void IRAM_ATTR axle_B1_isr(void *arg)
 {
-	BaseType_t xHigherPriorityTaskWoken;
 	unsigned long time = micros();
-	xQueueSendFromISR(axle_B1_Queue, &time, &xHigherPriorityTaskWoken);
-	portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+	switch(axleState[1])
+	{
+		case AXLE_IDLE:
+			axleCount[1]++;
+			firstAxleTime[1] = time;
+			currentAxleTime[1] = time;
+			axleState[1] = AXLE_1_SPEED;
+			break;
+		#pragma GCC diagnostic push
+		#pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
+		case AXLE_1_SPEED:
+		case AXLE_1_COUNT:
+		#pragma GCC diagnostic pop
+			axleCount[1]++;
+			currentAxleTime[1] = time;
+			break;
+		case AXLE_2_SPEED:
+			entranceDeltaMicros[1] = time - firstAxleTime[1];
+			axleState[1] = AXLE_2_COUNT;
+			break;
+		case AXLE_2_COUNT:
+			exitDeltaMicros[1] = time - currentAxleTime[1];
+			break;
+	}
 }
+
 void IRAM_ATTR axle_B2_isr(void *arg)
 {
-	BaseType_t xHigherPriorityTaskWoken;
 	unsigned long time = micros();
-	xQueueSendFromISR(axle_B2_Queue, &time, &xHigherPriorityTaskWoken);
-	portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+	switch(axleState[1])
+	{
+		case AXLE_IDLE:
+			axleCount[1]++;
+			firstAxleTime[1] = time;
+			currentAxleTime[1] = time;
+			axleState[1] = AXLE_2_SPEED;
+			break;
+		#pragma GCC diagnostic push
+		#pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
+		case AXLE_2_SPEED:
+		case AXLE_2_COUNT:
+		#pragma GCC diagnostic pop
+			axleCount[1]++;
+			currentAxleTime[1] = time;
+			break;
+		case AXLE_1_SPEED:
+			entranceDeltaMicros[1] = time - firstAxleTime[1];
+			axleState[1] = AXLE_1_COUNT;
+			break;
+		case AXLE_1_COUNT:
+			exitDeltaMicros[1] = time - currentAxleTime[1];
+			break;
+	}
 }
 
 void axleInit()
 {
-	axle_A1_Queue = xQueueCreate(4, sizeof(unsigned long));
-	axle_A2_Queue = xQueueCreate(4, sizeof(unsigned long));
-	axle_B1_Queue = xQueueCreate(4, sizeof(unsigned long));
-	axle_A2_Queue = xQueueCreate(4, sizeof(unsigned long));
-
 	gpio_install_isr_service(0);
 	gpio_isr_handler_add(AXLE_A1, axle_A1_isr, NULL);
 	gpio_isr_handler_add(AXLE_A2, axle_A2_isr, NULL);
@@ -74,48 +182,33 @@ void axleInit()
 	gpio_isr_handler_add(AXLE_B2, axle_B2_isr, NULL);
 }
 
-size_t axleGetNumTimes(gpio_num_t pin)
+uint32_t axleGetCount(uint32_t track)
 {
-	#pragma GCC diagnostic push
-	#pragma GCC diagnostic ignored "-Wswitch"
-	switch(pin)
-	{
-		case AXLE_A1:
-			return uxQueueMessagesWaiting(axle_A1_Queue);
-			break;
-		case AXLE_A2:
-			return uxQueueMessagesWaiting(axle_A2_Queue);
-			break;
-		case AXLE_B1:
-			return uxQueueMessagesWaiting(axle_B1_Queue);
-			break;
-		case AXLE_B2:
-			return uxQueueMessagesWaiting(axle_B2_Queue);
-			break;
-	}
-	#pragma GCC diagnostic pop
-	return 0;
+	return axleCount[track];
 }
 
-void axleGetTime(gpio_num_t pin, unsigned long *time)
+// micros() returns an unsigned long
+// On ESP32, unsigned long = uint32_t so these returns will be atomic
+unsigned long axleGetEntranceDeltaMicros(uint32_t track)
 {
-	// Should only call this when you know something is sitting in the queue, otherwise it will block
-	#pragma GCC diagnostic push
-	#pragma GCC diagnostic ignored "-Wswitch"
-	switch(pin)
-	{
-		case AXLE_A1:
-			xQueueReceive(axle_A1_Queue, time, portMAX_DELAY);
-			break;
-		case AXLE_A2:
-			xQueueReceive(axle_A2_Queue, time, portMAX_DELAY);
-			break;
-		case AXLE_B1:
-			xQueueReceive(axle_B1_Queue, time, portMAX_DELAY);
-			break;
-		case AXLE_B2:
-			xQueueReceive(axle_B2_Queue, time, portMAX_DELAY);
-			break;
-	}
-	#pragma GCC diagnostic pop
+	return entranceDeltaMicros[track];
+}
+
+unsigned long axleGetExitDeltaMicros(uint32_t track)
+{
+	return exitDeltaMicros[track];
+}
+
+unsigned long axleGetLatestAxleTime(uint32_t track)
+{
+	return currentAxleTime[track];
+}
+
+void axleReset(uint32_t track)
+{
+	axleCount[track] = 0;
+	currentAxleTime[track] = 0;
+	entranceDeltaMicros[track] = 0;
+	exitDeltaMicros[track] = 0;
+	axleState[track] = AXLE_IDLE;
 }

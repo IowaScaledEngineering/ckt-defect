@@ -22,5 +22,8 @@ LICENSE:
 #pragma once
 
 void axleInit();
-size_t axleGetNumTimes(gpio_num_t pin);
-void axleGetTime(gpio_num_t pin, unsigned long *time);
+uint32_t axleGetCount(uint32_t track);
+unsigned long axleGetEntranceDeltaMicros(uint32_t track);
+unsigned long axleGetExitDeltaMicros(uint32_t track);
+unsigned long axleGetLatestAxleTime(uint32_t track);
+void axleReset(uint32_t track);

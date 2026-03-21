@@ -655,6 +655,7 @@ clrTestPoint(TP2);
 		}
 
 
+/*
 		if( (4 == axleGetNumTimes(AXLE_A1)) && (4 == axleGetNumTimes(AXLE_A2)) )
 		{
 			// Both queues are full with 4 items each
@@ -673,6 +674,7 @@ clrTestPoint(TP2);
 				Serial.println(time);
 			}
 		}
+*/
 
 /*
 		lcd.setCursor(0, 1);
