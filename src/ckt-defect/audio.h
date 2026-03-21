@@ -34,6 +34,9 @@ void audioSetVolumeUpCoef(uint8_t);
 uint8_t audioGetVolumeUpCoef(void);
 void audioSetVolumeDownCoef(uint8_t);
 uint8_t audioGetVolumeDownCoef(void);
+void audioSetPttDelay(uint32_t milliseconds);
+void audioSetPttEnableCallback(void (*callback)(void));
+void audioSetPttDisableCallback(void (*callback)(void));
 
 void audioMute(void);
 void audioUnmute(void);

@@ -321,6 +321,12 @@ void loop()
 	// Set some defaults
 	audioSetVolumeUpCoef(10);
 	audioSetVolumeDownCoef(8);
+	audioSetPttDelay(0);
+	audioSetPttEnableCallback(enableAuxRelay);
+	audioSetPttDisableCallback(disableAuxRelay);
+
+	// FIXME - just for testing
+	audioSetPttDelay(750);
 
 	// Check for config file and load data from it if present
 	// FIXME

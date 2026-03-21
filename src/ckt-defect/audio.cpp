@@ -35,13 +35,14 @@ LICENSE:
 // Number of I2S DMA buffers
 #define I2S_NBUFFERS    6
 
-i2s_chan_handle_t i2s_tx_handle;
+static i2s_chan_handle_t i2s_tx_handle;
 
-QueueHandle_t wavSoundQueue;
+static QueueHandle_t wavSoundQueue;
 
 typedef enum
 {
 	PLAYER_IDLE,
+	PLAYER_PTT_DELAY,
 	PLAYER_INIT,
 	PLAYER_RECONFIGURE,
 	PLAYER_PLAY,
@@ -50,16 +51,16 @@ typedef enum
 	PLAYER_RESET,
 } PlayerState;
 
-PlayerState playerState;
-bool stopPlayer;
-bool killPlayer = false;
+static PlayerState playerState;
+static bool stopPlayer;
+static bool killPlayer = false;
 
-bool unmute;
-uint8_t audioVolumeStep = VOL_STEP_NOM;
-uint16_t audioVolume = 0;
-uint8_t audioVolumeUpCoef = 0;
-uint8_t audioVolumeDownCoef = 0;
-uint16_t volumeLevels[] = {
+static bool unmute;
+static uint8_t audioVolumeStep = VOL_STEP_NOM;
+static uint16_t audioVolume = 0;
+static uint8_t audioVolumeUpCoef = 0;
+static uint8_t audioVolumeDownCoef = 0;
+static uint16_t volumeLevels[] = {
 		0,      // 0
 		100,
 		200,
@@ -93,9 +94,13 @@ uint16_t volumeLevels[] = {
 		20000,  // 30
 };
 
-uint32_t dmaBufferSize;
+static uint32_t audioPttDelayMillis = 0;
+void (*pttEnable)(void) = NULL;
+void (*pttDisable)(void) = NULL;
 
-TaskHandle_t audioPumpHandle = NULL;
+static uint32_t dmaBufferSize;
+
+static TaskHandle_t audioPumpHandle = NULL;
 
 
 void audioStopPlaying(void)
@@ -150,6 +155,23 @@ void audioUnmute(void)
 {
 	unmute = true;
 }
+
+
+void audioSetPttDelay(uint32_t milliseconds)
+{
+	audioPttDelayMillis = milliseconds;
+}
+
+void audioSetPttEnableCallback(void (*callback)(void))
+{
+	pttEnable = callback;
+}
+
+void audioSetPttDisableCallback(void (*callback)(void))
+{
+	pttDisable = callback;
+}
+
 
 
 bool audioIsMuted(void)
@@ -211,7 +233,8 @@ static void audioPump(void *args)
 	WavSound wavSound;
 	uint32_t oldSampleRate = 0;
 	uint32_t flushCount = 0;
-	unsigned long timeoutTimer;
+	unsigned long timeoutStartTime;
+	unsigned long pttStartTime;
 
 	playerState = PLAYER_RESET;
 
@@ -223,6 +246,18 @@ static void audioPump(void *args)
 				if(!audioQueueEmpty())
 				{
 					// Queue not empty
+					pttStartTime = millis();
+					if(NULL != pttEnable)
+					{
+						pttEnable();
+					}
+					playerState = PLAYER_PTT_DELAY;
+				}
+				break;
+
+			case PLAYER_PTT_DELAY:
+				if((millis() - pttStartTime) > audioPttDelayMillis)
+				{
 					playerState = PLAYER_INIT;
 				}
 				break;
@@ -259,9 +294,9 @@ static void audioPump(void *args)
 				else if(wavSound.wav->available())
 				{
 					// Sound not done, more samples available
-					timeoutTimer = millis();
+					timeoutStartTime = millis();
 					sampleValue = wavSound.wav->getNextSample();
-					if(millis() > timeoutTimer + 150)
+					if((millis() - timeoutStartTime) > 150)
 					{
 						// Getting the next sample took longer than 150ms (5760 bytes @ 44.1kHz = 130ms) so something is wrong (mostly likely the card was removed)
 						// Delay task for 1s to allow main loop to clean up
@@ -315,6 +350,10 @@ clrTestPoint(TP0);
 				break;
 			
 			case PLAYER_RESET:
+				if(NULL != pttDisable)
+				{
+					pttDisable();
+				}
 				gpio_set_level(I2S_SD, 0);             // Disable amplifier
 				i2s_channel_disable(i2s_tx_handle);  // Disable I2S
 				oldSampleRate = 0;
