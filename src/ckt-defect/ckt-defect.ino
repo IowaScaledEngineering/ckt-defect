@@ -42,6 +42,7 @@ LICENSE:
 #include "messages.h"
 #include "parser.h"
 #include "vocab.h"
+#include "sfx.h"
 #include "axle.h"
 
 // 3 sec watchdog 
@@ -330,6 +331,10 @@ void loop()
 
 	// Check for config file and load data from it if present
 	// FIXME
+
+
+	// Load sound effects
+	loadSfx();
 
 
 	// If no config file, set default messages

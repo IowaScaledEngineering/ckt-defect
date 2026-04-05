@@ -27,6 +27,7 @@ LICENSE:
 #include "sound.h"
 #include "audio.h"
 #include "vocab.h"
+#include "sfx.h"
 #include "parser.h"
 
 QueueHandle_t parserQueue;
@@ -115,6 +116,11 @@ clrTestPoint(TP1);
 						}
 						else if(NULL != (wavSound.wav = vocabGetWord(token)))
 						{
+							audioQueuePush(&wavSound);
+						}
+						else
+						{
+							wavSound.wav = sfxGetSound("horn");
 							audioQueuePush(&wavSound);
 						}
 
