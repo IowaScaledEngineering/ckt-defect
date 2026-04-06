@@ -81,9 +81,10 @@ class ToneSound : public Sound
 {
 	int16_t sampleValue;
 	bool invert;
+	uint8_t attenuation;
 
 	public:
-		ToneSound(size_t samples, uint16_t sr);
+		ToneSound(size_t samples, uint16_t sr, uint8_t attenuation);
 		~ToneSound();
 		void open(void);
 		int16_t getNextSample(void);

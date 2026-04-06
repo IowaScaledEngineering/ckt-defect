@@ -109,9 +109,57 @@ setTestPoint(TP1);
 						}
 clrTestPoint(TP1);
 
-						if("#tone" == token)
+						if(token.starts_with("#tone"))
 						{
-							wavSound.wav = new ToneSound(16000, 16000);   // 1sec @ 16kHz
+							size_t pos = token.find('=');
+							uint32_t decisecs = 10;   // default: 1 sec
+							uint32_t attenuation = 1; // default: 1/2
+							if(pos != std::string::npos)
+							{
+								std::string params = token.substr(pos + 1);
+								std::string str_decisecs = "";
+								std::string str_attenuation = "";
+								pos = params.find(',');
+								if(pos != std::string::npos)
+								{
+									str_decisecs = params.substr(0, pos);
+									str_attenuation = params.substr(pos+1);
+								}
+								else
+								{
+									// No comma, so extract the entire params as decisecs
+									str_decisecs = params;
+								}
+
+								// Convert decisecs
+								try
+								{
+									decisecs = std::stoi(str_decisecs);
+								}
+								catch (const std::invalid_argument& e)
+								{
+									// Do nothing, use defaults
+								}
+								catch (const std::out_of_range& e)
+								{
+									// Do nothing, use defaults
+								}
+
+								// Convert attenuation
+								try
+								{
+									attenuation = std::stoi(str_attenuation);
+								}
+								catch (const std::invalid_argument& e)
+								{
+									// Do nothing, use defaults
+								}
+								catch (const std::out_of_range& e)
+								{
+									// Do nothing, use defaults
+								}
+							}
+							wavSound.wav = new ToneSound(1600*decisecs, 16000, attenuation);
 							audioQueuePush(&wavSound);
 						}
 						else if(NULL != (wavSound.wav = vocabGetWord(token)))

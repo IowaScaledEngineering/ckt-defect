@@ -175,11 +175,12 @@ void MemSound::close(void)
 
 
 
-ToneSound::ToneSound(size_t samples, uint16_t sr)
+ToneSound::ToneSound(size_t samples, uint16_t sr, uint8_t a)
 {
 	soundName = "tone";
 	dataSize = samples * 2;
 	sampleRate = sr;
+	attenuation = a;
 }
 ToneSound::~ToneSound()
 {
@@ -194,7 +195,7 @@ int16_t ToneSound::getNextSample(void)
 {
 	if(available() >= 2)
 	{
-		sampleValue = (invert ? -1 : 1) * sineWave[(byteCount/2) % 8] / 2;
+		sampleValue = ((invert ? -1 : 1) * sineWave[(byteCount/2) % 8]) >> attenuation;
 		if(7 == ((byteCount/2) % 8))
 			invert = !invert;
 		byteCount += 2;
