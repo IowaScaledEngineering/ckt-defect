@@ -211,3 +211,36 @@ void ToneSound::close(void)
 	delete this;  // Danger, danger, danger!
 	return;
 }
+
+
+
+
+
+
+SilenceSound::SilenceSound(size_t samples, uint16_t sr)
+{
+	soundName = "tone";
+	dataSize = samples * 2;
+	sampleRate = sr;
+}
+SilenceSound::~SilenceSound()
+{
+	// Do nothing
+}
+void SilenceSound::open(void)
+{
+	byteCount = 0;
+}
+int16_t SilenceSound::getNextSample(void)
+{
+	if(available() >= 2)
+	{
+		byteCount += 2;
+	}
+	return 0;
+}
+void SilenceSound::close(void)
+{
+	delete this;  // Danger, danger, danger!
+	return;
+}

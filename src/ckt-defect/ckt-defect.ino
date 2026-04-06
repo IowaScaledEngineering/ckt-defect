@@ -341,8 +341,9 @@ void loop()
 	for(uint32_t i=0; i<NUM_TRACKS; i++)
 	{
 		// Entrance Message
-//		trackMessages[i].entranceMsg = "Equipment Defect Detector";
-		trackMessages[i].entranceMsg = "1 #tone 2 #tone= 3 #tone=5 4 #tone=20 5 #tone=10,0 #tone=10,1 #tone=10,2 #tone=10,3";
+		trackMessages[i].entranceMsg = "Equipment Defect Detector";
+//		trackMessages[i].entranceMsg = "1 #tone 2 #tone= 3 #tone=5 4 #tone=20 5 #tone=10,0 #tone=10,1 #tone=10,2 #tone=10,3";   // Tone Test
+//		trackMessages[i].entranceMsg = "#tone=1 #pause #tone=1 #pause= #tone=1 #pause=10 #tone=1 #pause=20 #tone";   // Silence Test
 		if(cfg.milepostEnable)
 		{
 			trackMessages[i].entranceMsg += " milepost #milepost";
