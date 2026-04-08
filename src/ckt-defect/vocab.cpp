@@ -23,7 +23,7 @@ LICENSE:
 
 std::vector<Sound *> vocab;
 
-void vocabReset(void)
+void vocabDelete(void)
 {
 	for(uint32_t i=0; i<vocab.size(); i++)
 	{

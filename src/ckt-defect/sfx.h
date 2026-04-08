@@ -23,7 +23,7 @@ LICENSE:
 
 #include "sound.h"
 
-void sfxReset(void);
+void sfxDelete(void);
 size_t sfxGetSize(void);
 Sound* sfxGetSound(const std::string& name);
 

@@ -23,7 +23,7 @@ LICENSE:
 
 std::vector<Sound *> sfx;
 
-void sfxReset(void)
+void sfxDelete(void)
 {
 	for(uint32_t i=0; i<sfx.size(); i++)
 	{

@@ -283,7 +283,7 @@ void loop()
 	File rootDir;
 	
 	DetectorConfiguration cfg;
-	MessageBundle trackMessages[2];  // Declare two bundles of messages, one for each track
+	MessageBundle trackMessages[NUM_TRACKS];  // Declare two bundles of messages, one for each track
 	DataBundle data;
 
 	SerLCD lcd;
@@ -351,9 +351,7 @@ void loop()
 		if(cfg.trackNameEnable)
 		{
 			trackMessages[i].entranceMsg += " #track";
-
 		}
-
 		// Defect Messages
 		std::string tmpMessage;
 		if(cfg.axleEnable)
@@ -742,7 +740,8 @@ clrTestPoint(TP2);
 			parserTerminate();
 			audioTerminate();
 
-			vocabReset();
+			vocabDelete();
+			sfxDelete();
 
 			SD.end();
 

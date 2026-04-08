@@ -212,3 +212,12 @@ void axleReset(uint32_t track)
 	exitDeltaMicros[track] = 0;
 	axleState[track] = AXLE_IDLE;
 }
+
+void axleTerminate(void)
+{
+	gpio_isr_handler_remove(AXLE_A1);
+	gpio_isr_handler_remove(AXLE_A2);
+	gpio_isr_handler_remove(AXLE_B1);
+	gpio_isr_handler_remove(AXLE_B2);
+	gpio_uninstall_isr_service();
+}
