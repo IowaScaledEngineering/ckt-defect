@@ -289,6 +289,10 @@ void loop()
 	SerLCD lcd;
 	lcd.begin(Wire);
 	lcd.clear();
+	
+	bool sdCardPresent = false;
+	bool configFilePresent = false;
+	bool externalVocabPresent = false;
 
 	uint8_t state = 255;  // Start in default
 	uint8_t returnState = 0;
@@ -329,135 +333,29 @@ void loop()
 	// FIXME - just for testing
 	audioSetPttDelay(750);
 
-	// Check for config file and load data from it if present
-	// FIXME
-
 
 	// Load sound effects
 	loadSfx();
 
 
-	// If no config file, set default messages
-	for(uint32_t i=0; i<NUM_TRACKS; i++)
-	{
-		// Entrance Message
-		trackMessages[i].entranceMsg = "Equipment Defect Detector";
-//		trackMessages[i].entranceMsg = "1 #tone 2 #tone= 3 #tone=5 4 #tone=20 5 #tone=10,0 #tone=10,1 #tone=10,2 #tone=10,3";   // Tone Test
-//		trackMessages[i].entranceMsg = "#tone=1 #pause #tone=1 #pause= #tone=1 #pause=10 #tone=1 #pause=20 #tone";   // Silence Test
-		if(cfg.milepostEnable)
-		{
-			trackMessages[i].entranceMsg += " milepost #milepost";
-		}
-		if(cfg.trackNameEnable)
-		{
-			trackMessages[i].entranceMsg += " #track";
-		}
-		// Defect Messages
-		std::string tmpMessage;
-		if(cfg.axleEnable)
-		{
-			tmpMessage = " axle #axle";
-		}
-		trackMessages[i].defects.emplace_back("#tone hot journal" + tmpMessage, "hot journal" + tmpMessage, "Hot Journal", 500);
-		trackMessages[i].defects.emplace_back("#tone dragging equipment near" + tmpMessage, "dragging equipment near" + tmpMessage, "Dragging Equipment", 100);
-		trackMessages[i].defects.emplace_back("#tone high impact wheel detected" + tmpMessage, "high impact wheel detected" + tmpMessage, "High Impact Wheel", 200);
-
-		// Create Footer
-		tmpMessage.clear();
-		if(cfg.axleEnable)
-		{
-			tmpMessage += " total axles #axles";
-		}
-
-		if(cfg.speedEnable)
-		{
-			tmpMessage += " train speed #speed";
-		}
-
-		if(cfg.temperatureEnable)
-		{
-			tmpMessage += " temperature #temp degrees";
-		}
-
-		// Clean Exit Message
-		trackMessages[i].exitCleanMsg = trackMessages[i].entranceMsg + " no defects repeat no defects" + tmpMessage;
-
-		// Defect Exit Message
-		trackMessages[i].exitDefectMsg = trackMessages[i].entranceMsg + " you have a defect #defectlist" + tmpMessage + " detector out";
-
-		// Detector Integrity Message
-		trackMessages[i].integrityMsg = trackMessages[i].entranceMsg + tmpMessage + " integrity failure";
-		trackMessages[i].integrityProbability = 50;
-		
-		// Too Slow Message
-		trackMessages[i].tooSlowMsg = trackMessages[i].entranceMsg + " train 2 slow";
-		
-		// Detector Blocked Message
-		trackMessages[i].detectorBlockedMsg = trackMessages[i].entranceMsg + " detector blocked";
-	}
-
-
-	// If no SD vocab, load the internal ones
-	loadInternalVocab();
-
-
-/*
-	// Sanitize message strings
-	for(uint32_t i=0; i<NUM_TRACKS; i++)
-	{
-		toLowercase(trackMessages[i].entranceMsg);
-		for(uint32_t j=0; j<trackMessages[i].defects.size(); j++)
-		{
-			toLowercase(trackMessages[i].defects[j].alertMsg);
-			toLowercase(trackMessages[i].defects[j].detailMsg);
-			toLowercase(trackMessages[i].defects[j].summaryMsg);
-		}
-		toLowercase(trackMessages[i].exitCleanMsg);
-		toLowercase(trackMessages[i].exitDefectMsg);
-		toLowercase(trackMessages[i].integrityMsg);
-		toLowercase(trackMessages[i].tooSlowMsg);
-		toLowercase(trackMessages[i].detectorBlockedMsg);
-	}
-*/
-
-	// Sort defect messages by probability
-	for(uint32_t i=0; i<NUM_TRACKS; i++)
-	{
-		sort(trackMessages[i].defects.begin(), trackMessages[i].defects.end(), [](DefectMessage a, DefectMessage b) {
-			return a.probability < b.probability; // returns true if 'a' should come before 'b'
-			});
-	}
-
-	// Print configuration values
-	printConfiguration(&cfg);
-
-	for(uint32_t i=0; i<NUM_TRACKS; i++)
-	{
-		Serial.print('\n');
-
-		Serial.print("Track ");
-		Serial.println(i+1);
-
-		printMessages(&trackMessages[i]);
-	}
-	Serial.print('\n');
-	
-
-
-
-
-
-
+	// Initialize SPI and SD card
 	SPIClass vspi = SPIClass(FSPI);
 	vspi.begin(SDCLK, SDMISO, SDMOSI, SDCS);
-
-	// Check SD card
 	if(SD.begin(SDCS, vspi))
+	{
+		sdCardPresent = true;
+	}
+
+	
+	// Check for config file and load data from it if present
+	// FIXME
+	if(sdCardPresent)
 	{
 		// Check for and read config file
 		File f = SD.open("/config.txt");
 		if (f)
 		{
+			configFilePresent = true;
 			while(f.available())
 			{
 				char keyStr[128];
@@ -491,6 +389,114 @@ void loop()
 
 		esp_task_wdt_reset();
 	}
+
+
+	// If no config file, set defaults
+	if(!configFilePresent)
+	{
+		for(uint32_t i=0; i<NUM_TRACKS; i++)
+		{
+			// Entrance Message
+			trackMessages[i].entranceMsg = "Equipment Defect Detector";
+	//		trackMessages[i].entranceMsg = "1 #tone 2 #tone= 3 #tone=5 4 #tone=20 5 #tone=10,0 #tone=10,1 #tone=10,2 #tone=10,3";   // Tone Test
+	//		trackMessages[i].entranceMsg = "#tone=1 #pause #tone=1 #pause= #tone=1 #pause=10 #tone=1 #pause=20 #tone";   // Silence Test
+			if(cfg.milepostEnable)
+			{
+				trackMessages[i].entranceMsg += " milepost #milepost";
+			}
+			if(cfg.trackNameEnable)
+			{
+				trackMessages[i].entranceMsg += " #track";
+			}
+			// Defect Messages
+			std::string tmpMessage;
+			if(cfg.axleEnable)
+			{
+				tmpMessage = " axle #axle";
+			}
+			trackMessages[i].defects.emplace_back("#tone hot journal" + tmpMessage, "hot journal" + tmpMessage, "Hot Journal", 500);
+			trackMessages[i].defects.emplace_back("#tone dragging equipment near" + tmpMessage, "dragging equipment near" + tmpMessage, "Dragging Equipment", 100);
+			trackMessages[i].defects.emplace_back("#tone high impact wheel detected" + tmpMessage, "high impact wheel detected" + tmpMessage, "High Impact Wheel", 200);
+
+			// Create Footer
+			tmpMessage.clear();
+			if(cfg.axleEnable)
+			{
+				tmpMessage += " total axles #axles";
+			}
+
+			if(cfg.speedEnable)
+			{
+				tmpMessage += " train speed #speed";
+			}
+
+			if(cfg.temperatureEnable)
+			{
+				tmpMessage += " temperature #temp degrees";
+			}
+
+			// Clean Exit Message
+			trackMessages[i].exitCleanMsg = trackMessages[i].entranceMsg + " no defects repeat no defects" + tmpMessage;
+
+			// Defect Exit Message
+			trackMessages[i].exitDefectMsg = trackMessages[i].entranceMsg + " you have a defect #defectlist" + tmpMessage + " detector out";
+
+			// Detector Integrity Message
+			trackMessages[i].integrityMsg = trackMessages[i].entranceMsg + tmpMessage + " integrity failure";
+			trackMessages[i].integrityProbability = 50;
+			
+			// Too Slow Message
+			trackMessages[i].tooSlowMsg = trackMessages[i].entranceMsg + " train 2 slow";
+			
+			// Detector Blocked Message
+			trackMessages[i].detectorBlockedMsg = trackMessages[i].entranceMsg + " detector blocked";
+		}
+	}
+
+
+	// Check for external vocab
+	// FIXME
+	if(sdCardPresent)
+	{
+	}
+	
+	
+	// If no SD vocab, load the internal ones
+	if(!externalVocabPresent)
+	{
+		loadInternalVocab();
+	}
+
+
+	// Sort defect messages by probability
+	for(uint32_t i=0; i<NUM_TRACKS; i++)
+	{
+		sort(trackMessages[i].defects.begin(), trackMessages[i].defects.end(), [](DefectMessage a, DefectMessage b) {
+			return a.probability < b.probability; // returns true if 'a' should come before 'b'
+			});
+	}
+
+	// Print configuration values
+	printConfiguration(&cfg);
+
+	for(uint32_t i=0; i<NUM_TRACKS; i++)
+	{
+		Serial.print('\n');
+
+		Serial.print("Track ");
+		Serial.println(i+1);
+
+		printMessages(&trackMessages[i]);
+	}
+	Serial.print('\n');
+	
+
+
+
+
+
+
+
 
 
 
