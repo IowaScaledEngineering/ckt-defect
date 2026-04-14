@@ -299,7 +299,8 @@ void loop()
 	ParserObject obj;
 	std::string* msg;
 	std::string* msgPtr;
-	uint32_t startTime;
+	unsigned long startTime;
+	unsigned long axleTime = millis();
 
 	bool sdCardInserted = false;
 	unsigned long sdDetectTime = 0;
@@ -506,6 +507,8 @@ void loop()
 	audioInit();
 	parserInit();
 	axleInit();
+	axleReset(0);
+	axleReset(1);
 
 	while(1)
 	{
@@ -666,26 +669,40 @@ clrTestPoint(TP2);
 		}
 
 
-/*
-		if( (4 == axleGetNumTimes(AXLE_A1)) && (4 == axleGetNumTimes(AXLE_A2)) )
+		if(millis() - axleTime >= 1000)
 		{
-			// Both queues are full with 4 items each
-			unsigned long time;
-			
-			Serial.println("Axle A1 Times:");
-			for(uint32_t i=0; i<4; i++)
-			{
-				axleGetTime(AXLE_A1, &time);
-				Serial.println(time);
-			}
-			Serial.println("Axle A2 Times:");
-			for(uint32_t i=0; i<4; i++)
-			{
-				axleGetTime(AXLE_A2, &time);
-				Serial.println(time);
-			}
+			// 87 * 1000000 * 3600 / 12 / 5280 = 4,943,182
+			axleTime = millis();
+			Serial.print("Axle Count A: ");
+			Serial.println(axleGetCount(0));
+			Serial.print("Entrance Delta A: ");
+			Serial.println(axleGetEntranceDeltaMicros(0));
+			Serial.print("Exit Delta A: ");
+			Serial.println(axleGetExitDeltaMicros(0));
+			Serial.print("Entrance Speed A: ");
+			if(axleGetEntranceDeltaMicros(0) > 0)
+				Serial.print((49431820)/(axleGetEntranceDeltaMicros(0))/10.0,1);
+			Serial.print('\n');
+			Serial.print("Exit Speed A: ");
+			if(axleGetExitDeltaMicros(0) > 0)
+				Serial.print((49431820)/(axleGetExitDeltaMicros(0))/10.0,1);
+			Serial.print('\n');
+			Serial.print("Axle Count B: ");
+			Serial.println(axleGetCount(1));
+			Serial.print("Entrance Delta B: ");
+			Serial.println(axleGetEntranceDeltaMicros(1));
+			Serial.print("Exit Delta B: ");
+			Serial.println(axleGetExitDeltaMicros(1));
+			Serial.print("Entrance Speed B: ");
+			if(axleGetEntranceDeltaMicros(1) > 0)
+				Serial.print((49431820)/(axleGetEntranceDeltaMicros(1))/10.0,1);
+			Serial.print('\n');
+			Serial.print("Exit Speed B: ");
+			if(axleGetExitDeltaMicros(1) > 0)
+				Serial.print((49431820)/(axleGetExitDeltaMicros(1))/10.0,1);
+			Serial.print('\n');
+			Serial.println("---");
 		}
-*/
 
 /*
 		lcd.setCursor(0, 1);
@@ -703,6 +720,7 @@ clrTestPoint(TP2);
 		else
 			lcd.print("      ");
 */
+
 		if(sdCardInserted)
 		{
 			if(1 == gpio_get_level(SDDET))
@@ -745,6 +763,7 @@ clrTestPoint(TP2);
 			//  Terminate the parser first, then the audio, due to queue dependencies
 			parserTerminate();
 			audioTerminate();
+			axleTerminate();
 
 			vocabDelete();
 			sfxDelete();

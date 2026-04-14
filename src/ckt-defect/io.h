@@ -34,16 +34,16 @@ LICENSE:
 #define SDCS         39
 #define SDDET        GPIO_NUM_35
 
-#define AXLE_A1      GPIO_NUM_9
+#define AXLE_A1      GPIO_NUM_10
 #define AXLE_A1_EN   GPIO_NUM_3
 #define AXLE_A2      GPIO_NUM_11
-#define AXLE_A2_EN   GPIO_NUM_10
-#define AXLE_B1      GPIO_NUM_14
-#define AXLE_B1_EN   GPIO_NUM_13
-#define AXLE_B2      GPIO_NUM_33
-#define AXLE_B2_EN   GPIO_NUM_21
+#define AXLE_A2_EN   GPIO_NUM_9
+#define AXLE_B1      GPIO_NUM_13
+#define AXLE_B1_EN   GPIO_NUM_33
+#define AXLE_B2      GPIO_NUM_14
+#define AXLE_B2_EN   GPIO_NUM_34
 #define TRKA         GPIO_NUM_12
-#define TRKB         GPIO_NUM_34
+#define TRKB         GPIO_NUM_21
 
 #define AUX          GPIO_NUM_1
 
