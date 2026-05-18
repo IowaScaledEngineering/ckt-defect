@@ -5,8 +5,16 @@ DisplayLcd::DisplayLcd(TwoWire &wirePort, uint8_t i2c_addr)
 	  _i2cAddr(i2c_addr),
 	  _displayControl(LCD_DISPLAYON | LCD_CURSOROFF | LCD_BLINKOFF),
 	  _displayMode(LCD_ENTRYLEFT | LCD_ENTRYSHIFTDECREMENT),
-	  _lastButtonState(0) // Initialize all buttons as unpressed
+	  _lastButtonState(0), // Initialize all buttons as unpressed
+	  _cursorX(0),
+	  _cursorY(0)
 {
+	// Initialize cache with spaces
+	for (int r = 0; r < LCD_ROWS; ++r) {
+		for (int c = 0; c < LCD_COLS; ++c) {
+			_cache[r][c] = ' ';
+		}
+	}
 	init();
 }
 
@@ -61,38 +69,101 @@ void DisplayLcd::specialCommand(uint8_t cmd)
 
 void DisplayLcd::clear(void)
 {
+	// Force immediate physical clear
 	command(CLEAR_COMMAND);
 	delay(5); // Extra delay after a screen clear
+
+	// Clear local cache and reset position tracking
+	for (int r = 0; r < LCD_ROWS; ++r) {
+		for (int c = 0; c < LCD_COLS; ++c) {
+			_cache[r][c] = ' ';
+		}
+	}
+	_cursorX = 0;
+	_cursorY = 0;
 }
 
 void DisplayLcd::gotoxy(int x, int y)
 {
-	int row_offsets[] = {0x00, 0x40, 0x14, 0x54};
-
-	// Keep variables within LCD matrix bounds (Max 4 rows: 0 to 3)
+	// Keep variables within LCD matrix bounds
+	if (x < 0) x = 0;
+	if (x >= LCD_COLS) x = LCD_COLS - 1;
 	if (y < 0) y = 0;
-	if (y > 3) y = 3;
+	if (y >= LCD_ROWS) y = LCD_ROWS - 1;
 
-	specialCommand(LCD_SETDDRAMADDR | (x + row_offsets[y]));
+	_cursorX = x;
+	_cursorY = y;
+
+	int row_offsets[] = {0x00, 0x40, 0x14, 0x54};
+	specialCommand(LCD_SETDDRAMADDR | (_cursorX + row_offsets[_cursorY]));
+}
+
+void DisplayLcd::advanceCursor(void)
+{
+	_cursorX++;
+	if (_cursorX >= LCD_COLS) {
+		_cursorX = 0;
+		_cursorY++;
+		if (_cursorY >= LCD_ROWS) {
+			_cursorY = 0; // Wrap around to the top left
+		}
+	}
 }
 
 void DisplayLcd::print(char c)
 {
-	beginTransmission();
-	transmit(static_cast<uint8_t>(c));
-	endTransmission();
+	// Check if the hardware character matches what we want to print
+	if (_cache[_cursorY][_cursorX] != c) {
+		_cache[_cursorY][_cursorX] = c;
+		
+		beginTransmission();
+		transmit(static_cast<uint8_t>(c));
+		endTransmission();
+	}
+	
+	// Advance position state regardless of whether we physical wrote it
+	advanceCursor();
 }
 
 void DisplayLcd::print(const char *str)
 {
 	if (str == nullptr) return;
 
-	beginTransmission();
-	while (*str)
-	{
-		transmit(static_cast<uint8_t>(*str++));
+	bool inTransaction = false;
+
+	while (*str) {
+		char c = *str;
+
+		if (_cache[_cursorY][_cursorX] != c) {
+			// If cache mismatch occurs and we aren't transmitting, sync hardware cursor and start
+			if (!inTransaction) {
+				// Relocate hardware to match current internal cache coordinates
+				int row_offsets[] = {0x00, 0x40, 0x14, 0x54};
+				specialCommand(LCD_SETDDRAMADDR | (_cursorX + row_offsets[_cursorY]));
+				
+				beginTransmission();
+				inTransaction = true;
+			}
+
+			_cache[_cursorY][_cursorX] = c;
+			transmit(static_cast<uint8_t>(c));
+			advanceCursor();
+		} 
+		else {
+			// Cache matches. If we are currently transmitting a mismatch block, close it out.
+			if (inTransaction) {
+				endTransmission();
+				inTransaction = false;
+			}
+			advanceCursor();
+		}
+		str++;
 	}
-	endTransmission();
+
+	// Close final open transaction if it finished on a mismatch string chunk
+	if (inTransaction) {
+		endTransmission();
+	}
 }
 
 void DisplayLcd::print(const std::string &str)

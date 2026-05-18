@@ -21,6 +21,10 @@
 #define LCD_ENTRYLEFT           0x02
 #define LCD_ENTRYSHIFTDECREMENT 0x00
 
+// LCD Matrix Dimensions
+#define LCD_COLS            20
+#define LCD_ROWS            4
+
 class DisplayLcd : public Display
 {
 	public:
@@ -48,6 +52,11 @@ class DisplayLcd : public Display
 		DisplayEventQueue<DisplayEvent, 10> eventQueue;
 		uint8_t _lastButtonState;
 
+		// Internal Cache and Cursor tracking
+		char _cache[LCD_ROWS][LCD_COLS];
+		int _cursorX;
+		int _cursorY;
+
 		// Internal I2C utility methods
 		void init(void);
 		void beginTransmission(void);
@@ -55,4 +64,7 @@ class DisplayLcd : public Display
 		void endTransmission(void);
 		void command(uint8_t cmd);
 		void specialCommand(uint8_t cmd);
+		
+		// Helper to automatically advance cursor bounds
+		void advanceCursor(void);
 };
