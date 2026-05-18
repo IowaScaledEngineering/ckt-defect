@@ -585,6 +585,7 @@ setTestPoint(TP2);
 			audioProcessVolume();
 			ioProcessInputs();
 			timerTick = false;
+			lcd->readKeys();
 			menuManager.process();
 clrTestPoint(TP2);
 		}

@@ -29,6 +29,8 @@ class Menu
 		static void setDisplay(Display *d) { disp = d; }
 		virtual MenuEvent update() = 0;
 
+		virtual int getSelectedIndex() const { return 0; }
+
 		void hide() { hidden = true; }
 		void unhide() { hidden = false; }
 		bool isVisible() const { return !hidden; }

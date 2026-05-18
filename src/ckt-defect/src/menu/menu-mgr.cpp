@@ -8,8 +8,7 @@ void MenuManager::process()
 	MenuEvent ev = cur->update();
 	if(ev == MenuEvent::FORWARD)
 	{
-		auto sel = std::dynamic_pointer_cast<MenuListSelector>(cur);
-		if(sel)
+		if(!cur->getChildren().empty())
 		{
 			// Get visible children only
 			std::vector<std::shared_ptr<Menu>> visible;
@@ -19,20 +18,14 @@ void MenuManager::process()
 
 			if(!visible.empty())
 			{
-				cur = visible[sel->getSelectedIndex()];
-				disp->clear();
-			}
-		}
-		else if(!cur->getChildren().empty())
-		{
-			// Handle non-selector types (like Home) - find first visible child
-			for(auto &c : cur->getChildren())
-			{
-				if(c->isVisible())
+				// Safely get index polymorphically. 
+				// MenuListSelector returns its tracked selection; other menus default to 0.
+				int index = cur->getSelectedIndex();
+				
+				if(index >= 0 && index < static_cast<int>(visible.size()))
 				{
-					cur = c;
+					cur = visible[index];
 					disp->clear();
-					break;
 				}
 			}
 		}
