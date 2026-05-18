@@ -83,6 +83,7 @@ void DisplayLcd::clear(void)
 	_cursorY = 0;
 }
 
+// Only updates the internal cache cursor positions
 void DisplayLcd::gotoxy(int x, int y)
 {
 	// Keep variables within LCD matrix bounds
@@ -93,9 +94,18 @@ void DisplayLcd::gotoxy(int x, int y)
 
 	_cursorX = x;
 	_cursorY = y;
+}
+
+// Only sends the command to the physical LCD screen
+void DisplayLcd::gotoxySendCmd(int x, int y)
+{
+	if (x < 0) x = 0;
+	if (x >= LCD_COLS) x = LCD_COLS - 1;
+	if (y < 0) y = 0;
+	if (y >= LCD_ROWS) y = LCD_ROWS - 1;
 
 	int row_offsets[] = {0x00, 0x40, 0x14, 0x54};
-	specialCommand(LCD_SETDDRAMADDR | (_cursorX + row_offsets[_cursorY]));
+	specialCommand(LCD_SETDDRAMADDR | (x + row_offsets[y]));
 }
 
 void DisplayLcd::advanceCursor(void)
@@ -115,6 +125,9 @@ void DisplayLcd::print(char c)
 	// Check if the hardware character matches what we want to print
 	if (_cache[_cursorY][_cursorX] != c) {
 		_cache[_cursorY][_cursorX] = c;
+		
+		// Force physical hardware to align with current cache cursor tracking before writing
+		gotoxySendCmd(_cursorX, _cursorY);
 		
 		beginTransmission();
 		transmit(static_cast<uint8_t>(c));
@@ -137,10 +150,8 @@ void DisplayLcd::print(const char *str)
 		if (_cache[_cursorY][_cursorX] != c) {
 			// If cache mismatch occurs and we aren't transmitting, sync hardware cursor and start
 			if (!inTransaction) {
-				// Relocate hardware to match current internal cache coordinates
-				int row_offsets[] = {0x00, 0x40, 0x14, 0x54};
-				specialCommand(LCD_SETDDRAMADDR | (_cursorX + row_offsets[_cursorY]));
-				
+				// Hardware relocation
+				gotoxySendCmd(_cursorX, _cursorY);
 				beginTransmission();
 				inTransaction = true;
 			}

@@ -65,6 +65,8 @@ class DisplayLcd : public Display
 		void command(uint8_t cmd);
 		void specialCommand(uint8_t cmd);
 		
+		// Hardware positioning helper
+		void gotoxySendCmd(int x, int y);
 		// Helper to automatically advance cursor bounds
 		void advanceCursor(void);
 };
