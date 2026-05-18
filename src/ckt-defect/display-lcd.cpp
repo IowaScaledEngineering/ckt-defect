@@ -148,7 +148,7 @@ void DisplayLcd::print(const char *str)
 		char c = *str;
 
 		if (_cache[_cursorY][_cursorX] != c) {
-			// If cache mismatch occurs and we aren't transmitting, sync hardware cursor and start
+			// Found a mismatch! If we aren't transmitting yet, position the hardware and start
 			if (!inTransaction) {
 				// Hardware relocation
 				gotoxySendCmd(_cursorX, _cursorY);
@@ -156,22 +156,25 @@ void DisplayLcd::print(const char *str)
 				inTransaction = true;
 			}
 
+			// Update the cache matrix and write the character into the active I2C packet
 			_cache[_cursorY][_cursorX] = c;
 			transmit(static_cast<uint8_t>(c));
-			advanceCursor();
 		} 
 		else {
-			// Cache matches. If we are currently transmitting a mismatch block, close it out.
+			// This character already matches the cache. 
+			// If we were actively streaming a mismatched block, send it over I2C now before we skip ahead.
 			if (inTransaction) {
 				endTransmission();
 				inTransaction = false;
 			}
-			advanceCursor();
 		}
+		
+		// Internal cursor state must advance in tandem with the processed string element
+		advanceCursor();
 		str++;
 	}
 
-	// Close final open transaction if it finished on a mismatch string chunk
+	// Clean up any remaining buffered mismatch data at the end of the string loop
 	if (inTransaction) {
 		endTransmission();
 	}
