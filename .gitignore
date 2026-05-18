@@ -6,3 +6,5 @@ run.sh
 # Kicad stuff
 fp-info-cache
 kicad/*/*-backups
+
+src/menu-test/test
