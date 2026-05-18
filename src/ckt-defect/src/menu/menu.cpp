@@ -64,10 +64,18 @@ MenuEvent MenuListSelector::update()
 		{
 			disp->print(selector == menuIdx ? '>' : ' ');
 			disp->gotoxy(2, i);
-			// Clear row to prevent ghost text from longer previous names
-			disp->print("                  ");
-			disp->gotoxy(2, i);
-			disp->print(visibleChildren[menuIdx]->getName());
+			
+			// Smart clear: print name, then explicitly blank only the remaining slots
+			std::string name = visibleChildren[menuIdx]->getName();
+			disp->print(name);
+			
+			// Available space for the item text is 18 characters (20 total columns - 2 used by prefix cursor)
+			int remaining = 18 - (int)name.length();
+			if (remaining > 0)
+			{
+				std::string remainderClear(remaining, ' ');
+				disp->print(remainderClear);
+			}
 		}
 		else
 		{
@@ -369,10 +377,18 @@ MenuEvent MenuOptionSelector::update()
 		{
 			disp->print(currentVal == optIdx ? "[*] " : "[ ] ");
 			disp->gotoxy(4, i + 1);
-			// Clear row to prevent ghost text from longer previous names
-			disp->print("                ");
-			disp->gotoxy(4, i + 1);
-			disp->print(options[optIdx]);
+			
+			// Smart clear: print selection option string, then pad only remaining space
+			std::string optionText = options[optIdx];
+			disp->print(optionText);
+			
+			// Available space for the option string is 16 characters (20 columns total - 4 used by prefix marker)
+			int remaining = 16 - (int)optionText.length();
+			if (remaining > 0)
+			{
+				std::string remainderClear(remaining, ' ');
+				disp->print(remainderClear);
+			}
 		}
 		else
 		{
