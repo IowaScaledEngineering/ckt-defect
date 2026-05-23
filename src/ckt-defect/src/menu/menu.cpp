@@ -474,11 +474,6 @@ MenuEvent MenuBrightness::update()
 	uint8_t fullCharsNeeded = currentLevel;
 	uint8_t emptyCharsNeeded = 15 - fullCharsNeeded;
 
-	disp->gotoxy(0,2);
-	disp->print('0' + ((currentLevel/100)%10));
-	disp->print('0' + ((currentLevel/10)%10));
-	disp->print('0' + (currentLevel%10));
-
 	// Render the Bar Graph on Line 1 (Second row)
 	disp->gotoxy(1, 1);
 	disp->print("["); // Opening Bracket
