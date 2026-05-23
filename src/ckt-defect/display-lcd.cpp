@@ -88,6 +88,38 @@ void DisplayLcd::clear(void)
 	_cursorY = 0;
 }
 
+void DisplayLcd::refresh(void)
+{
+	beginTransmission();
+	endTransmission();
+
+	// 1. Force rewrite the backlight / brightness configuration
+	// Toggle the tracked hardware state to trick syncBacklightHardware() into an immediate write
+	_hardwareBrightness = ~(_backlight ? _brightnessValue : 0); 
+	syncBacklightHardware();
+
+	// 2. Clear the physical screen hardware and reset hardware position
+	command(CLEAR_COMMAND);
+	delay(5); // Settle time for a screen clear
+
+	// 3. Loop through the entire local cache and dump it directly to hardware
+	for (int r = 0; r < LCD_ROWS; ++r) {
+		// Reposition the physical LCD cursor to the start of this row
+		gotoxySendCmd(0, r);
+		
+		beginTransmission();
+		for (int c = 0; c < LCD_COLS; ++c) {
+			// Stream the cached characters line-by-line straight into the I2C transaction
+			transmit(static_cast<uint8_t>(_cache[r][c]));
+		}
+		endTransmission();
+	}
+
+	// 4. Align internal tracking states back to the hardware home position
+	_cursorX = 0;
+	_cursorY = 0;
+}
+
 // Only updates the internal cache cursor positions
 void DisplayLcd::gotoxy(int x, int y)
 {
@@ -266,7 +298,7 @@ void DisplayLcd::syncBacklightHardware(void)
 	}
 }
 
-void DisplayLcd::readKeys(void)
+bool DisplayLcd::readKeys(void)
 {
 	// Request 1 byte of data containing button states from the LCD module
 	if (_i2cPort->requestFrom(_i2cAddr, static_cast<uint8_t>(1)) == 1)
@@ -298,5 +330,9 @@ void DisplayLcd::readKeys(void)
 			// Update our saved register for the next cycle
 			_lastButtonState = currentButtonState;
 		}
+
+		return true; // I2C request was successful (ACK'd)
 	}
+
+	return false; // I2C request failed (NACK'd)
 }

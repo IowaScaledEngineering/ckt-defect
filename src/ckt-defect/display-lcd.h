@@ -33,6 +33,7 @@ class DisplayLcd : public Display
 
 		// Display interface implementations
 		void clear(void) override;
+		void refresh(void);
 		void gotoxy(int x, int y) override;
 		void print(char c) override;
 		void print(const char *str) override;
@@ -40,7 +41,7 @@ class DisplayLcd : public Display
 		
 		// Event Handling implementations
 		bool getEvent(DisplayEvent *event) override;
-		void readKeys(void);
+		bool readKeys(void);
 
 		// Backlight interface implementations
 		void backlightOn(void) override;

@@ -291,6 +291,8 @@ void loop()
 
 	DisplayLcd *lcd = new DisplayLcd();
 	Menu::setDisplay(lcd);
+	bool displayPresent = true;  // Start assuming it's there so we don't take the refresh delay initially
+	bool oldDisplayPresent = true;
 
 	bool sdCardPresent = false;
 	bool configFilePresent = false;
@@ -585,10 +587,20 @@ setTestPoint(TP2);
 			audioProcessVolume();
 			ioProcessInputs();
 			timerTick = false;
-			lcd->readKeys();
+			displayPresent = lcd->readKeys();
+
 			menuManager.process();
 clrTestPoint(TP2);
 		}
+
+		if(displayPresent && !oldDisplayPresent)
+		{
+			esp_task_wdt_reset();
+			Serial.println("\nDisplay Found");
+			delay(500);  // Wait for things to settle
+			lcd->refresh();
+		}
+		oldDisplayPresent = displayPresent;
 
 		// Check for serial input
 		if(Serial.available() > 0)
