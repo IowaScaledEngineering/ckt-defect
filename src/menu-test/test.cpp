@@ -36,23 +36,23 @@ int main()
 	auto mainSel = std::make_shared<MenuListSelector>("Main");
 	home->addChild(mainSel);
 
-	auto menu1 = std::make_shared<MenuDigitThumbwheel>("Digit Thumbwheel", &valFloat, 5, 1);
+	auto menu1 = std::make_shared<MenuDigitThumbwheel>("Digit Thumbwheel", &valFloat, 5, 1, true);
 	auto menu2 = std::make_shared<MenuListSelector>("Menu 2");
-	menu2->addChild(std::make_shared<MenuDigitThumbwheel>("Menu 2.1", &val2_1, 3, 0));
-	menu2->addChild(std::make_shared<MenuDigitThumbwheel>("Menu 2.2", &val2_2, 3, 0));
-	menu2->addChild(std::make_shared<MenuDigitThumbwheel>("Menu 2.3", &val2_3, 3, 0));
-	menu2->addChild(std::make_shared<MenuDigitThumbwheel>("Menu 2.4", &val2_4, 3, 0));
-	menu2->addChild(std::make_shared<MenuDigitThumbwheel>("Menu 2.5", &val2_5, 3, 0));
-	menu2->addChild(std::make_shared<MenuDigitThumbwheel>("Menu 2.6", &val2_6, 3, 0));
+	menu2->addChild(std::make_shared<MenuDigitThumbwheel>("Menu 2.1", &val2_1, 3, 0, false));
+	menu2->addChild(std::make_shared<MenuDigitThumbwheel>("Menu 2.2", &val2_2, 3, 0, false));
+	menu2->addChild(std::make_shared<MenuDigitThumbwheel>("Menu 2.3", &val2_3, 3, 0, false));
+	menu2->addChild(std::make_shared<MenuDigitThumbwheel>("Menu 2.4", &val2_4, 3, 0, false));
+	menu2->addChild(std::make_shared<MenuDigitThumbwheel>("Menu 2.5", &val2_5, 3, 0, false));
+	menu2->addChild(std::make_shared<MenuDigitThumbwheel>("Menu 2.6", &val2_6, 3, 0, false));
 
 	auto menu3 = std::make_shared<MenuListSelector>("Menu 3");
-	menu3->addChild(std::make_shared<MenuDigitThumbwheel>("Menu 3.1", &val3_1, 3, 0));
-	menu3->addChild(std::make_shared<MenuDigitThumbwheel>("Menu 3.2", &val3_2, 3, 0));
+	menu3->addChild(std::make_shared<MenuDigitThumbwheel>("Menu 3.1", &val3_1, 3, 0, true));
+	menu3->addChild(std::make_shared<MenuDigitThumbwheel>("Menu 3.2", &val3_2, 3, 0, true));
 
 	auto menu4 = std::make_shared<MenuNumberDial>("Number Dial", &val4, 0, 120, "sec");
 	auto menu5 = std::make_shared<MenuBoolSelector>("Bool Select", &val5, "Enable", "ENBL", "Disable", "DSBL");
 	auto menu6 = std::make_shared<MenuOptionSelector>("Option Select", &val6, options);
-	auto menu7 = std::make_shared<MenuDigitThumbwheel>("Menu 7", &val7, 3, 0);
+	auto menu7 = std::make_shared<MenuDigitThumbwheel>("Menu 7", &val7, 3, 0, false);
 
 	mainSel->addChild(menu1);
 	mainSel->addChild(menu2);

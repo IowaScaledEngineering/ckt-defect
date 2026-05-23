@@ -65,10 +65,11 @@ class MenuDigitThumbwheel : public Menu
 		uint32_t *valPtr;
 		uint8_t iDigits, fDigits, state = 0, curDigit = 0;
 		std::string modStr;
+		bool suppressLeadingZeros;
 
 	public:
-		MenuDigitThumbwheel(const std::string &name, uint32_t *p, uint32_t i, uint32_t f)
-		    : Menu(name), valPtr(p), iDigits(i), fDigits(f)
+		MenuDigitThumbwheel(const std::string &name, uint32_t *p, uint32_t i, uint32_t f, bool suppress)
+		    : Menu(name), valPtr(p), iDigits(i), fDigits(f), suppressLeadingZeros(suppress)
 		{
 		}
 		MenuEvent update() override;

@@ -131,15 +131,18 @@ MenuEvent MenuDigitThumbwheel::update()
 	// We want to keep at least the last digit of the integer part (index: modStr.length() - fDigits - 1)
 	int keepIndex = (int)modStr.length() - (int)fDigits - 1;
 
-	for(int i = 0; i < keepIndex; i++)
+	if (suppressLeadingZeros)
 	{
-		if(leading && displayStr[i] == '0')
+		for(int i = 0; i < keepIndex; i++)
 		{
-			displayStr[i] = ' '; // Replace leading zero with space
-		}
-		else
-		{
-			leading = false; // Found a non-zero, stop suppressing
+			if(leading && displayStr[i] == '0')
+			{
+				displayStr[i] = ' '; // Replace leading zero with space
+			}
+			else
+			{
+				leading = false; // Found a non-zero, stop suppressing
+			}
 		}
 	}
 
