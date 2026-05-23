@@ -26,6 +26,11 @@ class Display
 		virtual void print(const char *str) = 0;
 		virtual void print(const std::string &str) = 0;
 		virtual bool getEvent(DisplayEvent *event) = 0;
+
+		// New Backlight Interface
+		virtual void backlightOn(void) = 0;
+		virtual void backlightOff(void) = 0;
+		virtual bool getBacklight(void) const = 0;
 };
 
 template <typename T, size_t Capacity> class DisplayEventQueue

@@ -23,18 +23,15 @@ MenuEvent MenuListSelector::update()
 		selector = visibleChildren.empty() ? 0 : (uint32_t)visibleChildren.size() - 1;
 	}
 
-	if(state == 0)
-	{
-		disp->gotoxy(1, 3);
-		disp->print("UP");
-		disp->gotoxy(5, 3);
-		disp->print("DOWN");
-		disp->gotoxy(11, 3);
-		disp->print("SLCT");
-		disp->gotoxy(16, 3);
-		disp->print("BACK");
-		state = 1;
-	}
+	disp->backlightOn();
+	disp->gotoxy(1, 3);
+	disp->print("UP");
+	disp->gotoxy(5, 3);
+	disp->print("DOWN");
+	disp->gotoxy(11, 3);
+	disp->print("SLCT");
+	disp->gotoxy(16, 3);
+	disp->print("BACK");
 
 	// Calculate scrolling window to keep selector in the middle (row 1)
 	int32_t firstMenu;
@@ -93,12 +90,10 @@ MenuEvent MenuListSelector::update()
 			selector++;
 		else if(ev.keyNum == 3)
 		{
-			state = 0;
 			return MenuEvent::FORWARD;
 		}
 		else if(ev.keyNum == 4)
 		{
-			state = 0;
 			return MenuEvent::BACK;
 		}
 	}
@@ -107,18 +102,20 @@ MenuEvent MenuListSelector::update()
 
 MenuEvent MenuDigitThumbwheel::update()
 {
+	disp->backlightOn();
+	disp->gotoxy(0, 0);
+	disp->print(menuName);
+	disp->gotoxy(1, 3);
+	disp->print("++");
+	disp->gotoxy(6, 3);
+	disp->print(">>");
+	disp->gotoxy(10, 3);
+	disp->print("SAVE");
+	disp->gotoxy(16, 3);
+	disp->print("CNCL");
+
 	if(state == 0)
 	{
-		disp->gotoxy(0, 0);
-		disp->print(menuName);
-		disp->gotoxy(1, 3);
-		disp->print("++");
-		disp->gotoxy(6, 3);
-		disp->print(">>");
-		disp->gotoxy(10, 3);
-		disp->print("SAVE");
-		disp->gotoxy(16, 3);
-		disp->print("CNCL");
 		// modStr stores raw digits for logic
 		modStr = std::format("{:0{}d}", *valPtr, iDigits + fDigits);
 		curDigit = 0;
@@ -194,23 +191,25 @@ MenuEvent MenuDigitThumbwheel::update()
 
 MenuEvent MenuNumberDial::update()
 {
+	disp->backlightOn();
+
+	disp->gotoxy(0, 0);
+	disp->print(menuName);
+
+	// Draw Button Labels at bottom row (row 3)
+	disp->gotoxy(1, 3);
+	disp->print("++");
+	disp->gotoxy(6, 3);
+	disp->print("--");
+	disp->gotoxy(11, 3);
+	disp->print("SAVE");
+	disp->gotoxy(16, 3);
+	disp->print("CNCL");
+
 	if(state == 0)
 	{
 		// Sync with current variable and clamp within range
 		currentVal = std::clamp(*valPtr, minVal, maxVal);
-
-		disp->gotoxy(0, 0);
-		disp->print(menuName);
-
-		// Draw Button Labels at bottom row (row 3)
-		disp->gotoxy(1, 3);
-		disp->print("++");
-		disp->gotoxy(6, 3);
-		disp->print("--");
-		disp->gotoxy(11, 3);
-		disp->print("SAVE");
-		disp->gotoxy(16, 3);
-		disp->print("CNCL");
 
 		state = 1;
 	}
@@ -260,23 +259,24 @@ MenuEvent MenuNumberDial::update()
 
 MenuEvent MenuBoolSelector::update()
 {
+	disp->backlightOn();
+	disp->gotoxy(0, 0);
+	disp->print(menuName);
+
+	// Draw Button Labels at bottom row (row 3)
+	disp->gotoxy(1, 3);
+	disp->print(btn1Name);
+	disp->gotoxy(6, 3);
+	disp->print(btn2Name);
+	disp->gotoxy(11, 3);
+	disp->print("SAVE");
+	disp->gotoxy(16, 3);
+	disp->print("CNCL");
+
 	if(state == 0)
 	{
 		// Sync with current variable state
 		currentVal = *valPtr;
-
-		disp->gotoxy(0, 0);
-		disp->print(menuName);
-
-		// Draw Button Labels at bottom row (row 3)
-		disp->gotoxy(1, 3);
-		disp->print(btn1Name);
-		disp->gotoxy(6, 3);
-		disp->print(btn2Name);
-		disp->gotoxy(11, 3);
-		disp->print("SAVE");
-		disp->gotoxy(16, 3);
-		disp->print("CNCL");
 
 		state = 1;
 	}
@@ -320,6 +320,20 @@ MenuEvent MenuBoolSelector::update()
 
 MenuEvent MenuOptionSelector::update()
 {
+	disp->backlightOn();
+	disp->gotoxy(0, 0);
+	disp->print(menuName);
+
+	// Layout buttons: UP (1), DOWN (2), SAVE (3), CNCL (4)
+	disp->gotoxy(1, 3);
+	disp->print("UP");
+	disp->gotoxy(6, 3);
+	disp->print("DOWN");
+	disp->gotoxy(11, 3);
+	disp->print("SAVE");
+	disp->gotoxy(16, 3);
+	disp->print("CNCL");
+
 	if(state == 0)
 	{
 		// Sync with current variable state
@@ -330,19 +344,6 @@ MenuEvent MenuOptionSelector::update()
 		{
 			currentVal = options.empty() ? 0 : (uint32_t)options.size() - 1;
 		}
-
-		disp->gotoxy(0, 0);
-		disp->print(menuName);
-
-		// Layout buttons: UP (1), DOWN (2), SAVE (3), CNCL (4)
-		disp->gotoxy(1, 3);
-		disp->print("UP");
-		disp->gotoxy(6, 3);
-		disp->print("DOWN");
-		disp->gotoxy(11, 3);
-		disp->print("SAVE");
-		disp->gotoxy(16, 3);
-		disp->print("CNCL");
 
 		topIndex = 0;
 		state = 1;

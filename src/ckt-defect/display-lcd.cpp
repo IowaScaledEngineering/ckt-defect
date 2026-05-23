@@ -7,7 +7,10 @@ DisplayLcd::DisplayLcd(TwoWire &wirePort, uint8_t i2c_addr)
 	  _displayMode(LCD_ENTRYLEFT | LCD_ENTRYSHIFTDECREMENT),
 	  _lastButtonState(0), // Initialize all buttons as unpressed
 	  _cursorX(0),
-	  _cursorY(0)
+	  _cursorY(0),
+	  _backlight(true),               // Defaults to active
+	  _brightnessValue(255),          // Default full brightness
+	  _hardwareBrightness(255)        // Tracked matching physical default
 {
 	// Initialize cache with spaces
 	for (int r = 0; r < LCD_ROWS; ++r) {
@@ -34,7 +37,9 @@ void DisplayLcd::init(void)
 	transmit(CLEAR_COMMAND);                        // Send clear display command
 	endTransmission();                              // Stop transmission
 	delay(5);                                      // Let things settle
-}
+
+	// Push initial default brightness setup over I2C
+	syncBacklightHardware();}
 
 void DisplayLcd::beginTransmission(void)
 {
@@ -196,6 +201,57 @@ bool DisplayLcd::getEvent(DisplayEvent *event)
 		
 	*event = *e;
 	return true;
+}
+
+void DisplayLcd::backlightOn(void)
+{
+	if (!_backlight) {
+		_backlight = true;
+		syncBacklightHardware();
+	}
+}
+
+void DisplayLcd::backlightOff(void)
+{
+	if (_backlight) {
+		_backlight = false;
+		syncBacklightHardware();
+	}
+}
+
+bool DisplayLcd::getBacklight(void) const
+{
+	return _backlight;
+}
+
+void DisplayLcd::setBrightness(uint8_t value)
+{
+	if (_brightnessValue != value) {
+		_brightnessValue = value;
+		syncBacklightHardware();
+	}
+}
+
+uint8_t DisplayLcd::getBrightness(void) const
+{
+	return _brightnessValue;
+}
+
+// Caching helper logic for OpenLCD backlighting commands
+void DisplayLcd::syncBacklightHardware(void)
+{
+	// Target value depends on whether backlight toggle flag is true/false
+	uint8_t targetPhysicalBrightness = _backlight ? _brightnessValue : 0;
+
+	// Only push via I2C interface if state differs from actual cached physical property
+	if (_hardwareBrightness != targetPhysicalBrightness) {
+		beginTransmission();
+		transmit(SETTING_COMMAND); 
+		transmit(targetPhysicalBrightness);
+		endTransmission();
+
+		_hardwareBrightness = targetPhysicalBrightness; // Cache match confirmation
+	}
 }
 
 void DisplayLcd::readKeys(void)

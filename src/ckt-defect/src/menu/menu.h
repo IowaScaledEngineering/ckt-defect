@@ -52,7 +52,6 @@ class Menu
 class MenuListSelector : public Menu
 {
 		uint32_t selector = 0; // Index relative to visible items
-		uint8_t state = 0;
 
 	public:
 		using Menu::Menu;

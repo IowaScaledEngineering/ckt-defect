@@ -6,6 +6,7 @@ class MenuHome : public Menu
 		MenuHome(const std::string &n) : Menu(n) {}
 		MenuEvent update() override
 		{
+			disp->backlightOff();
 			disp->gotoxy(0, 0);
 			disp->print("Home Screen");
 			disp->gotoxy(16, 3);

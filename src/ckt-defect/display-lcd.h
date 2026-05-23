@@ -42,6 +42,15 @@ class DisplayLcd : public Display
 		bool getEvent(DisplayEvent *event) override;
 		void readKeys(void);
 
+		// Backlight interface implementations
+		void backlightOn(void) override;
+		void backlightOff(void) override;
+		bool getBacklight(void) const override;
+
+		// Brightness configurations
+		void setBrightness(uint8_t value);
+		uint8_t getBrightness(void) const;
+
 	private:
 		TwoWire *_i2cPort;
 		uint8_t _i2cAddr;
@@ -57,6 +66,11 @@ class DisplayLcd : public Display
 		int _cursorX;
 		int _cursorY;
 
+		// Backlight tracking and caching states
+		bool _backlight;
+		uint8_t _brightnessValue;       // Current internal value user wants (e.g., 128)
+		uint8_t _hardwareBrightness;    // What the LCD is physically set to right now
+
 		// Internal I2C utility methods
 		void init(void);
 		void beginTransmission(void);
@@ -65,6 +79,9 @@ class DisplayLcd : public Display
 		void command(uint8_t cmd);
 		void specialCommand(uint8_t cmd);
 		
+		// Hardware helper to write properties to I2C if conditions change
+		void syncBacklightHardware(void);
+
 		// Hardware positioning helper
 		void gotoxySendCmd(int x, int y);
 		// Helper to automatically advance cursor bounds

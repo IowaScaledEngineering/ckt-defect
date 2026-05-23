@@ -1,4 +1,3 @@
-
 #include "display-term.h"
 #include "display.h"
 #include <fcntl.h>
@@ -6,7 +5,7 @@
 #include <termios.h>
 #include <unistd.h>
 
-DisplayTerm::DisplayTerm(void)
+DisplayTerm::DisplayTerm(void) : _backlight(true) // Default to on
 {
 	// Save original settings
 	tcgetattr(STDIN_FILENO, &original_terminal);
@@ -63,10 +62,8 @@ void DisplayTerm::clear(void)
 	// 4. Disable Inverse Video and flush
 	std::cout << "\033[0m" << std::flush;
 
-	//	std::cout << "\033[" << 1 << ";" << 1 << "H┌";
-	//	std::cout << "\033[" << 1 << ";" << 22 << "H┐";
-	//	std::cout << "\033[" << 6 << ";" << 1 << "H└";
-	//	std::cout << "\033[" << 6 << ";" << 22 << "H┘" << std::flush;
+	// Draw the line 8 status update
+	updateBacklightStatusDisplay();
 
 	// Home cursor
 	gotoxy(0, 0);
@@ -93,6 +90,46 @@ bool DisplayTerm::getEvent(DisplayEvent *event)
 		return false;
 	*event = *e;
 	return true;
+}
+
+void DisplayTerm::backlightOn(void)
+{
+	if (!_backlight) {
+		_backlight = true;
+		updateBacklightStatusDisplay();
+	}
+}
+
+void DisplayTerm::backlightOff(void)
+{
+	if (_backlight) {
+		_backlight = false;
+		updateBacklightStatusDisplay();
+	}
+}
+
+bool DisplayTerm::getBacklight(void) const
+{
+	return _backlight;
+}
+
+void DisplayTerm::updateBacklightStatusDisplay(void)
+{
+	// Save existing cursor position visually by using ANSI escape storage sequences
+	std::cout << "\033[s"; 
+	
+	// Jump directly to Line 8, Column 1
+	std::cout << "\033[8;1H";
+	
+	// Print status with extra spaces to cleanly overwrite old strings
+	if (_backlight) {
+		std::cout << "Backlight  On";
+	} else {
+		std::cout << "Backlight Off";
+	}
+	
+	// Restore cursor position and flush
+	std::cout << "\033[u" << std::flush;
 }
 
 void DisplayTerm::readKeys(void)
