@@ -426,110 +426,6 @@ MenuEvent MenuOptionSelector::update()
 	return MenuEvent::NOOP;
 }
 
-MenuEvent MenuBrightness::update()
-{
-	disp->backlightOn();
-	disp->gotoxy(0, 0);
-	disp->print(menuName); // "Brightness Level"
-
-	// Draw Button Labels at bottom row (row 3)
-	disp->gotoxy(1, 3);
-	disp->print("--");
-	disp->gotoxy(6, 3);
-	disp->print("++");
-	disp->gotoxy(11, 3);
-	disp->print("SAVE");
-	disp->gotoxy(16, 3);
-	disp->print("CNCL");
-
-	if(state == 0)
-	{
-		// Query current runtime value directly via agnostic data API
-		uint8_t rawVal = disp->getBrightness();
-		originalVal = rawVal;
-		
-		// Map the raw value (0-255) to the nearest discrete menu step index (0-15).
-		// Uses efficient 8-bit rounding math: step = (rawVal + 8) / 17
-		currentLevel = (static_cast<uint16_t>(rawVal) + 8) / 17;
-		if (currentLevel > 15) currentLevel = 15;
-
-		// Initialize only standard full block characters
-		uint8_t fullBlock[8] = {
-			0b11111,
-			0b11111,
-			0b11111,
-			0b11111,
-			0b11111,
-			0b11111,
-			0b11111,
-			0b00000
-		};
-		disp->createCustomChar(2, fullBlock);
-
-		state = 1;
-	}
-
-	// --- Visual Bar Mapping Logic ---
-	// 15 positions in the bar correspond to levels 1 through 15
-	uint8_t fullCharsNeeded = currentLevel;
-	uint8_t emptyCharsNeeded = 15 - fullCharsNeeded;
-
-	// Render the Bar Graph on Line 1 (Second row)
-	disp->gotoxy(1, 1);
-	disp->print("["); // Opening Bracket
-
-	// Print Full Blocks
-	for(uint8_t i = 0; i < fullCharsNeeded; i++)
-	{
-		disp->print((char)0x02);
-	}
-	// Fill remainder of the 15-character block with spaces
-	for(uint8_t i = 0; i < emptyCharsNeeded; i++)
-	{
-		disp->print(' ');
-	}
-
-	disp->print("]"); // Closing Bracket
-
-	// --- Input & Value Calculations ---
-	DisplayEvent ev;
-	if(disp->getEvent(&ev) && ev.type == DisplayEventType::KEY_DOWN)
-	{
-		switch(ev.keyNum)
-		{
-			case 1: // Button 1: Decrease Level
-				if(currentLevel > 0)
-				{
-					currentLevel--;
-					// Convert step index directly to agnostic 0-255 domain
-					disp->setBrightness(currentLevel * 17);
-				}
-				break;
-
-			case 2: // Button 2: Increase Level
-				if(currentLevel < 15)
-				{
-					currentLevel++;
-					// Convert step index directly to agnostic 0-255 domain
-					disp->setBrightness(currentLevel * 17);
-				}
-				break;
-
-			case 3: // Button 3: SAVE
-				disp->setBrightness(currentLevel * 17); // Commit final value
-				state = 0;
-				return MenuEvent::BACK;
-
-			case 4: // Button 4: CNCL
-				disp->setBrightness(originalVal); // Safely restore un-snapped cached entry setting
-				state = 0;
-				return MenuEvent::BACK;
-		}
-	}
-
-	return MenuEvent::NOOP;
-}
-
 MenuEvent MenuPercentageBar::update()
 {
 	disp->backlightOn();
@@ -549,10 +445,10 @@ MenuEvent MenuPercentageBar::update()
 	if(state == 0)
 	{
 		// Cache original entry point data in case of cancellation
-		originalVal = *valPtr;
+		originalVal = (getFunc != nullptr) ? getFunc() : *valPtr;
 
 		// 1. Convert raw value to percentage with proper mathematical rounding (+ maxVal/2)
-		uint32_t rawVal = std::clamp<uint32_t>(*valPtr, 0U, maxVal);
+		uint32_t rawVal = std::clamp<uint32_t>((getFunc != nullptr) ? getFunc() : *valPtr, 0U, maxVal);
 		uint32_t initialPct = (uint32_t)((((uint64_t)rawVal * 100) + (maxVal / 2)) / maxVal);
 
 		// 2. Snap to the nearest stepVal multiple
@@ -636,22 +532,44 @@ MenuEvent MenuPercentageBar::update()
 			case 1: // Button 1: Decrease percentage by stepVal
 				currentVal -= (int32_t)stepVal;
 				if (currentVal < 0) currentVal = 0;
+				if (realTime && setFunc != nullptr)
+				{
+					setFunc((uint32_t)(((uint64_t)currentVal * maxVal) / 100));
+				}
 				break;
 
 			case 2: // Button 2: Increase percentage by stepVal
 				currentVal += (int32_t)stepVal;
 				if (currentVal > 100) currentVal = 100;
+				if (realTime && setFunc != nullptr)
+				{
+					setFunc((uint32_t)(((uint64_t)currentVal * maxVal) / 100));
+				}
 				break;
 
 			case 3: // Button 3: SAVE
 				// Convert percentage back to the raw scale before writing to the pointer
-				*valPtr = (uint32_t)(((uint64_t)percentage * maxVal) / 100);
+				if (setFunc != nullptr)
+				{
+					setFunc((uint32_t)(((uint64_t)percentage * maxVal) / 100));
+				}
+				else
+				{
+					*valPtr = (uint32_t)(((uint64_t)percentage * maxVal) / 100);
+				}
 				state = 0;
 				return MenuEvent::BACK;
 
 			case 4: // Button 4: CNCL
 				// Restore un-snapped raw entry value
-				*valPtr = originalVal;
+				if (realTime && setFunc != nullptr)
+				{
+					setFunc(originalVal);
+				}
+				else if (valPtr != nullptr)
+				{
+					*valPtr = originalVal;
+				}
 				state = 0;
 				return MenuEvent::BACK;
 		}

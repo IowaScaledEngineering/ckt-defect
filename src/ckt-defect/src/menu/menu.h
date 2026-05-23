@@ -3,6 +3,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <functional>
 
 enum class MenuEvent
 {
@@ -133,38 +134,37 @@ class MenuOptionSelector : public Menu
 		MenuEvent update() override;
 };
 
-class MenuBrightness : public Menu
-{
-	private:
-		uint8_t currentLevel; // Current menu UI index: 0 to 15 (Off + 15 levels)
-		uint8_t originalVal;  // Caches raw entry value to restore if user hits cancel
-		uint8_t state = 0;    // Menu tracking state
-
-	public:
-		MenuBrightness(const std::string &name)
-		    : Menu(name)
-		{
-		}
-
-		MenuEvent update() override;
-};
-
 class MenuPercentageBar : public Menu
 {
 	private:
-		uint32_t *valPtr;          // Pointer to the external target value
-		uint32_t maxVal;           // Maximum raw value (corresponds to 100%)
-		uint32_t stepVal;          // How much the raw value changes per button click
 		
-		uint32_t originalVal;      // Cached entry value for canceling
-		int32_t currentVal;        // Internally managed raw value between 0 and maxVal
-		uint8_t state = 0;         // Menu state tracker
+		uint32_t *valPtr;          
+		// Accept any callable object (lambdas, member functions, free functions)
+		std::function<uint32_t()> getFunc;     
+		std::function<void(uint32_t)> setFunc; 
+		bool realTime;             
+		uint32_t maxVal;           
+		uint32_t stepVal;          
+
+		uint32_t originalVal;      
+		int32_t currentVal;        
+		uint8_t state = 0;         
 
 	public:
+		// Constructor for direct pointers (remains unchanged)
 		MenuPercentageBar(const std::string &name, uint32_t *p, uint32_t max, uint32_t pcntStep)
-		    : Menu(name), valPtr(p), maxVal(max == 0 ? 100 : max), stepVal(pcntStep)
-		{
-		}
+		    : Menu(name), valPtr(p), getFunc(nullptr), setFunc(nullptr), realTime(false),
+		      maxVal(max == 0 ? 100 : max), stepVal(pcntStep) {}
+
+		// Modernized constructor using std::function
+		MenuPercentageBar(const std::string &name, 
+		                  std::function<uint32_t()> getter, 
+		                  std::function<void(uint32_t)> setter, 
+		                  uint32_t max, 
+		                  uint32_t pcntStep, 
+		                  bool realTimeUpdate)
+		    : Menu(name), valPtr(nullptr), getFunc(std::move(getter)), setFunc(std::move(setter)), 
+		      realTime(realTimeUpdate), maxVal(max == 0 ? 100 : max), stepVal(pcntStep) {}
 
 		MenuEvent update() override;
 };

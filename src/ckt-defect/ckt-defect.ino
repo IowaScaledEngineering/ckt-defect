@@ -293,7 +293,6 @@ void loop()
 	Menu::setDisplay(lcd);
 	bool displayPresent = true;  // Start assuming it's there so we don't take the refresh delay initially
 	bool oldDisplayPresent = true;
-	uint32_t lcdBrightness = 128;
 
 	bool sdCardPresent = false;
 	bool configFilePresent = false;
@@ -384,11 +383,15 @@ void loop()
 	menu8->addChild(menuD);
 	menu8->addChild(menuE);
 
-	auto menu9 = std::make_shared<MenuBrightness>("Backlight Level");
+	auto menu9 = std::make_shared<MenuPercentageBar>(
+		"Backlight Level", 
+		[lcd]() { return lcd->getBrightness(); },
+		[lcd](uint32_t val) { lcd->setBrightness(val); },
+		255, 
+		10, 
+		true
+	);
 	mainSel->addChild(menu9);
-
-	auto menu10 = std::make_shared<MenuPercentageBar>("Backlight Level", &lcdBrightness, 255, 10);
-	mainSel->addChild(menu10);
 
 	MenuManager menuManager(lcd, home);
 
@@ -598,7 +601,7 @@ setTestPoint(TP2);
 			displayPresent = lcd->readKeys();
 
 			menuManager.process();
-			lcd->setBrightness(lcdBrightness);
+//			lcd->setBrightness(lcdBrightness);
 clrTestPoint(TP2);
 		}
 
