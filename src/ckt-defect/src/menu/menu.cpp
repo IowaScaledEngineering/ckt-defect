@@ -220,16 +220,14 @@ MenuEvent MenuNumberDial::update()
 	int padCount = std::max(0, maxDigits - currentDigits);
 	std::string padding(padCount, ' ');
 
-	// 3. Render: Always start at (1, 1) to keep brackets anchored
-	disp->gotoxy(1, 1);
-	disp->print("[ ");
+	// 3. Render
+	disp->gotoxy(2, 1);
 	disp->print(padding); // Print the spaces FIRST for right-justification
 	disp->print(valStr);  // Then the number
 	if(units.length())
 	{
 		disp->print(" " + units);
 	}
-	disp->print(" ]  "); // Extra spaces after ']' to clean up any artifacts
 
 	DisplayEvent ev;
 	if(disp->getEvent(&ev) && ev.type == DisplayEventType::KEY_DOWN)
