@@ -198,9 +198,9 @@ MenuEvent MenuNumberDial::update()
 
 	// Draw Button Labels at bottom row (row 3)
 	disp->gotoxy(1, 3);
-	disp->print("++");
-	disp->gotoxy(6, 3);
 	disp->print("--");
+	disp->gotoxy(6, 3);
+	disp->print("++");
 	disp->gotoxy(11, 3);
 	disp->print("SAVE");
 	disp->gotoxy(16, 3);
@@ -236,13 +236,13 @@ MenuEvent MenuNumberDial::update()
 	{
 		switch(ev.keyNum)
 		{
-			case 1: // ++
-				if(currentVal < maxVal)
-					currentVal++;
-				break;
-			case 2: // --
+			case 1: // --
 				if(currentVal > minVal)
 					currentVal--;
+				break;
+			case 2: // ++
+				if(currentVal < maxVal)
+					currentVal++;
 				break;
 			case 3: // SAVE - Update original pointer and exit
 				*valPtr = currentVal;
