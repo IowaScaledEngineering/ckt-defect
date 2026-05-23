@@ -133,3 +133,19 @@ class MenuOptionSelector : public Menu
 
 		MenuEvent update() override;
 };
+
+class MenuBrightness : public Menu
+{
+	private:
+		uint8_t currentVal;   // Working hardware value aligned to steps of 9
+		uint8_t originalVal;  // Cached on entry to restore if user cancels
+		uint8_t state = 0;    // Menu runtime flag
+
+	public:
+		MenuBrightness(const std::string &name)
+		    : Menu(name)
+		{
+		}
+
+		MenuEvent update() override;
+};

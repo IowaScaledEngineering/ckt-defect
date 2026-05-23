@@ -320,6 +320,7 @@ void loop()
 	Serial.println(GIT_REV, HEX);
 
 	// Build menus
+	lcd->setBrightness(128);  // FIXME: should be in configuration
 	uint32_t val2_1 = 100;
 	uint32_t val2_2 = 100;
 	uint32_t val2_3 = 100;
@@ -381,6 +382,9 @@ void loop()
 	menu8->addChild(menuC);
 	menu8->addChild(menuD);
 	menu8->addChild(menuE);
+
+	auto menu9 = std::make_shared<MenuBrightness>("Backlight Level");
+	mainSel->addChild(menu9);
 
 	MenuManager menuManager(lcd, home);
 

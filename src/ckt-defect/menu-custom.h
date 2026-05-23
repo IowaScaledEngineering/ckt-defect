@@ -19,8 +19,7 @@ class MenuHome : public Menu
 			
 			disp->createCustomChar(3, smiley);
 
-			disp->setBrightness(128);
-			disp->backlightOn();
+			disp->backlightOff();
 			disp->gotoxy(0, 0);
 			disp->print("Home Screen ");
 			disp->print(0x03);
