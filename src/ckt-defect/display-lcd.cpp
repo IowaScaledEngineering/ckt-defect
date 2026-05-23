@@ -9,8 +9,8 @@ DisplayLcd::DisplayLcd(TwoWire &wirePort, uint8_t i2c_addr)
 	  _cursorX(0),
 	  _cursorY(0),
 	  _backlight(true),               // Defaults to active
-	  _brightnessValue(255),          // Default full brightness
-	  _hardwareBrightness(255)        // Tracked matching physical default
+	  _brightnessValue(255),          // Default full brightness (0-255 range)
+	  _hardwareBrightness(0)       // 128-157 range.  Out-of-bounds flag to guarantee initial sync
 {
 	// Initialize cache with spaces
 	for (int r = 0; r < LCD_ROWS; ++r) {
@@ -94,8 +94,8 @@ void DisplayLcd::refresh(void)
 	endTransmission();
 
 	// 1. Force rewrite the backlight / brightness configuration
-	// Toggle the tracked hardware state to trick syncBacklightHardware() into an immediate write
-	_hardwareBrightness = ~(_backlight ? _brightnessValue : 0); 
+	// Set to an impossible hardware domain value to guarantee the cache mismatch triggers
+	_hardwareBrightness = 0; 
 	syncBacklightHardware();
 
 	// 2. Clear the physical screen hardware and reset hardware position
@@ -287,7 +287,7 @@ uint8_t DisplayLcd::getBrightness(void) const
 // Caching helper logic for OpenLCD backlighting commands
 void DisplayLcd::syncBacklightHardware(void)
 {
-	uint8_t targetPhysicalBrightness = 128;
+	uint8_t targetPhysicalBrightness = 128; // OpenLCD backlight command address (128-157 range)
 
 	if (_backlight) {
 		// Fast 8-bit AVR approximation for (brightness * 29) / 255.
@@ -295,21 +295,24 @@ void DisplayLcd::syncBacklightHardware(void)
 		// which safely truncates to the exact same integer.
 		uint16_t intermediate = static_cast<uint16_t>(_brightnessValue);
 		
-		// intermediate * 29 using shift-and-add: (b * 16) + (b * 8) + (b * 4) + b
-		intermediate = (intermediate << 4) + (intermediate << 3) + (intermediate << 2) + intermediate;
+		// intermediate * 29 -> (b * 16) + (b * 8) + (b * 4) + b
+		intermediate = (intermediate << 4) + (intermediate << 3) + (intermediate << 2) + intermediate; //
+
+		// Add half of 256 divisor to ensure clean round-to-nearest mapping
+		intermediate += 128;
 		
-		// ">> 8" tells the AVR compiler to simply grab the high-byte register. Zero CPU cycles spent shifting!
-		targetPhysicalBrightness += static_cast<uint8_t>(intermediate >> 8);
+		// Extract high byte directly to handle zero-overhead register evaluation
+		targetPhysicalBrightness += static_cast<uint8_t>(intermediate >> 8); //
 	}
 
-	// Only push via I2C interface if state differs from actual cached physical property
+	// Safely checks physical domain registers (128 - 157) against cached properties
 	if (_hardwareBrightness != targetPhysicalBrightness) {
 		beginTransmission();
 		transmit(SETTING_COMMAND); // Set backlight amount
 		transmit(targetPhysicalBrightness);
 		endTransmission();
 
-		_hardwareBrightness = targetPhysicalBrightness; // Cache match confirmation
+		_hardwareBrightness = targetPhysicalBrightness; // Caches the active physical register state
 	}
 }
 

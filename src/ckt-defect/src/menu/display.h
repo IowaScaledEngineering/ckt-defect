@@ -32,6 +32,10 @@ class Display
 		virtual void backlightOn(void) = 0;
 		virtual void backlightOff(void) = 0;
 		virtual bool getBacklight(void) const = 0;
+
+		// Brightness configurations
+		virtual void setBrightness(uint8_t value) = 0;
+		virtual uint8_t getBrightness(void) const = 0;
 };
 
 template <typename T, size_t Capacity> class DisplayEventQueue

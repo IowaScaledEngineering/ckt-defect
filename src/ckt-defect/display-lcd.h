@@ -72,8 +72,8 @@ class DisplayLcd : public Display
 
 		// Backlight tracking and caching states
 		bool _backlight;
-		uint8_t _brightnessValue;       // Current internal value user wants (e.g., 128)
-		uint8_t _hardwareBrightness;    // What the LCD is physically set to right now
+		uint8_t _brightnessValue;       // User-facing brightness (0-255 domain)
+		uint8_t _hardwareBrightness;    // Actual mapped value sent via I2C (128-157 domain)
 
 		// Internal I2C utility methods
 		void init(void);
