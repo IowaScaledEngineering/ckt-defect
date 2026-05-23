@@ -444,30 +444,16 @@ MenuEvent MenuBrightness::update()
 
 	if(state == 0)
 	{
-		// Query active brightness setting directly from the display engine cache
+		// Query current runtime value directly via agnostic data API
 		uint8_t rawVal = disp->getBrightness();
 		originalVal = rawVal;
 		
-		// --- Sanitize and Snap Random/Intermediate Background Settings ---
-		// Add 4 (half of step size 9) to round correctly to nearest math step
-		uint8_t nearestStep = (rawVal + 4) / 9;
-		if (nearestStep > 28) nearestStep = 28; // Clamp bounds safely
-		
-		// Lock working value directly onto the steps grid
-		currentVal = nearestStep * 9;
+		// Map the raw value (0-255) to the nearest discrete menu step index (0-15).
+		// Uses efficient 8-bit rounding math: step = (rawVal + 8) / 17
+		currentLevel = (static_cast<uint16_t>(rawVal) + 8) / 17;
+		if (currentLevel > 15) currentLevel = 15;
 
-		// Define custom character 1: Half-filled vertical block (left side)
-		uint8_t halfBlock[8] = {
-			0b11000,
-			0b11000,
-			0b11000,
-			0b11000,
-			0b11000,
-			0b11000,
-			0b11000,
-			0b00000
-		};
-		// Define custom character 2: Fully-filled vertical block
+		// Initialize only standard full block characters
 		uint8_t fullBlock[8] = {
 			0b11111,
 			0b11111,
@@ -478,35 +464,22 @@ MenuEvent MenuBrightness::update()
 			0b11111,
 			0b00000
 		};
-
-		disp->createCustomChar(1, halfBlock);
 		disp->createCustomChar(2, fullBlock);
 
 		state = 1;
 	}
 
 	// --- Visual Bar Mapping Logic ---
-	// With maximum currentVal capped at 252, step index spans cleanly from 0 to 28.
-	uint8_t step = currentVal / 9;
-
-	// Use 15 central character text positions between the brackets.
-	// 15 spaces * 2 segments per text column = 30 visual configurations (indices 0 to 29).
-	uint8_t targetSegments = step; 
-	if (step == 28) 
-	{
-		targetSegments = 30; // Step 28 (value 252) triggers full 15th character filling
-	}
-
-	uint8_t fullCharsNeeded = targetSegments / 2;
-	uint8_t halfCharsNeeded = targetSegments % 2;
-	uint8_t emptyCharsNeeded = 15 - fullCharsNeeded - halfCharsNeeded;
+	// 15 positions in the bar correspond to levels 1 through 15
+	uint8_t fullCharsNeeded = currentLevel;
+	uint8_t emptyCharsNeeded = 15 - fullCharsNeeded;
 
 	disp->gotoxy(0,2);
-	disp->print('0' + ((currentVal/100)%10));
-	disp->print('0' + ((currentVal/10)%10));
-	disp->print('0' + (currentVal%10));
+	disp->print('0' + ((currentLevel/100)%10));
+	disp->print('0' + ((currentLevel/10)%10));
+	disp->print('0' + (currentLevel%10));
 
-	// Render the Bar Graph on Line 1 (Second line of the display)
+	// Render the Bar Graph on Line 1 (Second row)
 	disp->gotoxy(1, 1);
 	disp->print("["); // Opening Bracket
 
@@ -515,12 +488,7 @@ MenuEvent MenuBrightness::update()
 	{
 		disp->print((char)0x02);
 	}
-	// Print Half Block if one is remaining
-	if(halfCharsNeeded > 0)
-	{
-		disp->print((char)0x01);
-	}
-	// Fill the remainder of the 15-character slot with spaces
+	// Fill remainder of the 15-character block with spaces
 	for(uint8_t i = 0; i < emptyCharsNeeded; i++)
 	{
 		disp->print(' ');
@@ -528,35 +496,37 @@ MenuEvent MenuBrightness::update()
 
 	disp->print("]"); // Closing Bracket
 
-	// --- Input Handling ---
+	// --- Input & Value Calculations ---
 	DisplayEvent ev;
 	if(disp->getEvent(&ev) && ev.type == DisplayEventType::KEY_DOWN)
 	{
 		switch(ev.keyNum)
 		{
 			case 1: // Button 1: Decrease Level
-				if(currentVal > 0)
+				if(currentLevel > 0)
 				{
-					currentVal -= 9;
-					disp->setBrightness(currentVal); // Dynamic live preview
+					currentLevel--;
+					// Convert step index directly to agnostic 0-255 domain
+					disp->setBrightness(currentLevel * 17);
 				}
 				break;
 
 			case 2: // Button 2: Increase Level
-				if(currentVal < 252) // Capped strictly at 252
+				if(currentLevel < 15)
 				{
-					currentVal += 9;
-					disp->setBrightness(currentVal); // Dynamic live preview
+					currentLevel++;
+					// Convert step index directly to agnostic 0-255 domain
+					disp->setBrightness(currentLevel * 17);
 				}
 				break;
 
 			case 3: // Button 3: SAVE
-				disp->setBrightness(currentVal); // Confirm final step directly to driver
+				disp->setBrightness(currentLevel * 17); // Commit final value
 				state = 0;
 				return MenuEvent::BACK;
 
 			case 4: // Button 4: CNCL
-				disp->setBrightness(originalVal); // Revert hardware safely to master setup
+				disp->setBrightness(originalVal); // Safely restore un-snapped cached entry setting
 				state = 0;
 				return MenuEvent::BACK;
 		}

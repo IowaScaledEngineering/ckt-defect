@@ -86,7 +86,6 @@ class MenuNumberDial : public Menu
 		std::string units = "";
 
 	public:
-		// Updated constructor to accept min and max limits
 		MenuNumberDial(const std::string &name, uint32_t *p, uint32_t min, uint32_t max, std::string units)
 		    : Menu(name), valPtr(p), minVal(min), maxVal(max), units(units)
 		{
@@ -137,9 +136,9 @@ class MenuOptionSelector : public Menu
 class MenuBrightness : public Menu
 {
 	private:
-		uint8_t currentVal;   // Working hardware value aligned to steps of 9
-		uint8_t originalVal;  // Cached on entry to restore if user cancels
-		uint8_t state = 0;    // Menu runtime flag
+		uint8_t currentLevel; // Current menu UI index: 0 to 15 (Off + 15 levels)
+		uint8_t originalVal;  // Caches raw entry value to restore if user hits cancel
+		uint8_t state = 0;    // Menu tracking state
 
 	public:
 		MenuBrightness(const std::string &name)
