@@ -81,6 +81,12 @@ void DisplayTerm::print(const char *str) { std::cout << str << std::flush; }
 
 void DisplayTerm::print(const std::string &str) { std::cout << str << std::flush; }
 
+
+void DisplayTerm::createCustomChar(uint8_t location, const uint8_t* charmap)
+{
+	// Do nothing
+}
+
 bool DisplayTerm::getEvent(DisplayEvent *event)
 {
 	if(eventQueue.isEmpty())

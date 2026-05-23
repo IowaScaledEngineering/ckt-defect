@@ -39,6 +39,9 @@ class DisplayLcd : public Display
 		void print(const char *str) override;
 		void print(const std::string &str) override;
 		
+		// Custom Character Generation
+		void createCustomChar(uint8_t location, const uint8_t* charmap) override;
+		
 		// Event Handling implementations
 		bool getEvent(DisplayEvent *event) override;
 		bool readKeys(void);

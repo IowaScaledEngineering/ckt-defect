@@ -12,6 +12,7 @@ class DisplayTerm : public Display
 		void print(char c) override;
 		void print(const char *str) override;
 		void print(const std::string &str) override;
+		void createCustomChar(uint8_t location, const uint8_t* charmap) override;
 		bool getEvent(DisplayEvent *event) override;
 
 		void readKeys(void);

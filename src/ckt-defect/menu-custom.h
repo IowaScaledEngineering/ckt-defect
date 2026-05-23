@@ -6,9 +6,23 @@ class MenuHome : public Menu
 		MenuHome(const std::string &n) : Menu(n) {}
 		MenuEvent update() override
 		{
+			byte smiley[8] = {
+			  0b00000,
+			  0b00000,
+			  0b01010,
+			  0b00000,
+			  0b00000,
+			  0b10001,
+			  0b01110,
+			  0b00000
+			};
+			
+			disp->createCustomChar(3, smiley);
+
 			disp->backlightOff();
 			disp->gotoxy(0, 0);
-			disp->print("Home Screen");
+			disp->print("Home Screen ");
+			disp->print(0x03);
 			disp->gotoxy(16, 3);
 			disp->print("MENU");
 			DisplayEvent ev;

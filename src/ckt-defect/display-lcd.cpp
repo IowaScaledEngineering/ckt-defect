@@ -222,6 +222,21 @@ void DisplayLcd::print(const std::string &str)
 	print(str.c_str());
 }
 
+void DisplayLcd::createCustomChar(uint8_t location, const uint8_t* charmap)
+{
+	location &= 0x07; // OpenLCD has 8 slots available: 0-7
+	
+	beginTransmission();
+	transmit(SETTING_COMMAND);   // Put LCD into setting mode
+	transmit(27 + location);     // OpenLCD command range for custom chars is 27-34
+	
+	for (int i = 0; i < 8; i++) {
+		transmit(charmap[i]);
+	}
+	
+	endTransmission();
+}
+
 bool DisplayLcd::getEvent(DisplayEvent *event)
 {
 	if (eventQueue.isEmpty())
