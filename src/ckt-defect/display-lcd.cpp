@@ -8,8 +8,8 @@ DisplayLcd::DisplayLcd(TwoWire &wirePort, uint8_t i2c_addr)
 	  _lastButtonState(0), // Initialize all buttons as unpressed
 	  _cursorX(0),
 	  _cursorY(0),
-	  _backlight(true),               // Defaults to active
-	  _brightnessValue(255),          // Default full brightness (0-255 range)
+	  _backlight(false),               // Defaults to off
+	  _brightnessValue(128),          // Default mid brightness (0-255 range)
 	  _hardwareBrightness(0)       // 128-157 range.  Out-of-bounds flag to guarantee initial sync
 {
 	// Initialize cache with spaces
