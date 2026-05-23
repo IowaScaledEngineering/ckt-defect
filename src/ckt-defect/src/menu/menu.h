@@ -148,3 +148,23 @@ class MenuBrightness : public Menu
 
 		MenuEvent update() override;
 };
+
+class MenuPercentageBar : public Menu
+{
+	private:
+		uint32_t *valPtr;          // Pointer to the external target value
+		uint32_t maxVal;           // Maximum raw value (corresponds to 100%)
+		uint32_t stepVal;          // How much the raw value changes per button click
+		
+		uint32_t originalVal;      // Cached entry value for canceling
+		int32_t currentVal;        // Internally managed raw value between 0 and maxVal
+		uint8_t state = 0;         // Menu state tracker
+
+	public:
+		MenuPercentageBar(const std::string &name, uint32_t *p, uint32_t max, uint32_t pcntStep)
+		    : Menu(name), valPtr(p), maxVal(max == 0 ? 100 : max), stepVal(pcntStep)
+		{
+		}
+
+		MenuEvent update() override;
+};

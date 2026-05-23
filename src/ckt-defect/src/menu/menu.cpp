@@ -529,3 +529,133 @@ MenuEvent MenuBrightness::update()
 
 	return MenuEvent::NOOP;
 }
+
+MenuEvent MenuPercentageBar::update()
+{
+	disp->backlightOn();
+	disp->gotoxy(0, 0);
+	disp->print(menuName);
+
+	// Standard bottom row navigation mapping
+	disp->gotoxy(1, 3);
+	disp->print("--");
+	disp->gotoxy(6, 3);
+	disp->print("++");
+	disp->gotoxy(11, 3);
+	disp->print("SAVE");
+	disp->gotoxy(16, 3);
+	disp->print("CNCL");
+
+	if(state == 0)
+	{
+		// Cache original entry point data in case of cancellation
+		originalVal = *valPtr;
+
+		// 1. Convert raw value to percentage with proper mathematical rounding (+ maxVal/2)
+		uint32_t rawVal = std::clamp<uint32_t>(*valPtr, 0U, maxVal);
+		uint32_t initialPct = (uint32_t)((((uint64_t)rawVal * 100) + (maxVal / 2)) / maxVal);
+
+		// 2. Snap to the nearest stepVal multiple
+		if (stepVal > 0)
+		{
+			uint32_t remainder = initialPct % stepVal;
+			if (remainder >= (stepVal + 1) / 2)
+			{
+				initialPct += (stepVal - remainder); // Round up
+			}
+			else
+			{
+				initialPct -= remainder;             // Round down
+			}
+		}
+
+		// Final safety clamp to percentage boundaries
+		currentVal = (int32_t)std::clamp<uint32_t>(initialPct, 0U, 100U);
+
+		// Initialize the 5 custom fractional-width column bar pieces (5x8 pixels)
+		uint8_t bar1[8] = { 0b10000, 0b10000, 0b10000, 0b10000, 0b10000, 0b10000, 0b10000, 0b00000 };
+		uint8_t bar2[8] = { 0b11000, 0b11000, 0b11000, 0b11000, 0b11000, 0b11000, 0b11000, 0b00000 };
+		uint8_t bar3[8] = { 0b11100, 0b11100, 0b11100, 0b11100, 0b11100, 0b11100, 0b11100, 0b00000 };
+		uint8_t bar4[8] = { 0b11110, 0b11110, 0b11110, 0b11110, 0b11110, 0b11110, 0b11110, 0b00000 };
+		uint8_t bar5[8] = { 0b11111, 0b11111, 0b11111, 0b11111, 0b11111, 0b11111, 0b11111, 0b00000 };
+
+		disp->createCustomChar(1, bar1);
+		disp->createCustomChar(2, bar2);
+		disp->createCustomChar(3, bar3);
+		disp->createCustomChar(4, bar4);
+		disp->createCustomChar(5, bar5);
+
+		state = 1;
+	}
+
+	// currentVal is now explicitly the percentage (0-100)
+	uint32_t percentage = (uint32_t)currentVal;
+
+	// --- Visual Bar Render Math (Line 1) ---
+	// 15 display slots * 5 internal columns per slot = 75 discrete steps total.
+	// We map the 0-100 percentage scale smoothly down to the 0-75 bar step scale.
+	uint32_t totalSteps = (percentage * 75) / 100;
+	uint32_t fullBlocks = totalSteps / 5;
+	uint32_t partialBlockWidth = totalSteps % 5;
+	uint32_t emptyBlocks = 15 - fullBlocks - (partialBlockWidth > 0 ? 1 : 0);
+
+	disp->gotoxy(1, 1);
+	disp->print("[");
+
+	// 1. Draw solid complete 5/5 block segments
+	for(uint32_t i = 0; i < fullBlocks; i++)
+	{
+		disp->print((char)0x05); 
+	}
+	// 2. Draw fractional remainder block segments if applicable
+	if(partialBlockWidth > 0)
+	{
+		disp->print((char)partialBlockWidth);
+	}
+	// 3. Draw remaining space padding to keep layout stable
+	for(uint32_t i = 0; i < emptyBlocks; i++)
+	{
+		disp->print(' ');
+	}
+	disp->print("]");
+
+	// --- Visual Percentage Text Render Math (Line 2) ---
+	// Center "xxx%" across the 20 horizontal spaces
+	std::string textStr = std::format("{}%", percentage);
+	int padLeft = (20 - (int)textStr.length()) / 2;
+	
+	disp->gotoxy(0, 2);
+	disp->print(std::string(padLeft, ' ') + textStr + std::string(20 - padLeft - textStr.length(), ' '));
+
+	// --- Input Handling ---
+	DisplayEvent ev;
+	if(disp->getEvent(&ev) && ev.type == DisplayEventType::KEY_DOWN)
+	{
+		switch(ev.keyNum)
+		{
+			case 1: // Button 1: Decrease percentage by stepVal
+				currentVal -= (int32_t)stepVal;
+				if (currentVal < 0) currentVal = 0;
+				break;
+
+			case 2: // Button 2: Increase percentage by stepVal
+				currentVal += (int32_t)stepVal;
+				if (currentVal > 100) currentVal = 100;
+				break;
+
+			case 3: // Button 3: SAVE
+				// Convert percentage back to the raw scale before writing to the pointer
+				*valPtr = (uint32_t)(((uint64_t)percentage * maxVal) / 100);
+				state = 0;
+				return MenuEvent::BACK;
+
+			case 4: // Button 4: CNCL
+				// Restore un-snapped raw entry value
+				*valPtr = originalVal;
+				state = 0;
+				return MenuEvent::BACK;
+		}
+	}
+
+	return MenuEvent::NOOP;
+}
