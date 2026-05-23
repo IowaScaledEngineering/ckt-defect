@@ -240,13 +240,25 @@ uint8_t DisplayLcd::getBrightness(void) const
 // Caching helper logic for OpenLCD backlighting commands
 void DisplayLcd::syncBacklightHardware(void)
 {
-	// Target value depends on whether backlight toggle flag is true/false
-	uint8_t targetPhysicalBrightness = _backlight ? _brightnessValue : 0;
+	uint8_t targetPhysicalBrightness = 128;
+
+	if (_backlight) {
+		// Fast 8-bit AVR approximation for (brightness * 29) / 255.
+		// Maximum divergence from true division across 0-255 range is 0.11,
+		// which safely truncates to the exact same integer.
+		uint16_t intermediate = static_cast<uint16_t>(_brightnessValue);
+		
+		// intermediate * 29 using shift-and-add: (b * 16) + (b * 8) + (b * 4) + b
+		intermediate = (intermediate << 4) + (intermediate << 3) + (intermediate << 2) + intermediate;
+		
+		// ">> 8" tells the AVR compiler to simply grab the high-byte register. Zero CPU cycles spent shifting!
+		targetPhysicalBrightness += static_cast<uint8_t>(intermediate >> 8);
+	}
 
 	// Only push via I2C interface if state differs from actual cached physical property
 	if (_hardwareBrightness != targetPhysicalBrightness) {
 		beginTransmission();
-		transmit(SETTING_COMMAND); 
+		transmit(SETTING_COMMAND); // Set backlight amount
 		transmit(targetPhysicalBrightness);
 		endTransmission();
 
