@@ -199,6 +199,10 @@ MenuEvent MenuDigitThumbwheel::update()
 			{
 				*valPtr = std::stoul(modStr);
 			}
+			if(saveCallback)
+			{
+				saveCallback();
+			}
 			state = 0;
 			return MenuEvent::BACK;
 		}
@@ -309,6 +313,10 @@ MenuEvent MenuNumberDial::update()
 				{
 					*valPtr = currentVal;
 				}
+				if(saveCallback)
+				{
+					saveCallback();
+				}
 				state = 0;
 				return MenuEvent::BACK;
 			case 4: // Button 4: CNCL
@@ -408,6 +416,10 @@ MenuEvent MenuBoolSelector::update()
 				else
 				{
 					*valPtr = currentVal;
+				}
+				if(saveCallback)
+				{
+					saveCallback();
 				}
 				state = 0;
 				return MenuEvent::BACK;
@@ -557,6 +569,10 @@ MenuEvent MenuOptionSelector::update()
 				else
 				{
 					*valPtr = currentVal;
+				}
+				if(saveCallback)
+				{
+					saveCallback();
 				}
 				state = 0;
 				return MenuEvent::BACK;
@@ -727,6 +743,10 @@ MenuEvent MenuPercentageBar::update()
 				else
 				{
 					*valPtr = (uint32_t)(((uint64_t)percentage * maxVal) / 100);
+				}
+				if(saveCallback)
+				{
+					saveCallback();
 				}
 				state = 0;
 				return MenuEvent::BACK;
