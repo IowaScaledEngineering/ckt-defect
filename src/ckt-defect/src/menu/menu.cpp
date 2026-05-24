@@ -88,11 +88,13 @@ MenuEvent MenuListSelector::update()
 	// Handle button-hold timing evaluation if no fresh event occurred
 	if(!gotEvent && getMillis != nullptr && lastButtonNum != 0)
 	{
-		if((getMillis() - lastButtonPressTime) >= holdDelayMs)
+		uint32_t currentDelay = isHolding ? holdDelayMs : initialHoldDelayMs;
+		if((getMillis() - lastButtonPressTime) >= currentDelay)
 		{
 			ev.type = DisplayEventType::KEY_DOWN;
 			ev.keyNum = lastButtonNum;
 			gotEvent = true;
+			isHolding = true;
 			lastButtonPressTime = getMillis(); // Reset interval for subsequent continuous repeats
 		}
 	}
@@ -114,11 +116,13 @@ MenuEvent MenuListSelector::update()
 			else if(ev.keyNum == 3)
 			{
 				lastButtonNum = 0;
+				isHolding = false;
 				return MenuEvent::FORWARD;
 			}
 			else if(ev.keyNum == 4)
 			{
 				lastButtonNum = 0;
+				isHolding = false;
 				return MenuEvent::BACK;
 			}
 		}
@@ -127,6 +131,7 @@ MenuEvent MenuListSelector::update()
 			if(ev.keyNum == lastButtonNum)
 			{
 				lastButtonNum = 0;
+				isHolding = false;
 			}
 		}
 	}
@@ -205,11 +210,13 @@ MenuEvent MenuDigitThumbwheel::update()
 	// Handle button-hold timing evaluation if no fresh event occurred
 	if(!gotEvent && getMillis != nullptr && lastButtonNum != 0)
 	{
-		if((getMillis() - lastButtonPressTime) >= holdDelayMs)
+		uint32_t currentDelay = isHolding ? holdDelayMs : initialHoldDelayMs;
+		if((getMillis() - lastButtonPressTime) >= currentDelay)
 		{
 			ev.type = DisplayEventType::KEY_DOWN;
 			ev.keyNum = lastButtonNum;
 			gotEvent = true;
+			isHolding = true;
 			lastButtonPressTime = getMillis();
 		}
 	}
@@ -242,6 +249,7 @@ MenuEvent MenuDigitThumbwheel::update()
 			else if(ev.keyNum == 3) // Save
 			{
 				lastButtonNum = 0;
+				isHolding = false;
 				if(setFunc != nullptr)
 				{
 					setFunc(std::stoul(modStr));
@@ -260,6 +268,7 @@ MenuEvent MenuDigitThumbwheel::update()
 			else if(ev.keyNum == 4) // Cancel
 			{
 				lastButtonNum = 0;
+				isHolding = false;
 				if(realTime)
 				{
 					if(setFunc != nullptr)
@@ -280,6 +289,7 @@ MenuEvent MenuDigitThumbwheel::update()
 			if(ev.keyNum == lastButtonNum)
 			{
 				lastButtonNum = 0;
+				isHolding = false;
 			}
 		}
 	}
@@ -335,11 +345,13 @@ MenuEvent MenuNumberDial::update()
 	// Handle button-hold timing evaluation if no fresh event occurred
 	if(!gotEvent && getMillis != nullptr && lastButtonNum != 0)
 	{
-		if((getMillis() - lastButtonPressTime) >= holdDelayMs)
+		uint32_t currentDelay = isHolding ? holdDelayMs : initialHoldDelayMs;
+		if((getMillis() - lastButtonPressTime) >= currentDelay)
 		{
 			ev.type = DisplayEventType::KEY_DOWN;
 			ev.keyNum = lastButtonNum;
 			gotEvent = true;
+			isHolding = true;
 			lastButtonPressTime = getMillis();
 		}
 	}
@@ -384,6 +396,7 @@ MenuEvent MenuNumberDial::update()
 					break;
 				case 3: // Button 3: SAVE
 					lastButtonNum = 0;
+					isHolding = false;
 					if(setFunc != nullptr)
 					{
 						setFunc(currentVal);
@@ -400,6 +413,7 @@ MenuEvent MenuNumberDial::update()
 					return MenuEvent::BACK;
 				case 4: // Button 4: CNCL
 					lastButtonNum = 0;
+					isHolding = false;
 					if(realTime)
 					{
 						if(setFunc != nullptr)
@@ -420,6 +434,7 @@ MenuEvent MenuNumberDial::update()
 			if(ev.keyNum == lastButtonNum)
 			{
 				lastButtonNum = 0;
+				isHolding = false;
 			}
 		}
 	}
@@ -468,11 +483,13 @@ MenuEvent MenuBoolSelector::update()
 	// Handle button-hold timing evaluation if no fresh event occurred
 	if(!gotEvent && getMillis != nullptr && lastButtonNum != 0)
 	{
-		if((getMillis() - lastButtonPressTime) >= holdDelayMs)
+		uint32_t currentDelay = isHolding ? holdDelayMs : initialHoldDelayMs;
+		if((getMillis() - lastButtonPressTime) >= currentDelay)
 		{
 			ev.type = DisplayEventType::KEY_DOWN;
 			ev.keyNum = lastButtonNum;
 			gotEvent = true;
+			isHolding = true;
 			lastButtonPressTime = getMillis();
 		}
 	}
@@ -515,6 +532,7 @@ MenuEvent MenuBoolSelector::update()
 					break;
 				case 3: // Button 3: SAVE
 					lastButtonNum = 0;
+					isHolding = false;
 					if(setFunc != nullptr)
 					{
 						setFunc(currentVal);
@@ -531,6 +549,7 @@ MenuEvent MenuBoolSelector::update()
 					return MenuEvent::BACK;
 				case 4: // Button 4: CNCL
 					lastButtonNum = 0;
+					isHolding = false;
 					if(realTime)
 					{
 						if(setFunc != nullptr)
@@ -551,6 +570,7 @@ MenuEvent MenuBoolSelector::update()
 			if(ev.keyNum == lastButtonNum)
 			{
 				lastButtonNum = 0;
+				isHolding = false;
 			}
 		}
 	}
@@ -646,11 +666,13 @@ MenuEvent MenuOptionSelector::update()
 	// Handle button-hold timing evaluation if no fresh event occurred
 	if(!gotEvent && getMillis != nullptr && lastButtonNum != 0)
 	{
-		if((getMillis() - lastButtonPressTime) >= holdDelayMs)
+		uint32_t currentDelay = isHolding ? holdDelayMs : initialHoldDelayMs;
+		if((getMillis() - lastButtonPressTime) >= currentDelay)
 		{
 			ev.type = DisplayEventType::KEY_DOWN;
 			ev.keyNum = lastButtonNum;
 			gotEvent = true;
+			isHolding = true;
 			lastButtonPressTime = getMillis();
 		}
 	}
@@ -695,6 +717,7 @@ MenuEvent MenuOptionSelector::update()
 					break;
 				case 3: // Button 3: SAVE
 					lastButtonNum = 0;
+					isHolding = false;
 					if(setFunc != nullptr)
 					{
 						setFunc(currentVal);
@@ -711,6 +734,7 @@ MenuEvent MenuOptionSelector::update()
 					return MenuEvent::BACK;
 				case 4: // Button 4: CNCL
 					lastButtonNum = 0;
+					isHolding = false;
 					if(realTime)
 					{
 						if(setFunc != nullptr)
@@ -731,6 +755,7 @@ MenuEvent MenuOptionSelector::update()
 			if(ev.keyNum == lastButtonNum)
 			{
 				lastButtonNum = 0;
+				isHolding = false;
 			}
 		}
 	}
@@ -842,11 +867,13 @@ MenuEvent MenuPercentageBar::update()
 	// Handle button-hold timing evaluation if no fresh event occurred
 	if(!gotEvent && getMillis != nullptr && lastButtonNum != 0)
 	{
-		if((getMillis() - lastButtonPressTime) >= holdDelayMs)
+		uint32_t currentDelay = isHolding ? holdDelayMs : initialHoldDelayMs;
+		if((getMillis() - lastButtonPressTime) >= currentDelay)
 		{
 			ev.type = DisplayEventType::KEY_DOWN;
 			ev.keyNum = lastButtonNum;
 			gotEvent = true;
+			isHolding = true;
 			lastButtonPressTime = getMillis();
 		}
 	}
@@ -897,6 +924,7 @@ MenuEvent MenuPercentageBar::update()
 
 				case 3: // Button 3: SAVE
 					lastButtonNum = 0;
+					isHolding = false;
 					if(setFunc != nullptr)
 					{
 						setFunc((uint32_t)(((uint64_t)percentage * maxVal) / 100));
@@ -914,6 +942,7 @@ MenuEvent MenuPercentageBar::update()
 
 				case 4: // Button 4: CNCL
 					lastButtonNum = 0;
+					isHolding = false;
 					if(realTime)
 					{
 						if(setFunc != nullptr)
@@ -934,6 +963,7 @@ MenuEvent MenuPercentageBar::update()
 			if(ev.keyNum == lastButtonNum)
 			{
 				lastButtonNum = 0;
+				isHolding = false;
 			}
 		}
 	}
