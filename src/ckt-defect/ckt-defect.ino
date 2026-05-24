@@ -394,6 +394,8 @@ void loop()
 	mainSel->addChild(menu9);
 
 	MenuManager menuManager(lcd, home);
+	Menu::setTimingCallback(millis); 
+	Menu::setHoldDelay(400);
 
 	// Read NVM configuration
 	loadConfiguration(&cfg);

@@ -23,12 +23,22 @@ class Menu
 		std::vector<std::shared_ptr<Menu>> children;
 		bool hidden = false;
 
+		// Global holding/repeating timers and button state properties
+		static inline std::function<uint32_t()> getMillis = nullptr;
+		static inline uint32_t holdDelayMs = 500; // Default programmable time (ms) to repeat
+		static inline int lastButtonNum = 0;
+		static inline uint32_t lastButtonPressTime = 0;
+
 	public:
 		Menu(const std::string &name) : menuName(name) {}
 		virtual ~Menu() = default;
 		std::string getName() const { return menuName; }
 		static void setDisplay(Display *d) { disp = d; }
 		virtual MenuEvent update() = 0;
+
+		// Setter interface for global button repeating assets
+		static void setTimingCallback(std::function<uint32_t()> callback) { getMillis = callback; }
+		static void setHoldDelay(uint32_t delayMs) { holdDelayMs = delayMs; }
 
 		virtual int getSelectedIndex() const { return 0; }
 
@@ -119,8 +129,7 @@ class MenuNumberDial : public Menu
 
 		// Constructor using std::function callbacks
 		MenuNumberDial(const std::string &name, std::function<uint32_t()> getter,
-			       std::function<void(uint32_t)> setter, bool realTimeUpdate, uint32_t min, uint32_t max,
-			       std::string units, std::function<void()> onSave = nullptr)
+			       std::function<void(uint32_t)> setter, bool realTimeUpdate, uint32_t min, uint32_t max, std::string units, std::function<void()> onSave = nullptr)
 		    : Menu(name), valPtr(nullptr), getFunc(std::move(getter)), setFunc(std::move(setter)),
 		      realTime(realTimeUpdate), minVal(min), maxVal(max), units(units), saveCallback(std::move(onSave))
 		{
@@ -139,28 +148,24 @@ class MenuBoolSelector : public Menu
 		bool originalVal;
 		bool currentVal;
 		std::string opt1Name;
-		std::string opt2Name;
 		std::string btn1Name;
+		std::string opt2Name;
 		std::string btn2Name;
 		uint8_t state = 0;
 		std::function<void()> saveCallback;
 
 	public:
 		// Constructor for direct pointers
-		MenuBoolSelector(const std::string &name, bool *p, bool realTimeUpdate, const std::string &opt1, const std::string &btn1,
-				 const std::string &opt2, const std::string &btn2, std::function<void()> onSave = nullptr)
-		    : Menu(name), valPtr(p), getFunc(nullptr), setFunc(nullptr), realTime(realTimeUpdate), currentVal(*p),
-		      opt1Name(opt1), opt2Name(opt2), btn1Name(btn1), btn2Name(btn2), saveCallback(std::move(onSave))
+		MenuBoolSelector(const std::string &name, bool *p, bool realTimeUpdate, const std::string &opt1, const std::string &btn1, const std::string &opt2, const std::string &btn2, std::function<void()> onSave = nullptr)
+		    : Menu(name), valPtr(p), getFunc(nullptr), setFunc(nullptr), realTime(realTimeUpdate),
+		      opt1Name(opt1), btn1Name(btn1), opt2Name(opt2), btn2Name(btn2), saveCallback(std::move(onSave))
 		{
 		}
 
 		// Constructor using std::function callbacks
-		MenuBoolSelector(const std::string &name, std::function<bool()> getter,
-				 std::function<void(bool)> setter, bool realTimeUpdate, const std::string &opt1,
-				 const std::string &btn1, const std::string &opt2, const std::string &btn2, std::function<void()> onSave = nullptr)
-		    : Menu(name), valPtr(nullptr), getFunc(std::move(getter)), setFunc(std::move(setter)),
-		      realTime(realTimeUpdate), currentVal(false), opt1Name(opt1), opt2Name(opt2), btn1Name(btn1),
-		      btn2Name(btn2), saveCallback(std::move(onSave))
+		MenuBoolSelector(const std::string &name, std::function<bool()> getter, std::function<void(bool)> setter, bool realTimeUpdate, const std::string &opt1, const std::string &btn1, const std::string &opt2, const std::string &btn2, std::function<void()> onSave = nullptr)
+		    : Menu(name), valPtr(nullptr), getFunc(std::move(getter)), setFunc(std::move(setter)), realTime(realTimeUpdate),
+		      opt1Name(opt1), btn1Name(btn1), opt2Name(opt2), btn2Name(btn2), saveCallback(std::move(onSave))
 		{
 		}
 
@@ -169,10 +174,12 @@ class MenuBoolSelector : public Menu
 
 class MenuOptionSelector : public Menu
 {
+	private:
 		uint32_t *valPtr;
 		std::function<uint32_t()> getFunc;
 		std::function<void(uint32_t)> setFunc;
 		bool realTime;
+
 		uint32_t originalVal;
 		uint32_t currentVal;
 		std::vector<std::string> options;
@@ -183,12 +190,11 @@ class MenuOptionSelector : public Menu
 	public:
 		// Constructor for direct pointers
 		MenuOptionSelector(const std::string &name, uint32_t *p, bool realTimeUpdate, const std::vector<std::string> &opts, std::function<void()> onSave = nullptr)
-		    : Menu(name), valPtr(p), getFunc(nullptr), setFunc(nullptr), realTime(realTimeUpdate), currentVal(*p),
-		      options(opts), saveCallback(std::move(onSave))
+		    : Menu(name), valPtr(p), getFunc(nullptr), setFunc(nullptr), realTime(realTimeUpdate),
+		      currentVal(0), options(opts), saveCallback(std::move(onSave))
 		{
 		}
 
-		// Constructor using std::function callbacks
 		MenuOptionSelector(const std::string &name, std::function<uint32_t()> getter,
 				   std::function<void(uint32_t)> setter, bool realTimeUpdate,
 				   const std::vector<std::string> &opts, std::function<void()> onSave = nullptr)
@@ -226,8 +232,7 @@ class MenuPercentageBar : public Menu
 
 		// Constructor using std::function callbacks
 		MenuPercentageBar(const std::string &name, std::function<uint32_t()> getter,
-				  std::function<void(uint32_t)> setter, bool realTimeUpdate, uint32_t max,
-				  uint32_t pcntStep, std::function<void()> onSave = nullptr)
+				  std::function<void(uint32_t)> setter, bool realTimeUpdate, uint32_t max, uint32_t pcntStep, std::function<void()> onSave = nullptr)
 		    : Menu(name), valPtr(nullptr), getFunc(std::move(getter)), setFunc(std::move(setter)),
 		      realTime(realTimeUpdate), maxVal(max == 0 ? 100 : max), stepVal(pcntStep), saveCallback(std::move(onSave))
 		{
