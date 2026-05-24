@@ -608,8 +608,7 @@ clrTestPoint(TP2);
 		if(displayPresent && !oldDisplayPresent)
 		{
 			esp_task_wdt_reset();
-			Serial.println("\nDisplay Found");
-			delay(500);  // Wait for things to settle
+			delay(100);  // Wait for things to settle
 			lcd->refresh();
 		}
 		oldDisplayPresent = displayPresent;
