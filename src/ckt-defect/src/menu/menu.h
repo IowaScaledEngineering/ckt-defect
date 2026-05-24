@@ -63,21 +63,41 @@ class MenuListSelector : public Menu
 class MenuDigitThumbwheel : public Menu
 {
 		uint32_t *valPtr;
+		std::function<uint32_t()> getFunc;
+		std::function<void(uint32_t)> setFunc;
+		bool realTime;
+		uint32_t originalVal;
 		uint8_t iDigits, fDigits, state = 0, curDigit = 0;
 		std::string modStr;
 		bool suppressLeadingZeros;
 
 	public:
 		MenuDigitThumbwheel(const std::string &name, uint32_t *p, uint32_t i, uint32_t f, bool suppress)
-		    : Menu(name), valPtr(p), iDigits(i), fDigits(f), suppressLeadingZeros(suppress)
+		    : Menu(name), valPtr(p), getFunc(nullptr), setFunc(nullptr), realTime(false),
+		      iDigits(i), fDigits(f), suppressLeadingZeros(suppress)
 		{
 		}
+
+		MenuDigitThumbwheel(const std::string &name,
+		                    std::function<uint32_t()> getter,
+		                    std::function<void(uint32_t)> setter,
+		                    uint32_t i, uint32_t f, bool suppress,
+		                    bool realTimeUpdate)
+		    : Menu(name), valPtr(nullptr), getFunc(std::move(getter)), setFunc(std::move(setter)),
+		      realTime(realTimeUpdate), iDigits(i), fDigits(f), suppressLeadingZeros(suppress)
+		{
+		}
+
 		MenuEvent update() override;
 };
 
 class MenuNumberDial : public Menu
 {
 		uint32_t *valPtr;
+		std::function<uint32_t()> getFunc;
+		std::function<void(uint32_t)> setFunc;
+		bool realTime;
+		uint32_t originalVal;
 		uint32_t currentVal;
 		uint32_t minVal;
 		uint32_t maxVal;
@@ -88,7 +108,19 @@ class MenuNumberDial : public Menu
 
 	public:
 		MenuNumberDial(const std::string &name, uint32_t *p, uint32_t min, uint32_t max, std::string units)
-		    : Menu(name), valPtr(p), minVal(min), maxVal(max), units(units)
+		    : Menu(name), valPtr(p), getFunc(nullptr), setFunc(nullptr), realTime(false),
+		      minVal(min), maxVal(max), units(units)
+		{
+			maxDigits = (int)std::to_string(maxVal).length();
+		}
+
+		MenuNumberDial(const std::string &name,
+		               std::function<uint32_t()> getter,
+		               std::function<void(uint32_t)> setter,
+		               uint32_t min, uint32_t max, std::string units,
+		               bool realTimeUpdate)
+		    : Menu(name), valPtr(nullptr), getFunc(std::move(getter)), setFunc(std::move(setter)),
+		      realTime(realTimeUpdate), minVal(min), maxVal(max), units(units)
 		{
 			maxDigits = (int)std::to_string(maxVal).length();
 		}
@@ -99,6 +131,10 @@ class MenuNumberDial : public Menu
 class MenuBoolSelector : public Menu
 {
 		bool *valPtr;
+		std::function<bool()> getFunc;
+		std::function<void(bool)> setFunc;
+		bool realTime;
+		bool originalVal;
 		bool currentVal;
 		std::string opt1Name;
 		std::string opt2Name;
@@ -109,8 +145,20 @@ class MenuBoolSelector : public Menu
 	public:
 		MenuBoolSelector(const std::string &name, bool *p, const std::string &opt1, const std::string &btn1,
 				 const std::string &opt2, const std::string &btn2)
-		    : Menu(name), valPtr(p), currentVal(*p), opt1Name(opt1), opt2Name(opt2), btn1Name(btn1),
-		      btn2Name(btn2)
+		    : Menu(name), valPtr(p), getFunc(nullptr), setFunc(nullptr), realTime(false),
+		      currentVal(*p), opt1Name(opt1), opt2Name(opt2), btn1Name(btn1), btn2Name(btn2)
+		{
+		}
+
+		MenuBoolSelector(const std::string &name,
+		                 std::function<bool()> getter,
+		                 std::function<void(bool)> setter,
+		                 const std::string &opt1, const std::string &btn1,
+		                 const std::string &opt2, const std::string &btn2,
+		                 bool realTimeUpdate)
+		    : Menu(name), valPtr(nullptr), getFunc(std::move(getter)), setFunc(std::move(setter)),
+		      realTime(realTimeUpdate), currentVal(false), opt1Name(opt1), opt2Name(opt2),
+		      btn1Name(btn1), btn2Name(btn2)
 		{
 		}
 
@@ -120,6 +168,10 @@ class MenuBoolSelector : public Menu
 class MenuOptionSelector : public Menu
 {
 		uint32_t *valPtr;
+		std::function<uint32_t()> getFunc;
+		std::function<void(uint32_t)> setFunc;
+		bool realTime;
+		uint32_t originalVal;
 		uint32_t currentVal;
 		std::vector<std::string> options;
 		uint32_t topIndex = 0;
@@ -127,7 +179,18 @@ class MenuOptionSelector : public Menu
 
 	public:
 		MenuOptionSelector(const std::string &name, uint32_t *p, const std::vector<std::string> &opts)
-		    : Menu(name), valPtr(p), currentVal(*p), options(opts)
+		    : Menu(name), valPtr(p), getFunc(nullptr), setFunc(nullptr), realTime(false),
+		      currentVal(*p), options(opts)
+		{
+		}
+
+		MenuOptionSelector(const std::string &name,
+		                   std::function<uint32_t()> getter,
+		                   std::function<void(uint32_t)> setter,
+		                   const std::vector<std::string> &opts,
+		                   bool realTimeUpdate)
+		    : Menu(name), valPtr(nullptr), getFunc(std::move(getter)), setFunc(std::move(setter)),
+		      realTime(realTimeUpdate), currentVal(0), options(opts)
 		{
 		}
 

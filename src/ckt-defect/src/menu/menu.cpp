@@ -116,8 +116,11 @@ MenuEvent MenuDigitThumbwheel::update()
 
 	if(state == 0)
 	{
+		// Read current value via getter or pointer
+		uint32_t initVal = (getFunc != nullptr) ? getFunc() : *valPtr;
+		originalVal = initVal;
 		// modStr stores raw digits for logic
-		modStr = std::format("{:0{}d}", *valPtr, iDigits + fDigits);
+		modStr = std::format("{:0{}d}", initVal, iDigits + fDigits);
 		curDigit = 0;
 		state = 1;
 	}
@@ -169,6 +172,10 @@ MenuEvent MenuDigitThumbwheel::update()
 		if(ev.keyNum == 1) // Increment
 		{
 			modStr[curDigit] = ((modStr[curDigit] - '0' + 1) % 10) + '0';
+			if (realTime && setFunc != nullptr)
+			{
+				setFunc(std::stoul(modStr));
+			}
 		}
 		else if(ev.keyNum == 2) // Move Cursor
 		{
@@ -176,12 +183,27 @@ MenuEvent MenuDigitThumbwheel::update()
 		}
 		else if(ev.keyNum == 3) // Save
 		{
-			*valPtr = std::stoul(modStr);
+			if (setFunc != nullptr)
+			{
+				setFunc(std::stoul(modStr));
+			}
+			else
+			{
+				*valPtr = std::stoul(modStr);
+			}
 			state = 0;
 			return MenuEvent::BACK;
 		}
-		else if(ev.keyNum == 4) // Back
+		else if(ev.keyNum == 4) // Cancel
 		{
+			if (realTime && setFunc != nullptr)
+			{
+				setFunc(originalVal);
+			}
+			else if (valPtr != nullptr)
+			{
+				*valPtr = originalVal;
+			}
 			state = 0;
 			return MenuEvent::BACK;
 		}
@@ -209,7 +231,9 @@ MenuEvent MenuNumberDial::update()
 	if(state == 0)
 	{
 		// Sync with current variable and clamp within range
-		currentVal = std::clamp(*valPtr, minVal, maxVal);
+		uint32_t initVal = (getFunc != nullptr) ? getFunc() : *valPtr;
+		currentVal = std::clamp(initVal, minVal, maxVal);
+		originalVal = currentVal;
 
 		state = 1;
 	}
@@ -239,16 +263,39 @@ MenuEvent MenuNumberDial::update()
 			case 1: // --
 				if(currentVal > minVal)
 					currentVal--;
+				if (realTime && setFunc != nullptr)
+				{
+					setFunc(currentVal);
+				}
 				break;
 			case 2: // ++
 				if(currentVal < maxVal)
 					currentVal++;
+				if (realTime && setFunc != nullptr)
+				{
+					setFunc(currentVal);
+				}
 				break;
-			case 3: // SAVE - Update original pointer and exit
-				*valPtr = currentVal;
+			case 3: // SAVE - Update via setter or pointer and exit
+				if (setFunc != nullptr)
+				{
+					setFunc(currentVal);
+				}
+				else
+				{
+					*valPtr = currentVal;
+				}
 				state = 0;
 				return MenuEvent::BACK;
-			case 4: // CNCL - Exit without updating
+			case 4: // CNCL - Revert and exit
+				if (realTime && setFunc != nullptr)
+				{
+					setFunc(originalVal);
+				}
+				else if (valPtr != nullptr)
+				{
+					*valPtr = originalVal;
+				}
 				state = 0;
 				return MenuEvent::BACK;
 		}
@@ -275,8 +322,9 @@ MenuEvent MenuBoolSelector::update()
 
 	if(state == 0)
 	{
-		// Sync with current variable state
-		currentVal = *valPtr;
+		// Sync with current variable state via getter or pointer
+		currentVal = (getFunc != nullptr) ? getFunc() : *valPtr;
+		originalVal = currentVal;
 
 		state = 1;
 	}
@@ -301,15 +349,38 @@ MenuEvent MenuBoolSelector::update()
 		{
 			case 1: // Select Option 1 (true)
 				currentVal = true;
+				if (realTime && setFunc != nullptr)
+				{
+					setFunc(currentVal);
+				}
 				break;
 			case 2: // Select Option 2 (false)
 				currentVal = false;
+				if (realTime && setFunc != nullptr)
+				{
+					setFunc(currentVal);
+				}
 				break;
-			case 3: // SAVE - Commit change to pointer and back out
-				*valPtr = currentVal;
+			case 3: // SAVE - Commit change and back out
+				if (setFunc != nullptr)
+				{
+					setFunc(currentVal);
+				}
+				else
+				{
+					*valPtr = currentVal;
+				}
 				state = 0;
 				return MenuEvent::BACK;
-			case 4: // CNCL - Revert/Ignore change and back out
+			case 4: // CNCL - Revert and back out
+				if (realTime && setFunc != nullptr)
+				{
+					setFunc(originalVal);
+				}
+				else if (valPtr != nullptr)
+				{
+					*valPtr = originalVal;
+				}
 				state = 0;
 				return MenuEvent::BACK;
 		}
@@ -336,10 +407,11 @@ MenuEvent MenuOptionSelector::update()
 
 	if(state == 0)
 	{
-		// Sync with current variable state
-		currentVal = *valPtr;
+		// Sync with current variable state via getter or pointer
+		currentVal = (getFunc != nullptr) ? getFunc() : *valPtr;
+		originalVal = currentVal;
 
-		// If the pointer is beyond the end of the list, go to the last item
+		// If the value is beyond the end of the list, go to the last item
 		if(currentVal >= options.size())
 		{
 			currentVal = options.empty() ? 0 : (uint32_t)options.size() - 1;
@@ -408,16 +480,39 @@ MenuEvent MenuOptionSelector::update()
 			case 1: // UP
 				if(currentVal > 0)
 					currentVal--;
+				if (realTime && setFunc != nullptr)
+				{
+					setFunc(currentVal);
+				}
 				break;
 			case 2: // DOWN
 				if(currentVal < options.size() - 1)
 					currentVal++;
+				if (realTime && setFunc != nullptr)
+				{
+					setFunc(currentVal);
+				}
 				break;
 			case 3: // SAVE
-				*valPtr = currentVal;
+				if (setFunc != nullptr)
+				{
+					setFunc(currentVal);
+				}
+				else
+				{
+					*valPtr = currentVal;
+				}
 				state = 0;
 				return MenuEvent::BACK;
 			case 4: // CNCL
+				if (realTime && setFunc != nullptr)
+				{
+					setFunc(originalVal);
+				}
+				else if (valPtr != nullptr)
+				{
+					*valPtr = originalVal;
+				}
 				state = 0;
 				return MenuEvent::BACK;
 		}
