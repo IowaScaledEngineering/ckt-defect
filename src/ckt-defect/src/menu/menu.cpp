@@ -2,6 +2,26 @@
 #include <algorithm>
 #include <format>
 
+bool Menu::getMenuInputEvent(DisplayEvent *ev)
+{
+	bool gotEvent = disp->getEvent(ev);
+
+	// Handle button-hold timing evaluation if no fresh event occurred
+	if(!gotEvent && getMillis != nullptr && lastButtonNum != 0)
+	{
+		uint32_t currentDelay = isHolding ? holdDelayMs : initialHoldDelayMs;
+		if((getMillis() - lastButtonPressTime) >= currentDelay)
+		{
+			ev->type = DisplayEventType::KEY_DOWN;
+			ev->keyNum = lastButtonNum;
+			gotEvent = true;
+			isHolding = true;
+			lastButtonPressTime = getMillis(); // Reset interval for subsequent continuous repeats
+		}
+	}
+	return gotEvent;
+}
+
 MenuEvent MenuListSelector::update()
 {
 	// Filter visible children
@@ -83,21 +103,7 @@ MenuEvent MenuListSelector::update()
 
 	// Fetch hardware interaction events
 	DisplayEvent ev;
-	bool gotEvent = disp->getEvent(&ev);
-
-	// Handle button-hold timing evaluation if no fresh event occurred
-	if(!gotEvent && getMillis != nullptr && lastButtonNum != 0)
-	{
-		uint32_t currentDelay = isHolding ? holdDelayMs : initialHoldDelayMs;
-		if((getMillis() - lastButtonPressTime) >= currentDelay)
-		{
-			ev.type = DisplayEventType::KEY_DOWN;
-			ev.keyNum = lastButtonNum;
-			gotEvent = true;
-			isHolding = true;
-			lastButtonPressTime = getMillis(); // Reset interval for subsequent continuous repeats
-		}
-	}
+	bool gotEvent = getMenuInputEvent(&ev);
 
 	if(gotEvent)
 	{
@@ -205,21 +211,7 @@ MenuEvent MenuDigitThumbwheel::update()
 	}
 
 	DisplayEvent ev;
-	bool gotEvent = disp->getEvent(&ev);
-
-	// Handle button-hold timing evaluation if no fresh event occurred
-	if(!gotEvent && getMillis != nullptr && lastButtonNum != 0)
-	{
-		uint32_t currentDelay = isHolding ? holdDelayMs : initialHoldDelayMs;
-		if((getMillis() - lastButtonPressTime) >= currentDelay)
-		{
-			ev.type = DisplayEventType::KEY_DOWN;
-			ev.keyNum = lastButtonNum;
-			gotEvent = true;
-			isHolding = true;
-			lastButtonPressTime = getMillis();
-		}
-	}
+	bool gotEvent = getMenuInputEvent(&ev);
 
 	if(gotEvent)
 	{
@@ -340,21 +332,7 @@ MenuEvent MenuNumberDial::update()
 	}
 
 	DisplayEvent ev;
-	bool gotEvent = disp->getEvent(&ev);
-
-	// Handle button-hold timing evaluation if no fresh event occurred
-	if(!gotEvent && getMillis != nullptr && lastButtonNum != 0)
-	{
-		uint32_t currentDelay = isHolding ? holdDelayMs : initialHoldDelayMs;
-		if((getMillis() - lastButtonPressTime) >= currentDelay)
-		{
-			ev.type = DisplayEventType::KEY_DOWN;
-			ev.keyNum = lastButtonNum;
-			gotEvent = true;
-			isHolding = true;
-			lastButtonPressTime = getMillis();
-		}
-	}
+	bool gotEvent = getMenuInputEvent(&ev);
 
 	if(gotEvent)
 	{
@@ -478,7 +456,7 @@ MenuEvent MenuBoolSelector::update()
 	disp->print("    "); // Clear any trailing artifacts
 
 	DisplayEvent ev;
-	bool gotEvent = disp->getEvent(&ev);
+	bool gotEvent = getMenuInputEvent(&ev);
 
 	if(gotEvent)
 	{
@@ -633,21 +611,7 @@ MenuEvent MenuOptionSelector::update()
 
 	// 3. Process Input Events
 	DisplayEvent ev;
-	bool gotEvent = disp->getEvent(&ev);
-
-	// Handle button-hold timing evaluation if no fresh event occurred
-	if(!gotEvent && getMillis != nullptr && lastButtonNum != 0)
-	{
-		uint32_t currentDelay = isHolding ? holdDelayMs : initialHoldDelayMs;
-		if((getMillis() - lastButtonPressTime) >= currentDelay)
-		{
-			ev.type = DisplayEventType::KEY_DOWN;
-			ev.keyNum = lastButtonNum;
-			gotEvent = true;
-			isHolding = true;
-			lastButtonPressTime = getMillis();
-		}
-	}
+	bool gotEvent = getMenuInputEvent(&ev);
 
 	if(gotEvent)
 	{
@@ -834,21 +798,7 @@ MenuEvent MenuPercentageBar::update()
 
 	// --- Input Handling ---
 	DisplayEvent ev;
-	bool gotEvent = disp->getEvent(&ev);
-
-	// Handle button-hold timing evaluation if no fresh event occurred
-	if(!gotEvent && getMillis != nullptr && lastButtonNum != 0)
-	{
-		uint32_t currentDelay = isHolding ? holdDelayMs : initialHoldDelayMs;
-		if((getMillis() - lastButtonPressTime) >= currentDelay)
-		{
-			ev.type = DisplayEventType::KEY_DOWN;
-			ev.keyNum = lastButtonNum;
-			gotEvent = true;
-			isHolding = true;
-			lastButtonPressTime = getMillis();
-		}
-	}
+	bool gotEvent = getMenuInputEvent(&ev);
 
 	if(gotEvent)
 	{

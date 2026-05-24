@@ -31,6 +31,8 @@ class Menu
 		static inline uint32_t lastButtonPressTime = 0;
 		static inline bool isHolding = false; // Tracks if initial timeout has expired
 
+		// Shared helper to retrieve and process display/hold events
+		bool getMenuInputEvent(DisplayEvent *ev);
 	public:
 		Menu(const std::string &name) : menuName(name) {}
 		virtual ~Menu() = default;
