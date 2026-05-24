@@ -480,20 +480,6 @@ MenuEvent MenuBoolSelector::update()
 	DisplayEvent ev;
 	bool gotEvent = disp->getEvent(&ev);
 
-	// Handle button-hold timing evaluation if no fresh event occurred
-	if(!gotEvent && getMillis != nullptr && lastButtonNum != 0)
-	{
-		uint32_t currentDelay = isHolding ? holdDelayMs : initialHoldDelayMs;
-		if((getMillis() - lastButtonPressTime) >= currentDelay)
-		{
-			ev.type = DisplayEventType::KEY_DOWN;
-			ev.keyNum = lastButtonNum;
-			gotEvent = true;
-			isHolding = true;
-			lastButtonPressTime = getMillis();
-		}
-	}
-
 	if(gotEvent)
 	{
 		if(ev.type == DisplayEventType::KEY_DOWN)
@@ -502,7 +488,6 @@ MenuEvent MenuBoolSelector::update()
 			{
 				case 1: // Button 1 select Option 1 (true)
 					currentVal = true;
-					if(getMillis != nullptr) { lastButtonNum = 1; lastButtonPressTime = getMillis(); }
 					if(realTime)
 					{
 						if(setFunc != nullptr)
@@ -517,7 +502,6 @@ MenuEvent MenuBoolSelector::update()
 					break;
 				case 2: // Button 2 select Option 2 (false)
 					currentVal = false;
-					if(getMillis != nullptr) { lastButtonNum = 2; lastButtonPressTime = getMillis(); }
 					if(realTime)
 					{
 						if(setFunc != nullptr)
@@ -531,8 +515,6 @@ MenuEvent MenuBoolSelector::update()
 					}
 					break;
 				case 3: // Button 3: SAVE
-					lastButtonNum = 0;
-					isHolding = false;
 					if(setFunc != nullptr)
 					{
 						setFunc(currentVal);
@@ -548,8 +530,6 @@ MenuEvent MenuBoolSelector::update()
 					state = 0;
 					return MenuEvent::BACK;
 				case 4: // Button 4: CNCL
-					lastButtonNum = 0;
-					isHolding = false;
 					if(realTime)
 					{
 						if(setFunc != nullptr)
@@ -563,14 +543,6 @@ MenuEvent MenuBoolSelector::update()
 					}
 					state = 0;
 					return MenuEvent::BACK;
-			}
-		}
-		else if(ev.type == DisplayEventType::KEY_UP)
-		{
-			if(ev.keyNum == lastButtonNum)
-			{
-				lastButtonNum = 0;
-				isHolding = false;
 			}
 		}
 	}
