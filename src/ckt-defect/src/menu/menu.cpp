@@ -2,6 +2,8 @@
 #include <algorithm>
 #include <format>
 
+// --- Centralized Base Class Input Helper Mechanisms ---
+
 bool Menu::getMenuInputEvent(DisplayEvent *ev)
 {
 	bool gotEvent = disp->getEvent(ev);
@@ -21,6 +23,64 @@ bool Menu::getMenuInputEvent(DisplayEvent *ev)
 	}
 	return gotEvent;
 }
+
+void Menu::handleButtonPress(int keyNum)
+{
+	if(getMillis != nullptr) 
+	{ 
+		lastButtonNum = keyNum; 
+		lastButtonPressTime = getMillis(); 
+	}
+}
+
+void Menu::handleButtonRelease(int keyNum)
+{
+	if(keyNum == lastButtonNum)
+	{
+		lastButtonNum = 0;
+		isHolding = false;
+	}
+}
+
+uint32_t Menu::boundGetValue()
+{
+	if(getFunc32) return getFunc32();
+	if(valPtr32) return *valPtr32;
+	if(getFuncBool) return getFuncBool() ? 1 : 0;
+	if(valPtrBool) return *valPtrBool ? 1 : 0;
+	return 0;
+}
+
+void Menu::setValue(uint32_t value)
+{
+	if(setFunc32) setFunc32(value);
+	else if(valPtr32) *valPtr32 = value;
+	else if(setFuncBool) setFuncBool(value != 0);
+	else if(valPtrBool) *valPtrBool = (value != 0);
+}
+
+void Menu::applyChange(uint32_t value)
+{
+	lastButtonNum = 0;
+	isHolding = false;
+	setValue(value);
+	if(saveCallback)
+	{
+		saveCallback();
+	}
+}
+
+void Menu::cancel()
+{
+	lastButtonNum = 0;
+	isHolding = false;
+	if(realTime)
+	{
+		setValue(originalVal);
+	}
+}
+
+// --- Menu UI Subclass Implementations ---
 
 MenuEvent MenuListSelector::update()
 {
@@ -90,8 +150,7 @@ MenuEvent MenuListSelector::update()
 			int remaining = 18 - (int)name.length();
 			if(remaining > 0)
 			{
-				std::string remainderClear(remaining, ' ');
-				disp->print(remainderClear);
+				disp->print(std::string(remaining, ' '));
 			}
 		}
 		else
@@ -101,23 +160,20 @@ MenuEvent MenuListSelector::update()
 		}
 	}
 
-	// Fetch hardware interaction events
 	DisplayEvent ev;
-	bool gotEvent = getMenuInputEvent(&ev);
-
-	if(gotEvent)
+	if(getMenuInputEvent(&ev))
 	{
 		if(ev.type == DisplayEventType::KEY_DOWN)
 		{
 			if(ev.keyNum == 1 && selector > 0)
 			{
 				selector--;
-				if(getMillis != nullptr) { lastButtonNum = 1; lastButtonPressTime = getMillis(); }
+				handleButtonPress(1);
 			}
 			else if(ev.keyNum == 2 && selector < totalVisible - 1)
 			{
 				selector++;
-				if(getMillis != nullptr) { lastButtonNum = 2; lastButtonPressTime = getMillis(); }
+				handleButtonPress(2);
 			}
 			else if(ev.keyNum == 3)
 			{
@@ -134,11 +190,7 @@ MenuEvent MenuListSelector::update()
 		}
 		else if(ev.type == DisplayEventType::KEY_UP)
 		{
-			if(ev.keyNum == lastButtonNum)
-			{
-				lastButtonNum = 0;
-				isHolding = false;
-			}
+			handleButtonRelease(ev.keyNum);
 		}
 	}
 	return MenuEvent::NOOP;
@@ -160,19 +212,15 @@ MenuEvent MenuDigitThumbwheel::update()
 
 	if(state == 0)
 	{
-		// Read current value via getter or pointer
-		uint32_t initVal = (getFunc != nullptr) ? getFunc() : *valPtr;
+		uint32_t initVal = boundGetValue();
 		originalVal = initVal;
-		// modStr stores raw digits for logic
 		modStr = std::format("{:0{}d}", initVal, iDigits + fDigits);
 		curDigit = 0;
 		state = 1;
 	}
 
-	// 1. Prepare display string with leading zero suppression
 	std::string displayStr = modStr;
 	bool leading = true;
-	// We want to keep at least the last digit of the integer part (index: modStr.length() - fDigits - 1)
 	int keepIndex = (int)modStr.length() - (int)fDigits - 1;
 
 	if(suppressLeadingZeros)
@@ -181,16 +229,15 @@ MenuEvent MenuDigitThumbwheel::update()
 		{
 			if(leading && displayStr[i] == '0')
 			{
-				displayStr[i] = ' '; // Replace leading zero with space
+				displayStr[i] = ' ';
 			}
 			else
 			{
-				leading = false; // Found a non-zero, stop suppressing
+				leading = false;
 			}
 		}
 	}
 
-	// 2. Display logic
 	disp->gotoxy(1, 1);
 	disp->print("[");
 	for(uint32_t i = 0; i < displayStr.length(); i++)
@@ -201,7 +248,6 @@ MenuEvent MenuDigitThumbwheel::update()
 	}
 	disp->print("]");
 
-	// 3. Cursor logic (stays aligned with digits)
 	disp->gotoxy(2, 2);
 	for(uint32_t i = 0; i < modStr.length(); i++)
 	{
@@ -211,78 +257,40 @@ MenuEvent MenuDigitThumbwheel::update()
 	}
 
 	DisplayEvent ev;
-	bool gotEvent = getMenuInputEvent(&ev);
-
-	if(gotEvent)
+	if(getMenuInputEvent(&ev))
 	{
 		if(ev.type == DisplayEventType::KEY_DOWN)
 		{
-			if(ev.keyNum == 1) // Increment active digit string tracking asset
+			if(ev.keyNum == 1)
 			{
 				modStr[curDigit] = ((modStr[curDigit] - '0' + 1) % 10) + '0';
-				if(getMillis != nullptr) { lastButtonNum = 1; lastButtonPressTime = getMillis(); }
+				handleButtonPress(1);
 				if(realTime)
 				{
-					if(setFunc != nullptr)
-					{
-						setFunc(std::stoul(modStr));
-					}
-					else if(valPtr != nullptr)
-					{
-						*valPtr = std::stoul(modStr);
-					}
+					setValue(std::stoul(modStr));
 				}
 			}
-			else if(ev.keyNum == 2) // Move Cursor
+			else if(ev.keyNum == 2)
 			{
 				curDigit = (curDigit + 1) % modStr.length();
-				if(getMillis != nullptr) { lastButtonNum = 2; lastButtonPressTime = getMillis(); }
+				handleButtonPress(2);
 			}
-			else if(ev.keyNum == 3) // Save
+			else if(ev.keyNum == 3)
 			{
-				lastButtonNum = 0;
-				isHolding = false;
-				if(setFunc != nullptr)
-				{
-					setFunc(std::stoul(modStr));
-				}
-				else
-				{
-					*valPtr = std::stoul(modStr);
-				}
-				if(saveCallback)
-				{
-					saveCallback();
-				}
+				applyChange(std::stoul(modStr));
 				state = 0;
 				return MenuEvent::BACK;
 			}
-			else if(ev.keyNum == 4) // Cancel
+			else if(ev.keyNum == 4)
 			{
-				lastButtonNum = 0;
-				isHolding = false;
-				if(realTime)
-				{
-					if(setFunc != nullptr)
-					{
-						setFunc(originalVal);
-					}
-					else if(valPtr != nullptr)
-					{
-						*valPtr = originalVal;
-					}
-				}
+				cancel();
 				state = 0;
 				return MenuEvent::BACK;
 			}
 		}
 		else if(ev.type == DisplayEventType::KEY_UP)
 		{
-			if(ev.keyNum == lastButtonNum)
-			{
-				lastButtonNum = 0;
-				isHolding = false;
-			}
+			handleButtonRelease(ev.keyNum);
 		}
 	}
 	return MenuEvent::NOOP;
@@ -294,7 +302,6 @@ MenuEvent MenuNumberDial::update()
 	disp->gotoxy(0, 0);
 	disp->print(menuName);
 
-	// Draw Button Labels at bottom row (row 3)
 	disp->gotoxy(1, 3);
 	disp->print("--");
 	disp->gotoxy(6, 3);
@@ -306,11 +313,9 @@ MenuEvent MenuNumberDial::update()
 
 	if(state == 0)
 	{
-		// Sync with current variable and clamp within range
-		uint32_t initVal = (getFunc != nullptr) ? getFunc() : *valPtr;
+		uint32_t initVal = boundGetValue();
 		currentVal = std::clamp(initVal, minVal, maxVal);
 		originalVal = currentVal;
-
 		state = 1;
 	}
 
@@ -324,96 +329,51 @@ MenuEvent MenuNumberDial::update()
 
 	// 3. Render
 	disp->gotoxy(2, 1);
-	disp->print(padding); // Print the spaces FIRST for right-justification
-	disp->print(valStr);  // Then the number
+	disp->print(padding);
+	disp->print(valStr);
 	if(units.length())
 	{
 		disp->print(" " + units);
 	}
 
 	DisplayEvent ev;
-	bool gotEvent = getMenuInputEvent(&ev);
-
-	if(gotEvent)
+	if(getMenuInputEvent(&ev))
 	{
 		if(ev.type == DisplayEventType::KEY_DOWN)
 		{
 			switch(ev.keyNum)
 			{
-				case 1: // Button 1: Decrement
+				case 1:
 					if(currentVal > minVal)
 						currentVal--;
-					if(getMillis != nullptr) { lastButtonNum = 1; lastButtonPressTime = getMillis(); }
+					handleButtonPress(1);
 					if(realTime)
 					{
-						if(setFunc != nullptr)
-						{
-							setFunc(currentVal);
-						}
-						else if(valPtr != nullptr)
-						{
-							*valPtr = currentVal;
-						}
+						setValue(currentVal);
 					}
 					break;
-				case 2: // Button 2: Increment
+				case 2:
 					if(currentVal < maxVal)
 						currentVal++;
-					if(getMillis != nullptr) { lastButtonNum = 2; lastButtonPressTime = getMillis(); }
+					handleButtonPress(2);
 					if(realTime)
 					{
-						if(setFunc != nullptr)
-						{
-							setFunc(currentVal);
-						}
-						else if(valPtr != nullptr)
-						{
-							*valPtr = currentVal;
-						}
+						setValue(currentVal);
 					}
 					break;
-				case 3: // Button 3: SAVE
-					lastButtonNum = 0;
-					isHolding = false;
-					if(setFunc != nullptr)
-					{
-						setFunc(currentVal);
-					}
-					else
-					{
-						*valPtr = currentVal;
-					}
-					if(saveCallback)
-					{
-						saveCallback();
-					}
+				case 3:
+					applyChange(currentVal);
 					state = 0;
 					return MenuEvent::BACK;
-				case 4: // Button 4: CNCL
-					lastButtonNum = 0;
-					isHolding = false;
-					if(realTime)
-					{
-						if(setFunc != nullptr)
-						{
-							setFunc(originalVal);
-						}
-						else if(valPtr != nullptr)
-						{
-							*valPtr = originalVal;
-						}
-					}
+				case 4:
+					cancel();
 					state = 0;
 					return MenuEvent::BACK;
 			}
 		}
 		else if(ev.type == DisplayEventType::KEY_UP)
 		{
-			if(ev.keyNum == lastButtonNum)
-			{
-				lastButtonNum = 0;
-				isHolding = false;
-			}
+			handleButtonRelease(ev.keyNum);
 		}
 	}
 	return MenuEvent::NOOP;
@@ -425,7 +385,6 @@ MenuEvent MenuBoolSelector::update()
 	disp->gotoxy(0, 0);
 	disp->print(menuName);
 
-	// Draw Button Labels at bottom row (row 3)
 	disp->gotoxy(1, 3);
 	disp->print(btn1Name);
 	disp->gotoxy(6, 3);
@@ -437,8 +396,7 @@ MenuEvent MenuBoolSelector::update()
 
 	if(state == 0)
 	{
-		// Sync with current variable state via getter or pointer
-		currentVal = (getFunc != nullptr) ? getFunc() : *valPtr;
+		currentVal = (boundGetValue() != 0);
 		originalVal = currentVal;
 		state = 1;
 	}
@@ -456,72 +414,41 @@ MenuEvent MenuBoolSelector::update()
 	disp->print("    "); // Clear any trailing artifacts
 
 	DisplayEvent ev;
-	bool gotEvent = getMenuInputEvent(&ev);
-
-	if(gotEvent)
+	if(getMenuInputEvent(&ev)) // Now robustly tracks hold configurations consistently
 	{
 		if(ev.type == DisplayEventType::KEY_DOWN)
 		{
 			switch(ev.keyNum)
 			{
-				case 1: // Button 1 select Option 1 (true)
+				case 1:
 					currentVal = true;
+					handleButtonPress(1);
 					if(realTime)
 					{
-						if(setFunc != nullptr)
-						{
-							setFunc(currentVal);
-						}
-						else if(valPtr != nullptr)
-						{
-							*valPtr = currentVal;
-						}
+						setValue(1);
 					}
 					break;
-				case 2: // Button 2 select Option 2 (false)
+				case 2:
 					currentVal = false;
+					handleButtonPress(2);
 					if(realTime)
 					{
-						if(setFunc != nullptr)
-						{
-							setFunc(currentVal);
-						}
-						else if(valPtr != nullptr)
-						{
-							*valPtr = currentVal;
-						}
+						setValue(0);
 					}
 					break;
-				case 3: // Button 3: SAVE
-					if(setFunc != nullptr)
-					{
-						setFunc(currentVal);
-					}
-					else
-					{
-						*valPtr = currentVal;
-					}
-					if(saveCallback)
-					{
-						saveCallback();
-					}
+				case 3:
+					applyChange(currentVal ? 1 : 0);
 					state = 0;
 					return MenuEvent::BACK;
-				case 4: // Button 4: CNCL
-					if(realTime)
-					{
-						if(setFunc != nullptr)
-						{
-							setFunc(originalVal);
-						}
-						else if(valPtr != nullptr)
-						{
-							*valPtr = originalVal;
-						}
-					}
+				case 4:
+					cancel();
 					state = 0;
 					return MenuEvent::BACK;
 			}
+		}
+		else if(ev.type == DisplayEventType::KEY_UP)
+		{
+			handleButtonRelease(ev.keyNum);
 		}
 	}
 	return MenuEvent::NOOP;
@@ -533,7 +460,6 @@ MenuEvent MenuOptionSelector::update()
 	disp->gotoxy(0, 0);
 	disp->print(menuName);
 
-	// Layout buttons: UP (1), DOWN (2), SAVE (3), CNCL (4)
 	disp->gotoxy(1, 3);
 	disp->print("UP");
 	disp->gotoxy(6, 3);
@@ -545,8 +471,7 @@ MenuEvent MenuOptionSelector::update()
 
 	if(state == 0)
 	{
-		// Sync with current variable state via getter or pointer
-		currentVal = (getFunc != nullptr) ? getFunc() : *valPtr;
+		currentVal = boundGetValue();
 		originalVal = currentVal;
 
 		// If the value is beyond the end of the list, go to the last item
@@ -598,8 +523,7 @@ MenuEvent MenuOptionSelector::update()
 			int remaining = 16 - (int)optionText.length();
 			if(remaining > 0)
 			{
-				std::string remainderClear(remaining, ' ');
-				disp->print(remainderClear);
+				disp->print(std::string(remaining, ' '));
 			}
 		}
 		else
@@ -609,90 +533,44 @@ MenuEvent MenuOptionSelector::update()
 		}
 	}
 
-	// 3. Process Input Events
 	DisplayEvent ev;
-	bool gotEvent = getMenuInputEvent(&ev);
-
-	if(gotEvent)
+	if(getMenuInputEvent(&ev))
 	{
 		if(ev.type == DisplayEventType::KEY_DOWN)
 		{
 			switch(ev.keyNum)
 			{
-				case 1: // Button 1: UP
+				case 1:
 					if(currentVal > 0)
 						currentVal--;
-					if(getMillis != nullptr) { lastButtonNum = 1; lastButtonPressTime = getMillis(); }
+					handleButtonPress(1);
 					if(realTime)
 					{
-						if(setFunc != nullptr)
-						{
-							setFunc(currentVal);
-						}
-						else if(valPtr != nullptr)
-						{
-							*valPtr = currentVal;
-						}
+						setValue(currentVal);
 					}
 					break;
-				case 2: // Button 2: DOWN
+				case 2:
 					if(currentVal < options.size() - 1)
 						currentVal++;
-					if(getMillis != nullptr) { lastButtonNum = 2; lastButtonPressTime = getMillis(); }
+					handleButtonPress(2);
 					if(realTime)
 					{
-						if(setFunc != nullptr)
-						{
-							setFunc(currentVal);
-						}
-						else if(valPtr != nullptr)
-						{
-							*valPtr = currentVal;
-						}
+						setValue(currentVal);
 					}
 					break;
-				case 3: // Button 3: SAVE
-					lastButtonNum = 0;
-					isHolding = false;
-					if(setFunc != nullptr)
-					{
-						setFunc(currentVal);
-					}
-					else
-					{
-						*valPtr = currentVal;
-					}
-					if(saveCallback)
-					{
-						saveCallback();
-					}
+				case 3:
+					applyChange(currentVal);
 					state = 0;
 					return MenuEvent::BACK;
-				case 4: // Button 4: CNCL
-					lastButtonNum = 0;
-					isHolding = false;
-					if(realTime)
-					{
-						if(setFunc != nullptr)
-						{
-							setFunc(originalVal);
-						}
-						else if(valPtr != nullptr)
-						{
-							*valPtr = originalVal;
-						}
-					}
+				case 4:
+					cancel();
 					state = 0;
 					return MenuEvent::BACK;
 			}
 		}
 		else if(ev.type == DisplayEventType::KEY_UP)
 		{
-			if(ev.keyNum == lastButtonNum)
-			{
-				lastButtonNum = 0;
-				isHolding = false;
-			}
+			handleButtonRelease(ev.keyNum);
 		}
 	}
 	return MenuEvent::NOOP;
@@ -704,7 +582,6 @@ MenuEvent MenuPercentageBar::update()
 	disp->gotoxy(0, 0);
 	disp->print(menuName);
 
-	// Standard bottom row navigation mapping
 	disp->gotoxy(1, 3);
 	disp->print("--");
 	disp->gotoxy(6, 3);
@@ -716,14 +593,12 @@ MenuEvent MenuPercentageBar::update()
 
 	if(state == 0)
 	{
-		// Cache original entry point data in case of cancellation
-		originalVal = (getFunc != nullptr) ? getFunc() : *valPtr;
+		originalVal = boundGetValue();
 
 		// 1. Convert raw value to percentage with proper mathematical rounding (+ maxVal/2)
-		uint32_t rawVal = std::clamp<uint32_t>((getFunc != nullptr) ? getFunc() : *valPtr, 0U, maxVal);
+		uint32_t rawVal = std::clamp<uint32_t>(boundGetValue(), 0U, maxVal);
 		uint32_t initialPct = (uint32_t)((((uint64_t)rawVal * 100) + (maxVal / 2)) / maxVal);
 
-		// 2. Snap to the nearest stepVal multiple
 		if(stepVal > 0)
 		{
 			uint32_t remainder = initialPct % stepVal;
@@ -796,97 +671,49 @@ MenuEvent MenuPercentageBar::update()
 	disp->gotoxy(0, 2);
 	disp->print(std::string(padLeft, ' ') + textStr + std::string(20 - padLeft - textStr.length(), ' '));
 
-	// --- Input Handling ---
 	DisplayEvent ev;
-	bool gotEvent = getMenuInputEvent(&ev);
-
-	if(gotEvent)
+	if(getMenuInputEvent(&ev))
 	{
 		if(ev.type == DisplayEventType::KEY_DOWN)
 		{
 			switch(ev.keyNum)
 			{
-				case 1: // Button 1: Decrease percentage by stepVal
+				case 1:
 					currentVal -= (int32_t)stepVal;
 					if(currentVal < 0)
 						currentVal = 0;
-					if(getMillis != nullptr) { lastButtonNum = 1; lastButtonPressTime = getMillis(); }
+					handleButtonPress(1);
 					if(realTime)
 					{
-						uint32_t calculatedRaw = (uint32_t)(((uint64_t)currentVal * maxVal) / 100);
-						if(setFunc != nullptr)
-						{
-							setFunc(calculatedRaw);
-						}
-						else if(valPtr != nullptr)
-						{
-							*valPtr = calculatedRaw;
-						}
+						setValue((uint32_t)(((uint64_t)currentVal * maxVal) / 100));
 					}
 					break;
 
-				case 2: // Button 2: Increase percentage by stepVal
+				case 2:
 					currentVal += (int32_t)stepVal;
 					if(currentVal > 100)
 						currentVal = 100;
-					if(getMillis != nullptr) { lastButtonNum = 2; lastButtonPressTime = getMillis(); }
+					handleButtonPress(2);
 					if(realTime)
 					{
-						uint32_t calculatedRaw = (uint32_t)(((uint64_t)currentVal * maxVal) / 100);
-						if(setFunc != nullptr)
-						{
-							setFunc(calculatedRaw);
-						}
-						else if(valPtr != nullptr)
-						{
-							*valPtr = calculatedRaw;
-						}
+						setValue((uint32_t)(((uint64_t)currentVal * maxVal) / 100));
 					}
 					break;
 
-				case 3: // Button 3: SAVE
-					lastButtonNum = 0;
-					isHolding = false;
-					if(setFunc != nullptr)
-					{
-						setFunc((uint32_t)(((uint64_t)percentage * maxVal) / 100));
-					}
-					else if(valPtr != nullptr)
-					{
-						*valPtr = (uint32_t)(((uint64_t)percentage * maxVal) / 100);
-					}
-					if(saveCallback)
-					{
-						saveCallback();
-					}
+				case 3:
+					applyChange((uint32_t)(((uint64_t)percentage * maxVal) / 100));
 					state = 0;
 					return MenuEvent::BACK;
 
-				case 4: // Button 4: CNCL
-					lastButtonNum = 0;
-					isHolding = false;
-					if(realTime)
-					{
-						if(setFunc != nullptr)
-						{
-							setFunc(originalVal);
-						}
-						else if(valPtr != nullptr)
-						{
-							*valPtr = originalVal;
-						}
-					}
+				case 4:
+					cancel();
 					state = 0;
 					return MenuEvent::BACK;
 			}
 		}
 		else if(ev.type == DisplayEventType::KEY_UP)
 		{
-			if(ev.keyNum == lastButtonNum)
-			{
-				lastButtonNum = 0;
-				isHolding = false;
-			}
+			handleButtonRelease(ev.keyNum);
 		}
 	}
 	return MenuEvent::NOOP;
