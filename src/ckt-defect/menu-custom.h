@@ -1,4 +1,5 @@
 #include "src/menu/menu.h"
+#include <Arduino.h>
 
 class MenuHome : public Menu
 {
@@ -87,4 +88,25 @@ class MenuNav : public Menu
 			}
 			return MenuEvent::NOOP;
 		}
+};
+
+class MenuVolume : public Menu
+{
+	private:
+		int32_t currentVal; // Internal percentage (0 to 150)
+		uint8_t state = 0;
+
+	public:
+		// Constructor using std::function callbacks
+		MenuVolume(const std::string &name, std::function<uint32_t()> getter,
+		                          std::function<void(uint32_t)> setter, bool realTimeUpdate, std::function<void()> onSave = nullptr)
+		    : Menu(name)
+		{
+			getFunc32 = std::move(getter);
+			setFunc32 = std::move(setter);
+			realTime = realTimeUpdate;
+			saveCallback = std::move(onSave);
+		}
+
+		MenuEvent update() override;
 };

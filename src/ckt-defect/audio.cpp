@@ -121,6 +121,12 @@ void audioSetVolumeStep(uint8_t newVolumeStep)
 }
 
 
+uint8_t audioGetVolumeStep(void)
+{
+	return(audioVolumeStep);
+}
+
+
 void audioSetVolumeUpCoef(uint8_t value)
 {
 	audioVolumeUpCoef = value;

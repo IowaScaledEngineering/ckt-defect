@@ -30,6 +30,7 @@ void audioStopPlaying(void);
 bool audioIsPlaying(void);
 
 void audioSetVolumeStep(uint8_t);
+uint8_t audioGetVolumeStep(void);
 void audioSetVolumeUpCoef(uint8_t);
 uint8_t audioGetVolumeUpCoef(void);
 void audioSetVolumeDownCoef(uint8_t);

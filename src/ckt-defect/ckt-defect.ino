@@ -393,6 +393,15 @@ void loop()
 	);
 	mainSel->addChild(menu9);
 
+	auto menu10 = std::make_shared<MenuVolume>(
+		"Audio Volume",
+		audioGetVolumeStep,
+		audioSetVolumeStep,
+		true,
+		[lcd, &cfg]() { cfg.volumeStep = audioGetVolumeStep(); saveConfiguration(&cfg); }
+	);
+	mainSel->addChild(menu10);
+
 	MenuManager menuManager(lcd, home);
 	Menu::setTimingCallback(millis); 
 	Menu::setHoldDelay(400);
