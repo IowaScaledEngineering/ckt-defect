@@ -81,8 +81,9 @@ class MenuDigitThumbwheel : public Menu
 		MenuDigitThumbwheel(const std::string &name,
 		                    std::function<uint32_t()> getter,
 		                    std::function<void(uint32_t)> setter,
-		                    uint32_t i, uint32_t f, bool suppress,
-		                    bool realTimeUpdate)
+		                    bool realTimeUpdate,
+		                    uint32_t i, uint32_t f, bool suppress
+		                    )
 		    : Menu(name), valPtr(nullptr), getFunc(std::move(getter)), setFunc(std::move(setter)),
 		      realTime(realTimeUpdate), iDigits(i), fDigits(f), suppressLeadingZeros(suppress)
 		{
@@ -117,8 +118,9 @@ class MenuNumberDial : public Menu
 		MenuNumberDial(const std::string &name,
 		               std::function<uint32_t()> getter,
 		               std::function<void(uint32_t)> setter,
-		               uint32_t min, uint32_t max, std::string units,
-		               bool realTimeUpdate)
+		               bool realTimeUpdate,
+		               uint32_t min, uint32_t max, std::string units
+		               )
 		    : Menu(name), valPtr(nullptr), getFunc(std::move(getter)), setFunc(std::move(setter)),
 		      realTime(realTimeUpdate), minVal(min), maxVal(max), units(units)
 		{
@@ -153,9 +155,10 @@ class MenuBoolSelector : public Menu
 		MenuBoolSelector(const std::string &name,
 		                 std::function<bool()> getter,
 		                 std::function<void(bool)> setter,
+		                 bool realTimeUpdate,
 		                 const std::string &opt1, const std::string &btn1,
-		                 const std::string &opt2, const std::string &btn2,
-		                 bool realTimeUpdate)
+		                 const std::string &opt2, const std::string &btn2
+		                 )
 		    : Menu(name), valPtr(nullptr), getFunc(std::move(getter)), setFunc(std::move(setter)),
 		      realTime(realTimeUpdate), currentVal(false), opt1Name(opt1), opt2Name(opt2),
 		      btn1Name(btn1), btn2Name(btn2)
@@ -187,8 +190,9 @@ class MenuOptionSelector : public Menu
 		MenuOptionSelector(const std::string &name,
 		                   std::function<uint32_t()> getter,
 		                   std::function<void(uint32_t)> setter,
-		                   const std::vector<std::string> &opts,
-		                   bool realTimeUpdate)
+		                   bool realTimeUpdate,
+		                   const std::vector<std::string> &opts
+		                   )
 		    : Menu(name), valPtr(nullptr), getFunc(std::move(getter)), setFunc(std::move(setter)),
 		      realTime(realTimeUpdate), currentVal(0), options(opts)
 		{
@@ -223,9 +227,10 @@ class MenuPercentageBar : public Menu
 		MenuPercentageBar(const std::string &name, 
 		                  std::function<uint32_t()> getter, 
 		                  std::function<void(uint32_t)> setter, 
+		                  bool realTimeUpdate,
 		                  uint32_t max, 
-		                  uint32_t pcntStep, 
-		                  bool realTimeUpdate)
+		                  uint32_t pcntStep
+		                  )
 		    : Menu(name), valPtr(nullptr), getFunc(std::move(getter)), setFunc(std::move(setter)), 
 		      realTime(realTimeUpdate), maxVal(max == 0 ? 100 : max), stepVal(pcntStep) {}
 

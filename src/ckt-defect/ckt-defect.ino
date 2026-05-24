@@ -387,9 +387,9 @@ void loop()
 		"Backlight Level", 
 		[lcd]() { return lcd->getBrightness(); },
 		[lcd](uint32_t val) { lcd->setBrightness(val); },
+		true,
 		255, 
-		10, 
-		true
+		10
 	);
 	mainSel->addChild(menu9);
 
