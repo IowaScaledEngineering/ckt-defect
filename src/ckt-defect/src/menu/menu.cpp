@@ -61,14 +61,15 @@ MenuEvent MenuListSelector::update()
 		{
 			disp->print(selector == menuIdx ? '>' : ' ');
 			disp->gotoxy(2, i);
-			
+
 			// Smart clear: print name, then explicitly blank only the remaining slots
 			std::string name = visibleChildren[menuIdx]->getName();
 			disp->print(name);
-			
-			// Available space for the item text is 18 characters (20 total columns - 2 used by prefix cursor)
+
+			// Available space for the item text is 18 characters (20 total columns - 2 used by prefix
+			// cursor)
 			int remaining = 18 - (int)name.length();
-			if (remaining > 0)
+			if(remaining > 0)
 			{
 				std::string remainderClear(remaining, ' ');
 				disp->print(remainderClear);
@@ -131,7 +132,7 @@ MenuEvent MenuDigitThumbwheel::update()
 	// We want to keep at least the last digit of the integer part (index: modStr.length() - fDigits - 1)
 	int keepIndex = (int)modStr.length() - (int)fDigits - 1;
 
-	if (suppressLeadingZeros)
+	if(suppressLeadingZeros)
 	{
 		for(int i = 0; i < keepIndex; i++)
 		{
@@ -172,7 +173,7 @@ MenuEvent MenuDigitThumbwheel::update()
 		if(ev.keyNum == 1) // Increment
 		{
 			modStr[curDigit] = ((modStr[curDigit] - '0' + 1) % 10) + '0';
-			if (realTime && setFunc != nullptr)
+			if(realTime && setFunc != nullptr)
 			{
 				setFunc(std::stoul(modStr));
 			}
@@ -183,7 +184,7 @@ MenuEvent MenuDigitThumbwheel::update()
 		}
 		else if(ev.keyNum == 3) // Save
 		{
-			if (setFunc != nullptr)
+			if(setFunc != nullptr)
 			{
 				setFunc(std::stoul(modStr));
 			}
@@ -196,11 +197,11 @@ MenuEvent MenuDigitThumbwheel::update()
 		}
 		else if(ev.keyNum == 4) // Cancel
 		{
-			if (realTime && setFunc != nullptr)
+			if(realTime && setFunc != nullptr)
 			{
 				setFunc(originalVal);
 			}
-			else if (valPtr != nullptr)
+			else if(valPtr != nullptr)
 			{
 				*valPtr = originalVal;
 			}
@@ -263,7 +264,7 @@ MenuEvent MenuNumberDial::update()
 			case 1: // --
 				if(currentVal > minVal)
 					currentVal--;
-				if (realTime && setFunc != nullptr)
+				if(realTime && setFunc != nullptr)
 				{
 					setFunc(currentVal);
 				}
@@ -271,13 +272,13 @@ MenuEvent MenuNumberDial::update()
 			case 2: // ++
 				if(currentVal < maxVal)
 					currentVal++;
-				if (realTime && setFunc != nullptr)
+				if(realTime && setFunc != nullptr)
 				{
 					setFunc(currentVal);
 				}
 				break;
 			case 3: // SAVE - Update via setter or pointer and exit
-				if (setFunc != nullptr)
+				if(setFunc != nullptr)
 				{
 					setFunc(currentVal);
 				}
@@ -288,11 +289,11 @@ MenuEvent MenuNumberDial::update()
 				state = 0;
 				return MenuEvent::BACK;
 			case 4: // CNCL - Revert and exit
-				if (realTime && setFunc != nullptr)
+				if(realTime && setFunc != nullptr)
 				{
 					setFunc(originalVal);
 				}
-				else if (valPtr != nullptr)
+				else if(valPtr != nullptr)
 				{
 					*valPtr = originalVal;
 				}
@@ -349,20 +350,20 @@ MenuEvent MenuBoolSelector::update()
 		{
 			case 1: // Select Option 1 (true)
 				currentVal = true;
-				if (realTime && setFunc != nullptr)
+				if(realTime && setFunc != nullptr)
 				{
 					setFunc(currentVal);
 				}
 				break;
 			case 2: // Select Option 2 (false)
 				currentVal = false;
-				if (realTime && setFunc != nullptr)
+				if(realTime && setFunc != nullptr)
 				{
 					setFunc(currentVal);
 				}
 				break;
 			case 3: // SAVE - Commit change and back out
-				if (setFunc != nullptr)
+				if(setFunc != nullptr)
 				{
 					setFunc(currentVal);
 				}
@@ -373,11 +374,11 @@ MenuEvent MenuBoolSelector::update()
 				state = 0;
 				return MenuEvent::BACK;
 			case 4: // CNCL - Revert and back out
-				if (realTime && setFunc != nullptr)
+				if(realTime && setFunc != nullptr)
 				{
 					setFunc(originalVal);
 				}
-				else if (valPtr != nullptr)
+				else if(valPtr != nullptr)
 				{
 					*valPtr = originalVal;
 				}
@@ -451,14 +452,15 @@ MenuEvent MenuOptionSelector::update()
 		{
 			disp->print(currentVal == optIdx ? "[*] " : "[ ] ");
 			disp->gotoxy(4, i + 1);
-			
+
 			// Smart clear: print selection option string, then pad only remaining space
 			std::string optionText = options[optIdx];
 			disp->print(optionText);
-			
-			// Available space for the option string is 16 characters (20 columns total - 4 used by prefix marker)
+
+			// Available space for the option string is 16 characters (20 columns total - 4 used by prefix
+			// marker)
 			int remaining = 16 - (int)optionText.length();
-			if (remaining > 0)
+			if(remaining > 0)
 			{
 				std::string remainderClear(remaining, ' ');
 				disp->print(remainderClear);
@@ -480,7 +482,7 @@ MenuEvent MenuOptionSelector::update()
 			case 1: // UP
 				if(currentVal > 0)
 					currentVal--;
-				if (realTime && setFunc != nullptr)
+				if(realTime && setFunc != nullptr)
 				{
 					setFunc(currentVal);
 				}
@@ -488,13 +490,13 @@ MenuEvent MenuOptionSelector::update()
 			case 2: // DOWN
 				if(currentVal < options.size() - 1)
 					currentVal++;
-				if (realTime && setFunc != nullptr)
+				if(realTime && setFunc != nullptr)
 				{
 					setFunc(currentVal);
 				}
 				break;
 			case 3: // SAVE
-				if (setFunc != nullptr)
+				if(setFunc != nullptr)
 				{
 					setFunc(currentVal);
 				}
@@ -505,11 +507,11 @@ MenuEvent MenuOptionSelector::update()
 				state = 0;
 				return MenuEvent::BACK;
 			case 4: // CNCL
-				if (realTime && setFunc != nullptr)
+				if(realTime && setFunc != nullptr)
 				{
 					setFunc(originalVal);
 				}
-				else if (valPtr != nullptr)
+				else if(valPtr != nullptr)
 				{
 					*valPtr = originalVal;
 				}
@@ -547,16 +549,16 @@ MenuEvent MenuPercentageBar::update()
 		uint32_t initialPct = (uint32_t)((((uint64_t)rawVal * 100) + (maxVal / 2)) / maxVal);
 
 		// 2. Snap to the nearest stepVal multiple
-		if (stepVal > 0)
+		if(stepVal > 0)
 		{
 			uint32_t remainder = initialPct % stepVal;
-			if (remainder >= (stepVal + 1) / 2)
+			if(remainder >= (stepVal + 1) / 2)
 			{
 				initialPct += (stepVal - remainder); // Round up
 			}
 			else
 			{
-				initialPct -= remainder;             // Round down
+				initialPct -= remainder; // Round down
 			}
 		}
 
@@ -564,11 +566,11 @@ MenuEvent MenuPercentageBar::update()
 		currentVal = (int32_t)std::clamp<uint32_t>(initialPct, 0U, 100U);
 
 		// Initialize the 5 custom fractional-width column bar pieces (5x8 pixels)
-		uint8_t bar1[8] = { 0b10000, 0b10000, 0b10000, 0b10000, 0b10000, 0b10000, 0b10000, 0b00000 };
-		uint8_t bar2[8] = { 0b11000, 0b11000, 0b11000, 0b11000, 0b11000, 0b11000, 0b11000, 0b00000 };
-		uint8_t bar3[8] = { 0b11100, 0b11100, 0b11100, 0b11100, 0b11100, 0b11100, 0b11100, 0b00000 };
-		uint8_t bar4[8] = { 0b11110, 0b11110, 0b11110, 0b11110, 0b11110, 0b11110, 0b11110, 0b00000 };
-		uint8_t bar5[8] = { 0b11111, 0b11111, 0b11111, 0b11111, 0b11111, 0b11111, 0b11111, 0b00000 };
+		uint8_t bar1[8] = {0b10000, 0b10000, 0b10000, 0b10000, 0b10000, 0b10000, 0b10000, 0b00000};
+		uint8_t bar2[8] = {0b11000, 0b11000, 0b11000, 0b11000, 0b11000, 0b11000, 0b11000, 0b00000};
+		uint8_t bar3[8] = {0b11100, 0b11100, 0b11100, 0b11100, 0b11100, 0b11100, 0b11100, 0b00000};
+		uint8_t bar4[8] = {0b11110, 0b11110, 0b11110, 0b11110, 0b11110, 0b11110, 0b11110, 0b00000};
+		uint8_t bar5[8] = {0b11111, 0b11111, 0b11111, 0b11111, 0b11111, 0b11111, 0b11111, 0b00000};
 
 		disp->createCustomChar(1, bar1);
 		disp->createCustomChar(2, bar2);
@@ -596,7 +598,7 @@ MenuEvent MenuPercentageBar::update()
 	// 1. Draw solid complete 5/5 block segments
 	for(uint32_t i = 0; i < fullBlocks; i++)
 	{
-		disp->print((char)0x05); 
+		disp->print((char)0x05);
 	}
 	// 2. Draw fractional remainder block segments if applicable
 	if(partialBlockWidth > 0)
@@ -614,7 +616,7 @@ MenuEvent MenuPercentageBar::update()
 	// Center "xxx%" across the 20 horizontal spaces
 	std::string textStr = std::format("{}%", percentage);
 	int padLeft = (20 - (int)textStr.length()) / 2;
-	
+
 	disp->gotoxy(0, 2);
 	disp->print(std::string(padLeft, ' ') + textStr + std::string(20 - padLeft - textStr.length(), ' '));
 
@@ -626,8 +628,9 @@ MenuEvent MenuPercentageBar::update()
 		{
 			case 1: // Button 1: Decrease percentage by stepVal
 				currentVal -= (int32_t)stepVal;
-				if (currentVal < 0) currentVal = 0;
-				if (realTime && setFunc != nullptr)
+				if(currentVal < 0)
+					currentVal = 0;
+				if(realTime && setFunc != nullptr)
 				{
 					setFunc((uint32_t)(((uint64_t)currentVal * maxVal) / 100));
 				}
@@ -635,8 +638,9 @@ MenuEvent MenuPercentageBar::update()
 
 			case 2: // Button 2: Increase percentage by stepVal
 				currentVal += (int32_t)stepVal;
-				if (currentVal > 100) currentVal = 100;
-				if (realTime && setFunc != nullptr)
+				if(currentVal > 100)
+					currentVal = 100;
+				if(realTime && setFunc != nullptr)
 				{
 					setFunc((uint32_t)(((uint64_t)currentVal * maxVal) / 100));
 				}
@@ -644,7 +648,7 @@ MenuEvent MenuPercentageBar::update()
 
 			case 3: // Button 3: SAVE
 				// Convert percentage back to the raw scale before writing to the pointer
-				if (setFunc != nullptr)
+				if(setFunc != nullptr)
 				{
 					setFunc((uint32_t)(((uint64_t)percentage * maxVal) / 100));
 				}
@@ -657,11 +661,11 @@ MenuEvent MenuPercentageBar::update()
 
 			case 4: // Button 4: CNCL
 				// Restore un-snapped raw entry value
-				if (realTime && setFunc != nullptr)
+				if(realTime && setFunc != nullptr)
 				{
 					setFunc(originalVal);
 				}
-				else if (valPtr != nullptr)
+				else if(valPtr != nullptr)
 				{
 					*valPtr = originalVal;
 				}

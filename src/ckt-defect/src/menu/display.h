@@ -25,7 +25,7 @@ class Display
 		virtual void print(char c) = 0;
 		virtual void print(const char *str) = 0;
 		virtual void print(const std::string &str) = 0;
-		virtual void createCustomChar(uint8_t location, const uint8_t* charmap) = 0;
+		virtual void createCustomChar(uint8_t location, const uint8_t *charmap) = 0;
 		virtual bool getEvent(DisplayEvent *event) = 0;
 
 		// New Backlight Interface

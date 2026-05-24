@@ -1,9 +1,9 @@
 #pragma once
 #include "display.h"
+#include <functional>
 #include <memory>
 #include <string>
 #include <vector>
-#include <functional>
 
 enum class MenuEvent
 {
@@ -73,17 +73,14 @@ class MenuDigitThumbwheel : public Menu
 
 	public:
 		MenuDigitThumbwheel(const std::string &name, uint32_t *p, uint32_t i, uint32_t f, bool suppress)
-		    : Menu(name), valPtr(p), getFunc(nullptr), setFunc(nullptr), realTime(false),
-		      iDigits(i), fDigits(f), suppressLeadingZeros(suppress)
+		    : Menu(name), valPtr(p), getFunc(nullptr), setFunc(nullptr), realTime(false), iDigits(i),
+		      fDigits(f), suppressLeadingZeros(suppress)
 		{
 		}
 
-		MenuDigitThumbwheel(const std::string &name,
-		                    std::function<uint32_t()> getter,
-		                    std::function<void(uint32_t)> setter,
-		                    bool realTimeUpdate,
-		                    uint32_t i, uint32_t f, bool suppress
-		                    )
+		MenuDigitThumbwheel(const std::string &name, std::function<uint32_t()> getter,
+				    std::function<void(uint32_t)> setter, bool realTimeUpdate, uint32_t i, uint32_t f,
+				    bool suppress)
 		    : Menu(name), valPtr(nullptr), getFunc(std::move(getter)), setFunc(std::move(setter)),
 		      realTime(realTimeUpdate), iDigits(i), fDigits(f), suppressLeadingZeros(suppress)
 		{
@@ -109,18 +106,15 @@ class MenuNumberDial : public Menu
 
 	public:
 		MenuNumberDial(const std::string &name, uint32_t *p, uint32_t min, uint32_t max, std::string units)
-		    : Menu(name), valPtr(p), getFunc(nullptr), setFunc(nullptr), realTime(false),
-		      minVal(min), maxVal(max), units(units)
+		    : Menu(name), valPtr(p), getFunc(nullptr), setFunc(nullptr), realTime(false), minVal(min),
+		      maxVal(max), units(units)
 		{
 			maxDigits = (int)std::to_string(maxVal).length();
 		}
 
-		MenuNumberDial(const std::string &name,
-		               std::function<uint32_t()> getter,
-		               std::function<void(uint32_t)> setter,
-		               bool realTimeUpdate,
-		               uint32_t min, uint32_t max, std::string units
-		               )
+		MenuNumberDial(const std::string &name, std::function<uint32_t()> getter,
+			       std::function<void(uint32_t)> setter, bool realTimeUpdate, uint32_t min, uint32_t max,
+			       std::string units)
 		    : Menu(name), valPtr(nullptr), getFunc(std::move(getter)), setFunc(std::move(setter)),
 		      realTime(realTimeUpdate), minVal(min), maxVal(max), units(units)
 		{
@@ -147,21 +141,17 @@ class MenuBoolSelector : public Menu
 	public:
 		MenuBoolSelector(const std::string &name, bool *p, const std::string &opt1, const std::string &btn1,
 				 const std::string &opt2, const std::string &btn2)
-		    : Menu(name), valPtr(p), getFunc(nullptr), setFunc(nullptr), realTime(false),
-		      currentVal(*p), opt1Name(opt1), opt2Name(opt2), btn1Name(btn1), btn2Name(btn2)
+		    : Menu(name), valPtr(p), getFunc(nullptr), setFunc(nullptr), realTime(false), currentVal(*p),
+		      opt1Name(opt1), opt2Name(opt2), btn1Name(btn1), btn2Name(btn2)
 		{
 		}
 
-		MenuBoolSelector(const std::string &name,
-		                 std::function<bool()> getter,
-		                 std::function<void(bool)> setter,
-		                 bool realTimeUpdate,
-		                 const std::string &opt1, const std::string &btn1,
-		                 const std::string &opt2, const std::string &btn2
-		                 )
+		MenuBoolSelector(const std::string &name, std::function<bool()> getter,
+				 std::function<void(bool)> setter, bool realTimeUpdate, const std::string &opt1,
+				 const std::string &btn1, const std::string &opt2, const std::string &btn2)
 		    : Menu(name), valPtr(nullptr), getFunc(std::move(getter)), setFunc(std::move(setter)),
-		      realTime(realTimeUpdate), currentVal(false), opt1Name(opt1), opt2Name(opt2),
-		      btn1Name(btn1), btn2Name(btn2)
+		      realTime(realTimeUpdate), currentVal(false), opt1Name(opt1), opt2Name(opt2), btn1Name(btn1),
+		      btn2Name(btn2)
 		{
 		}
 
@@ -182,17 +172,14 @@ class MenuOptionSelector : public Menu
 
 	public:
 		MenuOptionSelector(const std::string &name, uint32_t *p, const std::vector<std::string> &opts)
-		    : Menu(name), valPtr(p), getFunc(nullptr), setFunc(nullptr), realTime(false),
-		      currentVal(*p), options(opts)
+		    : Menu(name), valPtr(p), getFunc(nullptr), setFunc(nullptr), realTime(false), currentVal(*p),
+		      options(opts)
 		{
 		}
 
-		MenuOptionSelector(const std::string &name,
-		                   std::function<uint32_t()> getter,
-		                   std::function<void(uint32_t)> setter,
-		                   bool realTimeUpdate,
-		                   const std::vector<std::string> &opts
-		                   )
+		MenuOptionSelector(const std::string &name, std::function<uint32_t()> getter,
+				   std::function<void(uint32_t)> setter, bool realTimeUpdate,
+				   const std::vector<std::string> &opts)
 		    : Menu(name), valPtr(nullptr), getFunc(std::move(getter)), setFunc(std::move(setter)),
 		      realTime(realTimeUpdate), currentVal(0), options(opts)
 		{
@@ -204,35 +191,34 @@ class MenuOptionSelector : public Menu
 class MenuPercentageBar : public Menu
 {
 	private:
-		
-		uint32_t *valPtr;          
+		uint32_t *valPtr;
 		// Accept any callable object (lambdas, member functions, free functions)
-		std::function<uint32_t()> getFunc;     
-		std::function<void(uint32_t)> setFunc; 
-		bool realTime;             
-		uint32_t maxVal;           
-		uint32_t stepVal;          
+		std::function<uint32_t()> getFunc;
+		std::function<void(uint32_t)> setFunc;
+		bool realTime;
+		uint32_t maxVal;
+		uint32_t stepVal;
 
-		uint32_t originalVal;      
-		int32_t currentVal;        
-		uint8_t state = 0;         
+		uint32_t originalVal;
+		int32_t currentVal;
+		uint8_t state = 0;
 
 	public:
 		// Constructor for direct pointers (remains unchanged)
 		MenuPercentageBar(const std::string &name, uint32_t *p, uint32_t max, uint32_t pcntStep)
 		    : Menu(name), valPtr(p), getFunc(nullptr), setFunc(nullptr), realTime(false),
-		      maxVal(max == 0 ? 100 : max), stepVal(pcntStep) {}
+		      maxVal(max == 0 ? 100 : max), stepVal(pcntStep)
+		{
+		}
 
 		// Modernized constructor using std::function
-		MenuPercentageBar(const std::string &name, 
-		                  std::function<uint32_t()> getter, 
-		                  std::function<void(uint32_t)> setter, 
-		                  bool realTimeUpdate,
-		                  uint32_t max, 
-		                  uint32_t pcntStep
-		                  )
-		    : Menu(name), valPtr(nullptr), getFunc(std::move(getter)), setFunc(std::move(setter)), 
-		      realTime(realTimeUpdate), maxVal(max == 0 ? 100 : max), stepVal(pcntStep) {}
+		MenuPercentageBar(const std::string &name, std::function<uint32_t()> getter,
+				  std::function<void(uint32_t)> setter, bool realTimeUpdate, uint32_t max,
+				  uint32_t pcntStep)
+		    : Menu(name), valPtr(nullptr), getFunc(std::move(getter)), setFunc(std::move(setter)),
+		      realTime(realTimeUpdate), maxVal(max == 0 ? 100 : max), stepVal(pcntStep)
+		{
+		}
 
 		MenuEvent update() override;
 };

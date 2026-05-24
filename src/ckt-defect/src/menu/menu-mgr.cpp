@@ -18,10 +18,10 @@ void MenuManager::process()
 
 			if(!visible.empty())
 			{
-				// Safely get index polymorphically. 
+				// Safely get index polymorphically.
 				// MenuListSelector returns its tracked selection; other menus default to 0.
 				int index = cur->getSelectedIndex();
-				
+
 				if(index >= 0 && index < static_cast<int>(visible.size()))
 				{
 					cur = visible[index];
