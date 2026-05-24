@@ -48,10 +48,10 @@ MenuEvent MenuListSelector::update()
 		if(firstMenu < 0)
 			firstMenu = 0;
 		else if(firstMenu > (int32_t)totalVisible - 3)
-			firstMenu = (int32_t)totalVisible - 3;
+			firstMenu = (int32_t)totalVisible - 3; // Pin window to the bottom if we reach the end
 	}
 
-	// Render the 3-row visible window
+	// Render the 3 visible menu slots
 	for(uint32_t i = 0; i < 3; i++)
 	{
 		uint32_t menuIdx = (uint32_t)firstMenu + i;
@@ -66,8 +66,7 @@ MenuEvent MenuListSelector::update()
 			std::string name = visibleChildren[menuIdx]->getName();
 			disp->print(name);
 
-			// Available space for the item text is 18 characters (20 total columns - 2 used by prefix
-			// cursor)
+			// Overwrite any residual artifact characters on the row
 			int remaining = 18 - (int)name.length();
 			if(remaining > 0)
 			{
@@ -77,11 +76,12 @@ MenuEvent MenuListSelector::update()
 		}
 		else
 		{
-			// Clear the line if there are fewer than 3 items to show
+			// Blank line if there are no more menu choices
 			disp->print("                    ");
 		}
 	}
 
+	// Fetch hardware interaction events
 	DisplayEvent ev;
 	if(disp->getEvent(&ev) && ev.type == DisplayEventType::KEY_DOWN)
 	{
@@ -170,12 +170,19 @@ MenuEvent MenuDigitThumbwheel::update()
 	DisplayEvent ev;
 	if(disp->getEvent(&ev) && ev.type == DisplayEventType::KEY_DOWN)
 	{
-		if(ev.keyNum == 1) // Increment
+		if(ev.keyNum == 1) // Increment active digit string tracking asset
 		{
 			modStr[curDigit] = ((modStr[curDigit] - '0' + 1) % 10) + '0';
-			if(realTime && setFunc != nullptr)
+			if(realTime)
 			{
-				setFunc(std::stoul(modStr));
+				if(setFunc != nullptr)
+				{
+					setFunc(std::stoul(modStr));
+				}
+				else if(valPtr != nullptr)
+				{
+					*valPtr = std::stoul(modStr);
+				}
 			}
 		}
 		else if(ev.keyNum == 2) // Move Cursor
@@ -197,13 +204,16 @@ MenuEvent MenuDigitThumbwheel::update()
 		}
 		else if(ev.keyNum == 4) // Cancel
 		{
-			if(realTime && setFunc != nullptr)
+			if(realTime)
 			{
-				setFunc(originalVal);
-			}
-			else if(valPtr != nullptr)
-			{
-				*valPtr = originalVal;
+				if(setFunc != nullptr)
+				{
+					setFunc(originalVal);
+				}
+				else if(valPtr != nullptr)
+				{
+					*valPtr = originalVal;
+				}
 			}
 			state = 0;
 			return MenuEvent::BACK;
@@ -215,7 +225,6 @@ MenuEvent MenuDigitThumbwheel::update()
 MenuEvent MenuNumberDial::update()
 {
 	disp->backlightOn();
-
 	disp->gotoxy(0, 0);
 	disp->print(menuName);
 
@@ -261,23 +270,37 @@ MenuEvent MenuNumberDial::update()
 	{
 		switch(ev.keyNum)
 		{
-			case 1: // --
+			case 1: // Button 1: Decrement
 				if(currentVal > minVal)
 					currentVal--;
-				if(realTime && setFunc != nullptr)
+				if(realTime)
 				{
-					setFunc(currentVal);
+					if(setFunc != nullptr)
+					{
+						setFunc(currentVal);
+					}
+					else if(valPtr != nullptr)
+					{
+						*valPtr = currentVal;
+					}
 				}
 				break;
-			case 2: // ++
+			case 2: // Button 2: Increment
 				if(currentVal < maxVal)
 					currentVal++;
-				if(realTime && setFunc != nullptr)
+				if(realTime)
 				{
-					setFunc(currentVal);
+					if(setFunc != nullptr)
+					{
+						setFunc(currentVal);
+					}
+					else if(valPtr != nullptr)
+					{
+						*valPtr = currentVal;
+					}
 				}
 				break;
-			case 3: // SAVE - Update via setter or pointer and exit
+			case 3: // Button 3: SAVE
 				if(setFunc != nullptr)
 				{
 					setFunc(currentVal);
@@ -288,20 +311,22 @@ MenuEvent MenuNumberDial::update()
 				}
 				state = 0;
 				return MenuEvent::BACK;
-			case 4: // CNCL - Revert and exit
-				if(realTime && setFunc != nullptr)
+			case 4: // Button 4: CNCL
+				if(realTime)
 				{
-					setFunc(originalVal);
-				}
-				else if(valPtr != nullptr)
-				{
-					*valPtr = originalVal;
+					if(setFunc != nullptr)
+					{
+						setFunc(originalVal);
+					}
+					else if(valPtr != nullptr)
+					{
+						*valPtr = originalVal;
+					}
 				}
 				state = 0;
 				return MenuEvent::BACK;
 		}
 	}
-
 	return MenuEvent::NOOP;
 }
 
@@ -326,7 +351,6 @@ MenuEvent MenuBoolSelector::update()
 		// Sync with current variable state via getter or pointer
 		currentVal = (getFunc != nullptr) ? getFunc() : *valPtr;
 		originalVal = currentVal;
-
 		state = 1;
 	}
 
@@ -348,21 +372,35 @@ MenuEvent MenuBoolSelector::update()
 	{
 		switch(ev.keyNum)
 		{
-			case 1: // Select Option 1 (true)
+			case 1: // Button 1: select option 1 (true)
 				currentVal = true;
-				if(realTime && setFunc != nullptr)
+				if(realTime)
 				{
-					setFunc(currentVal);
+					if(setFunc != nullptr)
+					{
+						setFunc(currentVal);
+					}
+					else if(valPtr != nullptr)
+					{
+						*valPtr = currentVal;
+					}
 				}
 				break;
-			case 2: // Select Option 2 (false)
+			case 2: // Button 2: select option 2 (false)
 				currentVal = false;
-				if(realTime && setFunc != nullptr)
+				if(realTime)
 				{
-					setFunc(currentVal);
+					if(setFunc != nullptr)
+					{
+						setFunc(currentVal);
+					}
+					else if(valPtr != nullptr)
+					{
+						*valPtr = currentVal;
+					}
 				}
 				break;
-			case 3: // SAVE - Commit change and back out
+			case 3: // Button 3: SAVE
 				if(setFunc != nullptr)
 				{
 					setFunc(currentVal);
@@ -373,20 +411,22 @@ MenuEvent MenuBoolSelector::update()
 				}
 				state = 0;
 				return MenuEvent::BACK;
-			case 4: // CNCL - Revert and back out
-				if(realTime && setFunc != nullptr)
+			case 4: // Button 4: CNCL
+				if(realTime)
 				{
-					setFunc(originalVal);
-				}
-				else if(valPtr != nullptr)
-				{
-					*valPtr = originalVal;
+					if(setFunc != nullptr)
+					{
+						setFunc(originalVal);
+					}
+					else if(valPtr != nullptr)
+					{
+						*valPtr = originalVal;
+					}
 				}
 				state = 0;
 				return MenuEvent::BACK;
 		}
 	}
-
 	return MenuEvent::NOOP;
 }
 
@@ -422,7 +462,7 @@ MenuEvent MenuOptionSelector::update()
 		state = 1;
 	}
 
-	// 1. Calculate the 2-row scrolling window
+	// Scroll management to keep focus visible inside the available 2 lines
 	if(currentVal < topIndex)
 	{
 		topIndex = currentVal;
@@ -442,7 +482,7 @@ MenuEvent MenuOptionSelector::update()
 		topIndex = (uint32_t)options.size() - 2;
 	}
 
-	// 2. Render the 2-row visible window (Row 1 and Row 2)
+	// Render the 2 available rows for options
 	for(uint32_t i = 0; i < 2; i++)
 	{
 		uint32_t optIdx = topIndex + i;
@@ -479,23 +519,37 @@ MenuEvent MenuOptionSelector::update()
 	{
 		switch(ev.keyNum)
 		{
-			case 1: // UP
+			case 1: // Button 1: UP
 				if(currentVal > 0)
 					currentVal--;
-				if(realTime && setFunc != nullptr)
+				if(realTime)
 				{
-					setFunc(currentVal);
+					if(setFunc != nullptr)
+					{
+						setFunc(currentVal);
+					}
+					else if(valPtr != nullptr)
+					{
+						*valPtr = currentVal;
+					}
 				}
 				break;
-			case 2: // DOWN
+			case 2: // Button 2: DOWN
 				if(currentVal < options.size() - 1)
 					currentVal++;
-				if(realTime && setFunc != nullptr)
+				if(realTime)
 				{
-					setFunc(currentVal);
+					if(setFunc != nullptr)
+					{
+						setFunc(currentVal);
+					}
+					else if(valPtr != nullptr)
+					{
+						*valPtr = currentVal;
+					}
 				}
 				break;
-			case 3: // SAVE
+			case 3: // Button 3: SAVE
 				if(setFunc != nullptr)
 				{
 					setFunc(currentVal);
@@ -506,20 +560,22 @@ MenuEvent MenuOptionSelector::update()
 				}
 				state = 0;
 				return MenuEvent::BACK;
-			case 4: // CNCL
-				if(realTime && setFunc != nullptr)
+			case 4: // Button 4: CNCL
+				if(realTime)
 				{
-					setFunc(originalVal);
-				}
-				else if(valPtr != nullptr)
-				{
-					*valPtr = originalVal;
+					if(setFunc != nullptr)
+					{
+						setFunc(originalVal);
+					}
+					else if(valPtr != nullptr)
+					{
+						*valPtr = originalVal;
+					}
 				}
 				state = 0;
 				return MenuEvent::BACK;
 		}
 	}
-
 	return MenuEvent::NOOP;
 }
 
@@ -630,9 +686,17 @@ MenuEvent MenuPercentageBar::update()
 				currentVal -= (int32_t)stepVal;
 				if(currentVal < 0)
 					currentVal = 0;
-				if(realTime && setFunc != nullptr)
+				if(realTime)
 				{
-					setFunc((uint32_t)(((uint64_t)currentVal * maxVal) / 100));
+					uint32_t calculatedRaw = (uint32_t)(((uint64_t)currentVal * maxVal) / 100);
+					if(setFunc != nullptr)
+					{
+						setFunc(calculatedRaw);
+					}
+					else if(valPtr != nullptr)
+					{
+						*valPtr = calculatedRaw;
+					}
 				}
 				break;
 
@@ -640,9 +704,17 @@ MenuEvent MenuPercentageBar::update()
 				currentVal += (int32_t)stepVal;
 				if(currentVal > 100)
 					currentVal = 100;
-				if(realTime && setFunc != nullptr)
+				if(realTime)
 				{
-					setFunc((uint32_t)(((uint64_t)currentVal * maxVal) / 100));
+					uint32_t calculatedRaw = (uint32_t)(((uint64_t)currentVal * maxVal) / 100);
+					if(setFunc != nullptr)
+					{
+						setFunc(calculatedRaw);
+					}
+					else if(valPtr != nullptr)
+					{
+						*valPtr = calculatedRaw;
+					}
 				}
 				break;
 
@@ -660,14 +732,16 @@ MenuEvent MenuPercentageBar::update()
 				return MenuEvent::BACK;
 
 			case 4: // Button 4: CNCL
-				// Restore un-snapped raw entry value
-				if(realTime && setFunc != nullptr)
+				if(realTime)
 				{
-					setFunc(originalVal);
-				}
-				else if(valPtr != nullptr)
-				{
-					*valPtr = originalVal;
+					if(setFunc != nullptr)
+					{
+						setFunc(originalVal);
+					}
+					else if(valPtr != nullptr)
+					{
+						*valPtr = originalVal;
+					}
 				}
 				state = 0;
 				return MenuEvent::BACK;
