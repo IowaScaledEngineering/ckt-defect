@@ -23,6 +23,7 @@ LICENSE:
 
 struct DetectorConfiguration {
 	uint8_t volumeStep;
+	uint8_t lcdBrightness;
 
 	bool milepostEnable;
 	float_t milepost[NUM_TRACKS];

@@ -26,6 +26,8 @@ LICENSE:
 #include "common.h"
 #include "configuration.h"
 
+#define LCD_BRIGHT_DEFAULT      128
+
 #define MILEPOST_EN_DEFAULT     true
 #define TRACK_NAME_EN_DEFAULT   true
 #define SPEED_EN_DEFAULT        true
@@ -44,6 +46,7 @@ void loadConfiguration(DetectorConfiguration* cfg)
 	preferences.begin(PREF_NAMESPACE, true);  // Open in read-only mode
 
 	cfg->volumeStep = preferences.getUChar("vol", VOL_STEP_NOM);
+	cfg->lcdBrightness = preferences.getUChar("lcd", LCD_BRIGHT_DEFAULT);
 
 	cfg->milepostEnable = preferences.getBool("mpEn", MILEPOST_EN_DEFAULT);
 	cfg->trackNameEnable = preferences.getBool("trkNameEn", TRACK_NAME_EN_DEFAULT);
@@ -73,6 +76,9 @@ void saveConfiguration(DetectorConfiguration* cfg)
 
 	if(cfg->volumeStep != preferences.getUChar("vol", VOL_STEP_NOM))
 		preferences.putUChar("vol", cfg->volumeStep);
+
+	if(cfg->lcdBrightness != preferences.getUChar("lcd", LCD_BRIGHT_DEFAULT))
+		preferences.putUChar("lcd", cfg->lcdBrightness);
 
 	if(cfg->milepostEnable != preferences.getBool("mpEn", MILEPOST_EN_DEFAULT))
 		preferences.putBool("mpEn", cfg->milepostEnable);
@@ -109,6 +115,9 @@ void printConfiguration(DetectorConfiguration* cfg)
 {
 	Serial.print("Volume: ");
 	Serial.println(cfg->volumeStep);
+
+	Serial.print("Lcd Brightness: ");
+	Serial.println(cfg->lcdBrightness);
 
 	Serial.print("Milepost Enable: ");
 	Serial.println(cfg->milepostEnable);

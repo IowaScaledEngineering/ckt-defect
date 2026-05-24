@@ -320,7 +320,6 @@ void loop()
 	Serial.println(GIT_REV, HEX);
 
 	// Build menus
-	lcd->setBrightness(128);  // FIXME: should be in configuration
 	uint32_t val2_1 = 100;
 	uint32_t val2_2 = 100;
 	uint32_t val2_3 = 100;
@@ -389,7 +388,8 @@ void loop()
 		[lcd](uint32_t val) { lcd->setBrightness(val); },
 		true,
 		255, 
-		10
+		10,
+		[lcd, &cfg]() { cfg.lcdBrightness = lcd->getBrightness(); saveConfiguration(&cfg); }
 	);
 	mainSel->addChild(menu9);
 
@@ -398,6 +398,7 @@ void loop()
 	// Read NVM configuration
 	loadConfiguration(&cfg);
 	audioSetVolumeStep(cfg.volumeStep);
+	lcd->setBrightness(cfg.lcdBrightness);
 
 	printMemoryUsage();
 
@@ -601,7 +602,6 @@ setTestPoint(TP2);
 			displayPresent = lcd->readKeys();
 
 			menuManager.process();
-//			lcd->setBrightness(lcdBrightness);
 clrTestPoint(TP2);
 		}
 
@@ -758,6 +758,7 @@ clrTestPoint(TP2);
 		}
 
 
+/*
 		if(millis() - axleTime >= 1000)
 		{
 			// 87 * 1000000 * 3600 / 12 / 5280 = 4,943,182
@@ -792,6 +793,7 @@ clrTestPoint(TP2);
 			Serial.print('\n');
 			Serial.println("---");
 		}
+*/
 
 /*
 		lcd.setCursor(0, 1);
