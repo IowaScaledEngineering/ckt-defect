@@ -47,7 +47,7 @@ class Menu
 		bool getMenuInputEvent(DisplayEvent *ev);
 		void handleButtonPress(int keyNum);
 		void handleButtonRelease(int keyNum);
-		uint32_t boundGetValue();
+		uint32_t getValue();
 		void setValue(uint32_t value);
 		void applyChange(uint32_t value);
 		void cancel();
@@ -57,6 +57,12 @@ class Menu
 		virtual ~Menu() = default;
 		std::string getName() const { return menuName; }
 		static void setDisplay(Display *d) { disp = d; }
+		virtual void onEnter()
+		{
+			if(disp) disp->clear();
+			lastButtonNum = 0;
+			isHolding = false;
+		}
 		virtual MenuEvent update() = 0;
 
 		// Setter interface for global button repeating assets
@@ -96,7 +102,7 @@ class MenuListSelector : public Menu
 
 class MenuDigitThumbwheel : public Menu
 {
-		uint8_t iDigits, fDigits, state = 0, curDigit = 0;
+		uint8_t iDigits, fDigits, curDigit = 0;
 		std::string modStr;
 		bool suppressLeadingZeros;
 
@@ -122,6 +128,7 @@ class MenuDigitThumbwheel : public Menu
 			saveCallback = std::move(onSave);
 		}
 
+		void onEnter() override;
 		MenuEvent update() override;
 };
 
@@ -130,7 +137,6 @@ class MenuNumberDial : public Menu
 		uint32_t currentVal;
 		uint32_t minVal;
 		uint32_t maxVal;
-		uint8_t state = 0;
 		int fieldWidth = 0;
 		int maxDigits = 0;
 		std::string units = "";
@@ -158,6 +164,7 @@ class MenuNumberDial : public Menu
 			maxDigits = (int)std::to_string(maxVal).length();
 		}
 
+		void onEnter() override;
 		MenuEvent update() override;
 };
 
@@ -168,7 +175,6 @@ class MenuBoolSelector : public Menu
 		std::string btn1Name;
 		std::string opt2Name;
 		std::string btn2Name;
-		uint8_t state = 0;
 
 	public:
 		// Constructor for direct pointers
@@ -190,6 +196,7 @@ class MenuBoolSelector : public Menu
 			saveCallback = std::move(onSave);
 		}
 
+		void onEnter() override;
 		MenuEvent update() override;
 };
 
@@ -199,7 +206,6 @@ class MenuOptionSelector : public Menu
 		uint32_t currentVal;
 		std::vector<std::string> options;
 		uint32_t topIndex = 0;
-		uint8_t state = 0;
 
 	public:
 		// Constructor for direct pointers
@@ -222,6 +228,7 @@ class MenuOptionSelector : public Menu
 			saveCallback = std::move(onSave);
 		}
 
+		void onEnter() override;
 		MenuEvent update() override;
 };
 
@@ -231,7 +238,6 @@ class MenuPercentageBar : public Menu
 		uint32_t maxVal;
 		uint32_t stepVal;
 		int32_t currentVal;
-		uint8_t state = 0;
 
 	public:
 		// Constructor for direct pointers
@@ -254,5 +260,6 @@ class MenuPercentageBar : public Menu
 			saveCallback = std::move(onSave);
 		}
 
+		void onEnter() override;
 		MenuEvent update() override;
 };

@@ -42,7 +42,7 @@ void Menu::handleButtonRelease(int keyNum)
 	}
 }
 
-uint32_t Menu::boundGetValue()
+uint32_t Menu::getValue()
 {
 	if(getFunc32) return getFunc32();
 	if(valPtr32) return *valPtr32;
@@ -196,6 +196,15 @@ MenuEvent MenuListSelector::update()
 	return MenuEvent::NOOP;
 }
 
+void MenuDigitThumbwheel::onEnter()
+{
+	Menu::onEnter();
+	uint32_t initVal = getValue();
+	originalVal = initVal;
+	modStr = std::format("{:0{}d}", initVal, iDigits + fDigits);
+	curDigit = 0;
+}
+
 MenuEvent MenuDigitThumbwheel::update()
 {
 	disp->backlightOn();
@@ -209,15 +218,6 @@ MenuEvent MenuDigitThumbwheel::update()
 	disp->print("SAVE");
 	disp->gotoxy(16, 3);
 	disp->print("CNCL");
-
-	if(state == 0)
-	{
-		uint32_t initVal = boundGetValue();
-		originalVal = initVal;
-		modStr = std::format("{:0{}d}", initVal, iDigits + fDigits);
-		curDigit = 0;
-		state = 1;
-	}
 
 	std::string displayStr = modStr;
 	bool leading = true;
@@ -278,13 +278,11 @@ MenuEvent MenuDigitThumbwheel::update()
 			else if(ev.keyNum == 3)
 			{
 				applyChange(std::stoul(modStr));
-				state = 0;
 				return MenuEvent::BACK;
 			}
 			else if(ev.keyNum == 4)
 			{
 				cancel();
-				state = 0;
 				return MenuEvent::BACK;
 			}
 		}
@@ -294,6 +292,14 @@ MenuEvent MenuDigitThumbwheel::update()
 		}
 	}
 	return MenuEvent::NOOP;
+}
+
+void MenuNumberDial::onEnter()
+{
+	Menu::onEnter();
+	uint32_t initVal = getValue();
+	currentVal = std::clamp(initVal, minVal, maxVal);
+	originalVal = currentVal;
 }
 
 MenuEvent MenuNumberDial::update()
@@ -310,14 +316,6 @@ MenuEvent MenuNumberDial::update()
 	disp->print("SAVE");
 	disp->gotoxy(16, 3);
 	disp->print("CNCL");
-
-	if(state == 0)
-	{
-		uint32_t initVal = boundGetValue();
-		currentVal = std::clamp(initVal, minVal, maxVal);
-		originalVal = currentVal;
-		state = 1;
-	}
 
 	// 1. Determine number of digits for the current value
 	std::string valStr = std::to_string(currentVal);
@@ -363,11 +361,9 @@ MenuEvent MenuNumberDial::update()
 					break;
 				case 3:
 					applyChange(currentVal);
-					state = 0;
 					return MenuEvent::BACK;
 				case 4:
 					cancel();
-					state = 0;
 					return MenuEvent::BACK;
 			}
 		}
@@ -377,6 +373,13 @@ MenuEvent MenuNumberDial::update()
 		}
 	}
 	return MenuEvent::NOOP;
+}
+
+void MenuBoolSelector::onEnter()
+{
+	Menu::onEnter();
+	currentVal = (getValue() != 0);
+	originalVal = currentVal;
 }
 
 MenuEvent MenuBoolSelector::update()
@@ -393,13 +396,6 @@ MenuEvent MenuBoolSelector::update()
 	disp->print("SAVE");
 	disp->gotoxy(16, 3);
 	disp->print("CNCL");
-
-	if(state == 0)
-	{
-		currentVal = (boundGetValue() != 0);
-		originalVal = currentVal;
-		state = 1;
-	}
 
 	// 1. Render Option 1 (associated with true) on line 1
 	disp->gotoxy(0, 1);
@@ -438,11 +434,9 @@ MenuEvent MenuBoolSelector::update()
 					break;
 				case 3:
 					applyChange(currentVal ? 1 : 0);
-					state = 0;
 					return MenuEvent::BACK;
 				case 4:
 					cancel();
-					state = 0;
 					return MenuEvent::BACK;
 			}
 		}
@@ -452,6 +446,20 @@ MenuEvent MenuBoolSelector::update()
 		}
 	}
 	return MenuEvent::NOOP;
+}
+
+void MenuOptionSelector::onEnter()
+{
+	Menu::onEnter();
+	currentVal = getValue();
+	originalVal = currentVal;
+
+	// If the value is beyond the end of the list, go to the last item
+	if(currentVal >= options.size())
+	{
+		currentVal = options.empty() ? 0 : (uint32_t)options.size() - 1;
+	}
+	topIndex = 0;
 }
 
 MenuEvent MenuOptionSelector::update()
@@ -468,20 +476,6 @@ MenuEvent MenuOptionSelector::update()
 	disp->print("SAVE");
 	disp->gotoxy(16, 3);
 	disp->print("CNCL");
-
-	if(state == 0)
-	{
-		currentVal = boundGetValue();
-		originalVal = currentVal;
-
-		// If the value is beyond the end of the list, go to the last item
-		if(currentVal >= options.size())
-		{
-			currentVal = options.empty() ? 0 : (uint32_t)options.size() - 1;
-		}
-		topIndex = 0;
-		state = 1;
-	}
 
 	// Scroll management to keep focus visible inside the available 2 lines
 	if(currentVal < topIndex)
@@ -560,11 +554,9 @@ MenuEvent MenuOptionSelector::update()
 					break;
 				case 3:
 					applyChange(currentVal);
-					state = 0;
 					return MenuEvent::BACK;
 				case 4:
 					cancel();
-					state = 0;
 					return MenuEvent::BACK;
 			}
 		}
@@ -574,6 +566,45 @@ MenuEvent MenuOptionSelector::update()
 		}
 	}
 	return MenuEvent::NOOP;
+}
+
+void MenuPercentageBar::onEnter()
+{
+	Menu::onEnter();
+	originalVal = getValue();
+
+	// 1. Convert raw value to percentage with proper mathematical rounding (+ maxVal/2)
+	uint32_t rawVal = std::clamp<uint32_t>(getValue(), 0U, maxVal);
+	uint32_t initialPct = (uint32_t)((((uint64_t)rawVal * 100) + (maxVal / 2)) / maxVal);
+
+	if(stepVal > 0)
+	{
+		uint32_t remainder = initialPct % stepVal;
+		if(remainder >= (stepVal + 1) / 2)
+		{
+			initialPct += (stepVal - remainder); // Round up
+		}
+		else
+		{
+			initialPct -= remainder; // Round down
+		}
+	}
+
+	// Final safety clamp to percentage boundaries
+	currentVal = (int32_t)std::clamp<uint32_t>(initialPct, 0U, 100U);
+
+	// Initialize the 5 custom fractional-width column bar pieces (5x8 pixels)
+	uint8_t bar1[8] = {0b10000, 0b10000, 0b10000, 0b10000, 0b10000, 0b10000, 0b10000, 0b00000};
+	uint8_t bar2[8] = {0b11000, 0b11000, 0b11000, 0b11000, 0b11000, 0b11000, 0b11000, 0b00000};
+	uint8_t bar3[8] = {0b11100, 0b11100, 0b11100, 0b11100, 0b11100, 0b11100, 0b11100, 0b00000};
+	uint8_t bar4[8] = {0b11110, 0b11110, 0b11110, 0b11110, 0b11110, 0b11110, 0b11110, 0b00000};
+	uint8_t bar5[8] = {0b11111, 0b11111, 0b11111, 0b11111, 0b11111, 0b11111, 0b11111, 0b00000};
+
+	disp->createCustomChar(1, bar1);
+	disp->createCustomChar(2, bar2);
+	disp->createCustomChar(3, bar3);
+	disp->createCustomChar(4, bar4);
+	disp->createCustomChar(5, bar5);
 }
 
 MenuEvent MenuPercentageBar::update()
@@ -590,46 +621,6 @@ MenuEvent MenuPercentageBar::update()
 	disp->print("SAVE");
 	disp->gotoxy(16, 3);
 	disp->print("CNCL");
-
-	if(state == 0)
-	{
-		originalVal = boundGetValue();
-
-		// 1. Convert raw value to percentage with proper mathematical rounding (+ maxVal/2)
-		uint32_t rawVal = std::clamp<uint32_t>(boundGetValue(), 0U, maxVal);
-		uint32_t initialPct = (uint32_t)((((uint64_t)rawVal * 100) + (maxVal / 2)) / maxVal);
-
-		if(stepVal > 0)
-		{
-			uint32_t remainder = initialPct % stepVal;
-			if(remainder >= (stepVal + 1) / 2)
-			{
-				initialPct += (stepVal - remainder); // Round up
-			}
-			else
-			{
-				initialPct -= remainder; // Round down
-			}
-		}
-
-		// Final safety clamp to percentage boundaries
-		currentVal = (int32_t)std::clamp<uint32_t>(initialPct, 0U, 100U);
-
-		// Initialize the 5 custom fractional-width column bar pieces (5x8 pixels)
-		uint8_t bar1[8] = {0b10000, 0b10000, 0b10000, 0b10000, 0b10000, 0b10000, 0b10000, 0b00000};
-		uint8_t bar2[8] = {0b11000, 0b11000, 0b11000, 0b11000, 0b11000, 0b11000, 0b11000, 0b00000};
-		uint8_t bar3[8] = {0b11100, 0b11100, 0b11100, 0b11100, 0b11100, 0b11100, 0b11100, 0b00000};
-		uint8_t bar4[8] = {0b11110, 0b11110, 0b11110, 0b11110, 0b11110, 0b11110, 0b11110, 0b00000};
-		uint8_t bar5[8] = {0b11111, 0b11111, 0b11111, 0b11111, 0b11111, 0b11111, 0b11111, 0b00000};
-
-		disp->createCustomChar(1, bar1);
-		disp->createCustomChar(2, bar2);
-		disp->createCustomChar(3, bar3);
-		disp->createCustomChar(4, bar4);
-		disp->createCustomChar(5, bar5);
-
-		state = 1;
-	}
 
 	// Dynamic calculation of percentage bounds based on inputs
 	uint32_t percentage = std::clamp<int32_t>(currentVal, 0, 100);
@@ -702,12 +693,10 @@ MenuEvent MenuPercentageBar::update()
 
 				case 3:
 					applyChange((uint32_t)(((uint64_t)percentage * maxVal) / 100));
-					state = 0;
 					return MenuEvent::BACK;
 
 				case 4:
 					cancel();
-					state = 0;
 					return MenuEvent::BACK;
 			}
 		}

@@ -94,7 +94,6 @@ class MenuVolume : public Menu
 {
 	private:
 		int32_t currentVal; // Internal percentage (0 to 150)
-		uint8_t state = 0;
 
 	public:
 		// Constructor using std::function callbacks
@@ -107,6 +106,7 @@ class MenuVolume : public Menu
 			realTime = realTimeUpdate;
 			saveCallback = std::move(onSave);
 		}
-
+		
+		void onEnter() override;
 		MenuEvent update() override;
 };

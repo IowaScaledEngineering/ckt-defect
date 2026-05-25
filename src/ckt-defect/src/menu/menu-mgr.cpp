@@ -6,6 +6,8 @@ void MenuManager::process()
 	if(!cur)
 		return;
 	MenuEvent ev = cur->update();
+	std::shared_ptr<Menu> next = nullptr;
+
 	if(ev == MenuEvent::FORWARD)
 	{
 		if(!cur->getChildren().empty())
@@ -24,16 +26,14 @@ void MenuManager::process()
 
 				if(index >= 0 && index < static_cast<int>(visible.size()))
 				{
-					cur = visible[index];
-					disp->clear();
+					next = visible[index];
 				}
 			}
 		}
 	}
 	else if(ev == MenuEvent::BACK && cur->getParent())
 	{
-		cur = std::shared_ptr<Menu>(cur->getParent(), [](Menu *) {});
-		disp->clear();
+		next = std::shared_ptr<Menu>(cur->getParent(), [](Menu *) {});
 	}
 	// Added: Handle NEXT and PREV sibling navigation
 	else if((ev == MenuEvent::NEXT || ev == MenuEvent::PREV) && cur->getParent())
@@ -56,8 +56,7 @@ void MenuManager::process()
 				}
 				if(next_it != siblings.end())
 				{
-					cur = *next_it;
-					disp->clear();
+					next = *next_it;
 				}
 			}
 			else if(ev == MenuEvent::PREV)
@@ -72,11 +71,16 @@ void MenuManager::process()
 					}
 					if((*prev_it)->isVisible())
 					{
-						cur = *prev_it;
-						disp->clear();
+						next = *prev_it;
 					}
 				}
 			}
 		}
+	}
+
+	if(next && next != cur)
+	{
+		cur = next;
+		cur->onEnter();
 	}
 }
