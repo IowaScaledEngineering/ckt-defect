@@ -320,19 +320,10 @@ void loop()
 	Serial.println(GIT_REV, HEX);
 
 	// Build menus
-	uint32_t val2_1 = 100;
-	uint32_t val2_2 = 100;
-	uint32_t val2_3 = 100;
-	uint32_t val2_4 = 100;
-	uint32_t val2_5 = 100;
-	uint32_t val2_6 = 100;
-	uint32_t val3_1 = 100;
-	uint32_t val3_2 = 100;
-	uint32_t val4 = 100;
-	bool val5 = false;
-	uint32_t val6 = 3;
-	uint32_t val7 = 100;
 	uint32_t valFloat = 4725;
+	uint32_t val2 = 100;
+	bool val3 = false;
+	uint32_t val4 = 3;
 
 	std::vector<std::string> options = {
 	    "Arizona", "Alaska", "Colorado", "Florida", "Iowa", "Kansas", "Nebraska", "Wyoming",
@@ -343,46 +334,18 @@ void loop()
 	home->addChild(mainSel);
 
 	auto menu1 = std::make_shared<MenuDigitThumbwheel>("Digit Thumbwheel", &valFloat, false, 5, 1, true);
-	auto menu2 = std::make_shared<MenuListSelector>("Menu 2");
-	menu2->addChild(std::make_shared<MenuDigitThumbwheel>("Menu 2.1", &val2_1, false, 3, 0, false));
-	menu2->addChild(std::make_shared<MenuDigitThumbwheel>("Menu 2.2", &val2_2, false, 3, 0, false));
-	menu2->addChild(std::make_shared<MenuDigitThumbwheel>("Menu 2.3", &val2_3, false, 3, 0, false));
-	menu2->addChild(std::make_shared<MenuDigitThumbwheel>("Menu 2.4", &val2_4, false, 3, 0, false));
-	menu2->addChild(std::make_shared<MenuDigitThumbwheel>("Menu 2.5", &val2_5, false, 3, 0, false));
-	menu2->addChild(std::make_shared<MenuDigitThumbwheel>("Menu 2.6", &val2_6, false, 3, 0, false));
-
-	auto menu3 = std::make_shared<MenuListSelector>("Menu 3");
-	menu3->addChild(std::make_shared<MenuDigitThumbwheel>("Menu 3.1", &val3_1, false, 3, 0, true));
-	menu3->addChild(std::make_shared<MenuDigitThumbwheel>("Menu 3.2", &val3_2, false, 3, 0, true));
-
-	auto menu4 = std::make_shared<MenuNumberDial>("Number Dial", &val4, false, 0, 120, "sec");
-	auto menu5 = std::make_shared<MenuBoolSelector>("Bool Select", &val5, false, "Enable", "ENBL", "Disable", "DSBL");
-	auto menu6 = std::make_shared<MenuOptionSelector>("Option Select", &val6, false, options);
-	auto menu7 = std::make_shared<MenuDigitThumbwheel>("Menu 7", &val7, false, 3, 0, false);
+	auto menuSysConfig = std::make_shared<MenuListSelector>("System Config");
+	auto menu2 = std::make_shared<MenuNumberDial>("Number Dial", &val2, false, 0, 120, "sec");
+	auto menu3 = std::make_shared<MenuBoolSelector>("Bool Select", &val3, false, "Enable", "ENBL", "Disable", "DSBL");
+	auto menu4 = std::make_shared<MenuOptionSelector>("Option Select", &val4, false, options);
 
 	mainSel->addChild(menu1);
+	mainSel->addChild(menuSysConfig);
 	mainSel->addChild(menu2);
 	mainSel->addChild(menu3);
 	mainSel->addChild(menu4);
-	mainSel->addChild(menu5);
-	mainSel->addChild(menu6);
-	mainSel->addChild(menu7);
 
-	auto menu8 = std::make_shared<MenuNavHome>("Navigator");
-	mainSel->addChild(menu8);
-
-	auto menuA = std::make_shared<MenuNav>("Menu A");
-	auto menuB = std::make_shared<MenuNav>("Menu B");
-	auto menuC = std::make_shared<MenuNav>("Menu C");
-	auto menuD = std::make_shared<MenuNav>("Menu D");
-	auto menuE = std::make_shared<MenuNav>("Menu E");
-	menu8->addChild(menuA);
-	menu8->addChild(menuB);
-	menu8->addChild(menuC);
-	menu8->addChild(menuD);
-	menu8->addChild(menuE);
-
-	auto menu9 = std::make_shared<MenuPercentageBar>(
+	auto menuBacklightLevel = std::make_shared<MenuPercentageBar>(
 		"Backlight Level", 
 		[lcd]() { return lcd->getBrightness(); },
 		[lcd](uint32_t val) { lcd->setBrightness(val); },
@@ -391,16 +354,17 @@ void loop()
 		10,
 		[lcd, &cfg]() { cfg.lcdBrightness = lcd->getBrightness(); saveConfiguration(&cfg); }
 	);
-	mainSel->addChild(menu9);
 
-	auto menu10 = std::make_shared<MenuVolume>(
+	auto menuVolume = std::make_shared<MenuVolume>(
 		"Audio Volume",
 		audioGetVolumeStep,
 		audioSetVolumeStep,
 		true,
 		[lcd, &cfg]() { cfg.volumeStep = audioGetVolumeStep(); saveConfiguration(&cfg); }
 	);
-	mainSel->addChild(menu10);
+
+	menuSysConfig->addChild(menuBacklightLevel);
+	menuSysConfig->addChild(menuVolume);
 
 	MenuManager menuManager(lcd, home);
 	Menu::setTimingCallback(millis); 
