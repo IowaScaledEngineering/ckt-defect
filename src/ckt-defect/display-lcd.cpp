@@ -321,8 +321,7 @@ bool DisplayLcd::readKeys(void)
 	// Request 1 byte of data containing button states from the LCD module
 	if (_i2cPort->requestFrom(_i2cAddr, static_cast<uint8_t>(1)) == 1)
 	{
-		// Isolate the lowest 4 bits representing Buttons 1 through 4
-		uint8_t currentButtonState = _i2cPort->read() & 0x0F;
+		uint8_t currentButtonState = _i2cPort->read();
 		
 		// XOR reveals which bits transitioned state since our last check
 		uint8_t changed = currentButtonState ^ _lastButtonState;
@@ -331,7 +330,7 @@ bool DisplayLcd::readKeys(void)
 		{
 			for (int i = 0; i < 4; ++i)
 			{
-				// Check if this specific button's bit changed
+				// 1. Process standard lower nibble transitions (Key Down / Key Up)
 				if (changed & (1 << i))
 				{
 					int eventNum = i + 1; // Map bit index (0-3) to button ID (1-4)
@@ -343,6 +342,19 @@ bool DisplayLcd::readKeys(void)
 
 					DisplayEvent newEvent = {type, eventNum};
 					eventQueue.push(newEvent); // Attempts to push event onto the circular buffer
+				}
+
+				// 2. Process upper nibble transitions (Key Long)
+				// Check if the long press bit changed, and transitioned to HIGH
+				if ((changed & (1 << (i + 4))) && (currentButtonState & (1 << (i + 4))))
+				{
+					// Only process if the corresponding lower nibble bit is also active (pressed)
+					if (currentButtonState & (1 << i))
+					{
+						int eventNum = i + 1;
+						DisplayEvent newEvent = {DisplayEventType::KEY_LONG, eventNum};
+						eventQueue.push(newEvent);
+					}
 				}
 			}
 			// Update our saved register for the next cycle
