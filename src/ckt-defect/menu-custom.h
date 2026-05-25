@@ -27,7 +27,7 @@ class MenuHome : public Menu
 			disp->gotoxy(16, 3);
 			disp->print("MENU");
 			DisplayEvent ev;
-			if(disp->getEvent(&ev) && ev.type == DisplayEventType::KEY_DOWN && ev.keyNum == 4)
+			if(disp->getEvent(&ev) && ev.type == DisplayEventType::KEY_PRESS && ev.keyNum == 4)
 				return MenuEvent::FORWARD;
 			return MenuEvent::NOOP;
 		}

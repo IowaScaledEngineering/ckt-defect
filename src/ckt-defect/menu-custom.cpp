@@ -89,7 +89,7 @@ MenuEvent MenuVolume::update()
 	DisplayEvent ev;
 	if(getMenuInputEvent(&ev))
 	{
-		if(ev.type == DisplayEventType::KEY_DOWN)
+		if(ev.type == DisplayEventType::KEY_PRESS)
 		{
 			switch(ev.keyNum)
 			{
@@ -124,7 +124,7 @@ MenuEvent MenuVolume::update()
 					return MenuEvent::BACK;
 			}
 		}
-		else if(ev.type == DisplayEventType::KEY_UP)
+		else if(ev.type == DisplayEventType::KEY_RELEASE)
 		{
 			handleButtonRelease(ev.keyNum);
 		}

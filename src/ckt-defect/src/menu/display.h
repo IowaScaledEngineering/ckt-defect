@@ -7,8 +7,8 @@
 
 enum class DisplayEventType
 {
-	KEY_DOWN,
-	KEY_UP
+	KEY_PRESS,
+	KEY_RELEASE
 	KEY_LONG,
 };
 struct DisplayEvent

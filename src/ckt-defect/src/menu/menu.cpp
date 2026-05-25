@@ -14,7 +14,7 @@ bool Menu::getMenuInputEvent(DisplayEvent *ev)
 		uint32_t currentDelay = isHolding ? holdDelayMs : initialHoldDelayMs;
 		if((getMillis() - lastButtonPressTime) >= currentDelay)
 		{
-			ev->type = DisplayEventType::KEY_DOWN;
+			ev->type = DisplayEventType::KEY_PRESS;
 			ev->keyNum = lastButtonNum;
 			gotEvent = true;
 			isHolding = true;
@@ -163,7 +163,7 @@ MenuEvent MenuListSelector::update()
 	DisplayEvent ev;
 	if(getMenuInputEvent(&ev))
 	{
-		if(ev.type == DisplayEventType::KEY_DOWN)
+		if(ev.type == DisplayEventType::KEY_PRESS)
 		{
 			if(ev.keyNum == 1 && selector > 0)
 			{
@@ -188,7 +188,7 @@ MenuEvent MenuListSelector::update()
 				return MenuEvent::BACK;
 			}
 		}
-		else if(ev.type == DisplayEventType::KEY_UP)
+		else if(ev.type == DisplayEventType::KEY_RELEASE)
 		{
 			handleButtonRelease(ev.keyNum);
 		}
@@ -259,7 +259,7 @@ MenuEvent MenuDigitThumbwheel::update()
 	DisplayEvent ev;
 	if(getMenuInputEvent(&ev))
 	{
-		if(ev.type == DisplayEventType::KEY_DOWN)
+		if(ev.type == DisplayEventType::KEY_PRESS)
 		{
 			if(ev.keyNum == 1)
 			{
@@ -286,7 +286,7 @@ MenuEvent MenuDigitThumbwheel::update()
 				return MenuEvent::BACK;
 			}
 		}
-		else if(ev.type == DisplayEventType::KEY_UP)
+		else if(ev.type == DisplayEventType::KEY_RELEASE)
 		{
 			handleButtonRelease(ev.keyNum);
 		}
@@ -337,7 +337,7 @@ MenuEvent MenuNumberDial::update()
 	DisplayEvent ev;
 	if(getMenuInputEvent(&ev))
 	{
-		if(ev.type == DisplayEventType::KEY_DOWN)
+		if(ev.type == DisplayEventType::KEY_PRESS)
 		{
 			switch(ev.keyNum)
 			{
@@ -367,7 +367,7 @@ MenuEvent MenuNumberDial::update()
 					return MenuEvent::BACK;
 			}
 		}
-		else if(ev.type == DisplayEventType::KEY_UP)
+		else if(ev.type == DisplayEventType::KEY_RELEASE)
 		{
 			handleButtonRelease(ev.keyNum);
 		}
@@ -412,7 +412,7 @@ MenuEvent MenuBoolSelector::update()
 	DisplayEvent ev;
 	if(getMenuInputEvent(&ev)) // Now robustly tracks hold configurations consistently
 	{
-		if(ev.type == DisplayEventType::KEY_DOWN)
+		if(ev.type == DisplayEventType::KEY_PRESS)
 		{
 			switch(ev.keyNum)
 			{
@@ -440,7 +440,7 @@ MenuEvent MenuBoolSelector::update()
 					return MenuEvent::BACK;
 			}
 		}
-		else if(ev.type == DisplayEventType::KEY_UP)
+		else if(ev.type == DisplayEventType::KEY_RELEASE)
 		{
 			handleButtonRelease(ev.keyNum);
 		}
@@ -530,7 +530,7 @@ MenuEvent MenuOptionSelector::update()
 	DisplayEvent ev;
 	if(getMenuInputEvent(&ev))
 	{
-		if(ev.type == DisplayEventType::KEY_DOWN)
+		if(ev.type == DisplayEventType::KEY_PRESS)
 		{
 			switch(ev.keyNum)
 			{
@@ -560,7 +560,7 @@ MenuEvent MenuOptionSelector::update()
 					return MenuEvent::BACK;
 			}
 		}
-		else if(ev.type == DisplayEventType::KEY_UP)
+		else if(ev.type == DisplayEventType::KEY_RELEASE)
 		{
 			handleButtonRelease(ev.keyNum);
 		}
@@ -665,7 +665,7 @@ MenuEvent MenuPercentageBar::update()
 	DisplayEvent ev;
 	if(getMenuInputEvent(&ev))
 	{
-		if(ev.type == DisplayEventType::KEY_DOWN)
+		if(ev.type == DisplayEventType::KEY_PRESS)
 		{
 			switch(ev.keyNum)
 			{
@@ -700,7 +700,7 @@ MenuEvent MenuPercentageBar::update()
 					return MenuEvent::BACK;
 			}
 		}
-		else if(ev.type == DisplayEventType::KEY_UP)
+		else if(ev.type == DisplayEventType::KEY_RELEASE)
 		{
 			handleButtonRelease(ev.keyNum);
 		}

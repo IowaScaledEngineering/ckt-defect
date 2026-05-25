@@ -337,8 +337,8 @@ bool DisplayLcd::readKeys(void)
 					
 					// Determine whether it was a press (bit high) or release (bit low)
 					DisplayEventType type = (currentButtonState & (1 << i)) 
-						? DisplayEventType::KEY_DOWN 
-						: DisplayEventType::KEY_UP;
+						? DisplayEventType::KEY_PRESS 
+						: DisplayEventType::KEY_RELEASE;
 
 					DisplayEvent newEvent = {type, eventNum};
 					eventQueue.push(newEvent); // Attempts to push event onto the circular buffer
