@@ -26,8 +26,9 @@ class Menu
 		// Global holding/repeating timers and button state properties
 		static inline std::function<uint32_t()> getMillis = nullptr;
 		static inline uint32_t initialHoldDelayMs = 1000; // Initial delay before auto-repeat starts
+		static inline uint32_t longHoldDelayMs = 3000; // Delay before going to faster auto-increment
 		static inline uint32_t holdDelayMs = 500; // Default programmable time (ms) to repeat
-		static inline uint32_t longHoldDelayMs = 200; // Default programmable time (ms) to repeat
+		static inline uint32_t fastDelayMs = 200; // Default programmable time (ms) to fast repeat
 		static inline int lastButtonNum = 0;
 		static inline uint32_t lastButtonPressTime = 0;
 		static inline bool isHolding = false; // Tracks if initial timeout has expired
@@ -69,8 +70,9 @@ class Menu
 		// Setter interface for global button repeating assets
 		static void setTimingCallback(std::function<uint32_t()> callback) { getMillis = callback; }
 		static void setHoldDelay(uint32_t delayMs) { holdDelayMs = delayMs; }
-		static void setLongHoldDelay(uint32_t delayMs) { longHoldDelayMs = delayMs; }
+		static void setFastDelay(uint32_t delayMs) { fastDelayMs = delayMs; }
 		static void setInitialHoldDelay(uint32_t delayMs) { initialHoldDelayMs = delayMs; }
+		static void setLongHoldDelay(uint32_t delayMs) { longHoldDelayMs = delayMs; }
 
 		virtual int getSelectedIndex() const { return 0; }
 
