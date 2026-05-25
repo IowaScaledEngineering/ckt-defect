@@ -8,10 +8,39 @@ bool Menu::getMenuInputEvent(DisplayEvent *ev)
 {
 	bool gotEvent = disp->getEvent(ev);
 
+	// Static variable to track when the current button hold sequence actually started
+	static uint32_t absoluteHoldStartTime = 0;
+
+	// Reset the absolute hold timer if no button is being pressed/held
+	if (lastButtonNum == 0)
+	{
+		absoluteHoldStartTime = 0;
+	}
+
 	// Handle button-hold timing evaluation if no fresh event occurred
 	if(!gotEvent && getMillis != nullptr && lastButtonNum != 0)
 	{
-		uint32_t currentDelay = isHolding ? holdDelayMs : initialHoldDelayMs;
+		// If this is the very start of a press sequence, capture the initial time
+		if (absoluteHoldStartTime == 0)
+		{
+			absoluteHoldStartTime = getMillis();
+		}
+
+		uint32_t currentDelay = initialHoldDelayMs;
+		
+		if (isHolding)
+		{
+			// Measure total hold time from the absolute start of the press sequence
+			if ((getMillis() - absoluteHoldStartTime) >= longHoldDelayMs)
+			{
+				currentDelay = fastDelayMs;
+			}
+			else
+			{
+				currentDelay = holdDelayMs;
+			}
+		}
+
 		if((getMillis() - lastButtonPressTime) >= currentDelay)
 		{
 			ev->type = DisplayEventType::KEY_PRESS;

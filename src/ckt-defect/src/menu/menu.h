@@ -28,7 +28,7 @@ class Menu
 		static inline uint32_t initialHoldDelayMs = 1000; // Initial delay before auto-repeat starts
 		static inline uint32_t longHoldDelayMs = 3000; // Delay before going to faster auto-increment
 		static inline uint32_t holdDelayMs = 500; // Default programmable time (ms) to repeat
-		static inline uint32_t fastDelayMs = 200; // Default programmable time (ms) to fast repeat
+		static inline uint32_t fastDelayMs = 100; // Default programmable time (ms) to fast repeat
 		static inline int lastButtonNum = 0;
 		static inline uint32_t lastButtonPressTime = 0;
 		static inline bool isHolding = false; // Tracks if initial timeout has expired
