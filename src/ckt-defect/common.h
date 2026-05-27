@@ -43,4 +43,16 @@ const std::vector<std::string> trackNames = {
 	"West Track",
 };
 
+enum class MinSpeed {
+	Off = 0,
+	Entrance = 1,
+	Exit = 2,
+};
+
+const std::vector<std::string> minSpeedName = {
+	"Off",
+	"Entrance",
+	"Exit",
+};
+
 void toLowercase(std::string& str);

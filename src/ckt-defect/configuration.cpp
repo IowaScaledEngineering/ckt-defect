@@ -35,6 +35,10 @@ LICENSE:
 #define TEMPERATURE_EN_DEFAULT  true
 #define MILEPOST_DEFAULT        346.9
 
+#define MIN_SPEED_TYPE_DEFAULT  0 // Corresponds to MinSpeed::Off
+#define MIN_SPEED_DEFAULT       10
+#define MIN_AXLES_DEFAULT       4
+
 #define PREF_NAMESPACE   "defectdetector"
 
 Preferences preferences;
@@ -53,6 +57,10 @@ void loadConfiguration(DetectorConfiguration* cfg)
 	cfg->speedEnable = preferences.getBool("spdEn", SPEED_EN_DEFAULT);
 	cfg->axleEnable = preferences.getBool("axleEn", AXLE_EN_DEFAULT);
 	cfg->temperatureEnable = preferences.getBool("tmpEn", TEMPERATURE_EN_DEFAULT);
+
+	cfg->minSpeedType = static_cast<MinSpeed>(preferences.getUChar("spdType", MIN_SPEED_TYPE_DEFAULT));
+	cfg->minSpeed = preferences.getUChar("minSpd", MIN_SPEED_DEFAULT);
+	cfg->minimumAxles = preferences.getUShort("minAxle", MIN_AXLES_DEFAULT);
 
 	for(uint32_t i=0; i<NUM_TRACKS; i++)
 	{
@@ -95,6 +103,15 @@ void saveConfiguration(DetectorConfiguration* cfg)
 	if(cfg->temperatureEnable != preferences.getBool("tmpEn", TEMPERATURE_EN_DEFAULT))
 		preferences.putBool("tmpEn", cfg->temperatureEnable);
 
+	if(static_cast<uint8_t>(cfg->minSpeedType) != preferences.getUChar("spdTyp", MIN_SPEED_TYPE_DEFAULT))
+		preferences.putUChar("spdType", static_cast<uint8_t>(cfg->minSpeedType));
+
+	if(cfg->minSpeed != preferences.getUChar("minSpd", MIN_SPEED_DEFAULT))
+		preferences.putUChar("minSpd", cfg->minSpeed);
+
+	if(cfg->minimumAxles != preferences.getUShort("minAx", MIN_AXLES_DEFAULT))
+		preferences.putUShort("minAxle", cfg->minimumAxles);
+
 	for(uint32_t i=0; i<NUM_TRACKS; i++)
 	{
 		key = "mp" + String(i);
@@ -128,8 +145,20 @@ void printConfiguration(DetectorConfiguration* cfg)
 	Serial.print("Speed Enable: ");
 	Serial.println(cfg->speedEnable);
 
+	Serial.print("Min Speed Type: ");
+	if(static_cast<size_t>(cfg->minSpeedType) < minSpeedName.size())
+		Serial.println(minSpeedName[static_cast<size_t>(cfg->minSpeedType)].c_str());
+	else
+		Serial.println("ERROR!");
+
+	Serial.print("Min Speed: ");
+	Serial.println(cfg->minSpeed);
+
 	Serial.print("Axle Enable: ");
 	Serial.println(cfg->axleEnable);
+
+	Serial.print("Minimum Axles: ");
+	Serial.println(cfg->minimumAxles);
 
 	Serial.print("Temperature Enable: ");
 	Serial.println(cfg->temperatureEnable);

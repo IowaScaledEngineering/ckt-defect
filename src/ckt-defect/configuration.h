@@ -21,6 +21,8 @@ LICENSE:
 
 #pragma once
 
+#include "common.h"
+
 struct DetectorConfiguration {
 	uint8_t volumeStep;
 	uint8_t lcdBrightness;
@@ -31,8 +33,16 @@ struct DetectorConfiguration {
 	bool trackNameEnable;
 	uint8_t trackNameId[NUM_TRACKS];
 
+	// Speed
 	bool speedEnable;
+	MinSpeed minSpeedType;
+	uint8_t minSpeed;
+
+	// Axles	
 	bool axleEnable;
+	uint16_t minimumAxles;
+	
+	// Other
 	bool temperatureEnable;
 };
 
