@@ -6,6 +6,7 @@ class MenuManager
 		std::shared_ptr<Menu> cur;
 
 	public:
-		MenuManager(Display *d, std::shared_ptr<Menu> r) : disp(d), cur(r) { disp->clear(); }
+		MenuManager(Display *d, std::shared_ptr<Menu> r) : disp(d), cur(r) { }
+		void begin();
 		void process();
 };

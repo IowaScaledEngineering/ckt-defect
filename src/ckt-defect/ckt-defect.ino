@@ -311,13 +311,44 @@ void loop()
 	
 	esp_task_wdt_reset();
 
-	Serial.println("ISE Defect Detector");
 
-	Serial.print("Version: ");
-	Serial.println(VERSION_STRING);
+	// Read NVM configuration
+	loadConfiguration(&cfg);
 
-	Serial.print("Git Rev: ");
-	Serial.println(GIT_REV, HEX);
+	audioSetVolumeStep(cfg.volumeStep);
+	lcd->setBrightness(cfg.lcdBrightness);
+	audioSetVolumeUpCoef(10);   // FIXME: should be leaded from NVM
+	audioSetVolumeDownCoef(8);   // FIXME: should be leaded from NVM;
+	audioSetPttDelay(750);   // FIXME: should be leaded from NVM
+
+
+	// Show splash screen
+	lcd->clear();
+	lcd->backlightOn();
+	uint8_t copyright[8] = {
+		0b01110, 
+		0b11011, 
+		0b10101, 
+		0b10111, 
+		0b10101, 
+		0b11011, 
+		0b01110, 
+		0b00000};
+	lcd->createCustomChar(0, copyright);
+
+	lcd->gotoxy(0,0);
+	lcd->print("Iowa Scaled");
+	lcd->gotoxy(15,0);
+	lcd->print((char)0x00);
+	lcd->print("2026");
+	lcd->gotoxy(0,1);
+	lcd->print("Engineering");
+	lcd->gotoxy(0,2);
+	lcd->print("Defect Detector");
+	lcd->gotoxy(0,3);
+	lcd->print(VERSION_STRING);
+	lcd->gotoxy(14,3);
+	lcd->print(GIT_REV);
 
 	// Build menus
 	uint32_t valFloat = 4725;
@@ -366,26 +397,36 @@ void loop()
 	menuSysConfig->addChild(menuBacklightLevel);
 	menuSysConfig->addChild(menuVolume);
 
-	MenuManager menuManager(lcd, home);
-	Menu::setTimingCallback(millis); 
-	Menu::setHoldDelay(400);
 
-	// Read NVM configuration
-	loadConfiguration(&cfg);
-	audioSetVolumeStep(cfg.volumeStep);
-	lcd->setBrightness(cfg.lcdBrightness);
+	// Wait for splash screen timeout
+	while(millis() < 5000)
+	{
+		esp_task_wdt_reset();
+	}
+
+	Menu::setTimingCallback(millis); 
+	Menu::setInitialHoldDelay(1000);
+	Menu::setHoldDelay(400);
+	Menu::setLongHoldDelay(3000);
+	Menu::setFastDelay(100);
+
+	MenuManager menuManager(lcd, home);
+	menuManager.begin();
+	menuManager.process();  // Call once here to get things going
+
+
+	Serial.println("ISE Defect Detector");
+	Serial.print("Version: ");
+	Serial.println(VERSION_STRING);
+	Serial.print("Git Rev: ");
+	Serial.println(GIT_REV);
 
 	printMemoryUsage();
 
-	// Set some defaults
-	audioSetVolumeUpCoef(10);
-	audioSetVolumeDownCoef(8);
-	audioSetPttDelay(0);
+
+	// Set up audio
 	audioSetPttEnableCallback(enableAuxRelay);
 	audioSetPttDisableCallback(disableAuxRelay);
-
-	// FIXME - just for testing
-	audioSetPttDelay(750);
 
 
 	// Load sound effects
@@ -618,6 +659,7 @@ clrTestPoint(TP2);
 
 		// FIXME Send some test audio
 
+/*
 		switch(state)
 		{
 			case 0:
@@ -731,7 +773,7 @@ clrTestPoint(TP2);
 				state = 0;
 				break;
 		}
-
+*/
 
 /*
 		if(millis() - axleTime >= 1000)

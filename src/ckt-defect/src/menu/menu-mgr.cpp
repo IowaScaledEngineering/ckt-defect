@@ -1,6 +1,14 @@
 #include "menu-mgr.h"
 #include <algorithm> // Added for std::find_if
 
+void MenuManager::begin()
+{
+	if (cur)
+	{
+		cur->onEnter();
+	}
+}
+
 void MenuManager::process()
 {
 	if(!cur)

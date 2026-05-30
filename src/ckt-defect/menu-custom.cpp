@@ -1,6 +1,39 @@
 #include "menu-custom.h"
 #include <format>
 
+void MenuHome::onEnter()
+{
+	Menu::onEnter(); // Call the base implementation to clear display, clear button repeat states, etc.
+}
+
+MenuEvent MenuHome::update()
+{
+	byte smiley[8] = {
+	  0b00000,
+	  0b00000,
+	  0b01010,
+	  0b00000,
+	  0b00000,
+	  0b10001,
+	  0b01110,
+	  0b00000
+	};
+	
+	disp->createCustomChar(3, smiley);
+
+	disp->backlightOff();
+	disp->gotoxy(0, 0);
+	disp->print("Home Screen ");
+	disp->print(0x03);
+	disp->gotoxy(16, 3);
+	disp->print("MENU");
+	DisplayEvent ev;
+	if(disp->getEvent(&ev) && ev.type == DisplayEventType::KEY_PRESS && ev.keyNum == 4)
+		return MenuEvent::FORWARD;
+	return MenuEvent::NOOP;
+}
+
+
 void MenuVolume::onEnter()
 {
 	Menu::onEnter(); // Call the base implementation to clear display, clear button repeat states, etc.
