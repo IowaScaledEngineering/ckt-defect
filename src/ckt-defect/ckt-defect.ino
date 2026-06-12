@@ -351,7 +351,6 @@ void loop()
 	uint32_t val2 = 100;
 	bool val3 = false;
 	uint32_t val4 = 3;
-
 	std::vector<std::string> options = {
 	    "Arizona", "Alaska", "Colorado", "Florida", "Iowa", "Kansas", "Nebraska", "Wyoming",
 	};
@@ -360,17 +359,54 @@ void loop()
 	auto mainSel = std::make_shared<MenuListSelector>("Main");
 	home->addChild(mainSel);
 
-	auto menu1 = std::make_shared<MenuDigitThumbwheel>("Digit Thumbwheel", &valFloat, false, 5, 1, true);
-	auto menuSysConfig = std::make_shared<MenuListSelector>("System Config");
-	auto menu2 = std::make_shared<MenuNumberDial>("Number Dial", &val2, false, 0, 120, "sec");
-	auto menu3 = std::make_shared<MenuBoolSelector>("Bool Select", &val3, false, "Enable", "ENBL", "Disable", "DSBL");
-	auto menu4 = std::make_shared<MenuOptionSelector>("Option Select", &val4, false, options);
+	// Track Menu
+	auto menuTrackConfig = std::make_shared<MenuListSelector>("Track Config");
+	mainSel->addChild(menuTrackConfig);
 
-	mainSel->addChild(menu1);
+	auto menuTrackNameA = std::make_shared<MenuOptionSelector>(
+		"Track A Name", 
+		[&cfg]() -> uint32_t { return cfg.trackNameId[0]; },
+		[&cfg](uint32_t val) { cfg.trackNameId[0] = (unsigned char)val; },
+		false,
+		trackNames,
+		[&cfg]() { saveConfiguration(&cfg); loadConfiguration(&cfg); }  // Load afterwards to reset the track name string
+	);
+
+	auto menuTrackNameB = std::make_shared<MenuOptionSelector>(
+		"Track B Name", 
+		[&cfg]() -> uint32_t { return cfg.trackNameId[1]; },
+		[&cfg](uint32_t val) { cfg.trackNameId[1] = (unsigned char)val; },
+		false,
+		trackNames,
+		[&cfg]() { saveConfiguration(&cfg); loadConfiguration(&cfg); }  // Load afterwards to reset the track name string
+	);
+
+	auto menuTrackNameEn = std::make_shared<MenuBoolSelector>(
+		"Track Name Enable",
+		&cfg.trackNameEnable, 
+		false, 
+		"On", "ON", 
+		"Off", "OFF",
+		[&cfg, menuTrackNameA, menuTrackNameB]() { saveConfiguration(&cfg); if(cfg.trackNameEnable) {menuTrackNameA->unhide(); menuTrackNameB->unhide();} else {menuTrackNameA->hide(); menuTrackNameB->hide();} }
+	);
+
+	if(cfg.trackNameEnable)
+	{
+		menuTrackNameA->unhide();
+		menuTrackNameB->unhide();
+	}
+	else
+	{
+		menuTrackNameA->hide();	
+		menuTrackNameB->hide();
+	}
+	menuTrackConfig->addChild(menuTrackNameEn);
+	menuTrackConfig->addChild(menuTrackNameA);
+	menuTrackConfig->addChild(menuTrackNameB);
+
+	// System Menu
+	auto menuSysConfig = std::make_shared<MenuListSelector>("System Config");
 	mainSel->addChild(menuSysConfig);
-	mainSel->addChild(menu2);
-	mainSel->addChild(menu3);
-	mainSel->addChild(menu4);
 
 	auto menuBacklightLevel = std::make_shared<MenuPercentageBar>(
 		"Backlight Level", 
@@ -392,6 +428,16 @@ void loop()
 
 	menuSysConfig->addChild(menuBacklightLevel);
 	menuSysConfig->addChild(menuVolume);
+
+	auto menu1 = std::make_shared<MenuDigitThumbwheel>("Digit Thumbwheel", &valFloat, false, 5, 1, true);
+	auto menu2 = std::make_shared<MenuNumberDial>("Number Dial", &val2, false, 0, 120, "sec");
+	auto menu3 = std::make_shared<MenuBoolSelector>("Bool Select", &val3, false, "Enable", "ENBL", "Disable", "DSBL");
+	auto menu4 = std::make_shared<MenuOptionSelector>("Option Select", &val4, false, options);
+
+	mainSel->addChild(menu1);
+	mainSel->addChild(menu2);
+	mainSel->addChild(menu3);
+	mainSel->addChild(menu4);
 
 
 	// Wait for splash screen timeout
@@ -483,10 +529,7 @@ void loop()
 		{
 			trackMessages.entranceMsg += " milepost #milepost";
 		}
-		if(cfg.trackNameEnable)
-		{
-			trackMessages.entranceMsg += " #track";
-		}
+		trackMessages.entranceMsg += " #track";
 		// Defect Messages
 		std::string tmpMessage;
 		if(cfg.axleEnable)

@@ -105,7 +105,8 @@ std::string* transformMessage(std::string* inputMessage, DetectorConfiguration *
 		}
 		else if("#track" == token)
 		{
-			(*outputMessage) += cfg->trackName[trackNum];
+			if(cfg->trackNameEnable)
+				(*outputMessage) += cfg->trackName[trackNum];
 		}
 		else if("#axle" == token)
 		{
