@@ -336,19 +336,15 @@ void loop()
 		0b00000};
 	lcd->createCustomChar(0, copyright);
 
-	lcd->gotoxy(0,0);
-	lcd->print("Iowa Scaled");
-	lcd->gotoxy(15,0);
-	lcd->print((char)0x00);
-	lcd->print("2026");
-	lcd->gotoxy(0,1);
-	lcd->print("Engineering");
-	lcd->gotoxy(0,2);
-	lcd->print("Defect Detector");
-	lcd->gotoxy(0,3);
+	lcd->gotoxy(3,0);
+	lcd->print("Talking Defect");
+	lcd->gotoxy(2,1);
+	lcd->print("Detector ");
 	lcd->print(VERSION_STRING);
-	lcd->gotoxy(14,3);
-	lcd->print(GIT_REV);
+	lcd->gotoxy(2,2);
+	lcd->print("Iowa Scaled Engr");
+	lcd->gotoxy(2,3);
+	lcd->print("www.iascaled.com");
 
 	// Build menus
 	uint32_t valFloat = 4725;
@@ -649,7 +645,6 @@ clrTestPoint(TP2);
 
 		// FIXME Send some test audio
 
-/*
 		switch(state)
 		{
 			case 0:
@@ -673,7 +668,8 @@ clrTestPoint(TP2);
 			case 2:
 				data.speed[0] = 37;
 				if(millis() - startTime >= 10000)
-					state++;
+					state = 0;
+//					state++;
 				break;
 
 			case 3:
@@ -763,7 +759,6 @@ clrTestPoint(TP2);
 				state = 0;
 				break;
 		}
-*/
 
 /*
 		if(millis() - axleTime >= 1000)

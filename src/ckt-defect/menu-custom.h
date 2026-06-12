@@ -3,6 +3,8 @@
 
 class MenuHome : public Menu
 {
+	private:
+		bool backlightState = false;
 	public:
 		MenuHome(const std::string &n) : Menu(n) {}
 		void onEnter() override;

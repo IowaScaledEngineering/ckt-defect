@@ -8,28 +8,44 @@ void MenuHome::onEnter()
 
 MenuEvent MenuHome::update()
 {
-	byte smiley[8] = {
-	  0b00000,
-	  0b00000,
-	  0b01010,
-	  0b00000,
-	  0b00000,
-	  0b10001,
-	  0b01110,
-	  0b00000
-	};
-	
-	disp->createCustomChar(3, smiley);
+	if(backlightState)
+		disp->backlightOn();
+	else
+		disp->backlightOff();
+	disp->gotoxy(2, 0);
+	disp->print("Milepost ");
+	// FIXME: print milepost
+	disp->gotoxy(7, 1);
+	disp->print("STANDBY");
+	disp->gotoxy(5, 2);
+	disp->print("TEMP:");
+	// FIXME: print temperature
 
-	disp->backlightOff();
-	disp->gotoxy(0, 0);
-	disp->print("Home Screen ");
-	disp->print(0x03);
-	disp->gotoxy(16, 3);
+	disp->gotoxy(0,3);
+	disp->print("LIGHT");
+	disp->gotoxy(16,3);
 	disp->print("MENU");
+
 	DisplayEvent ev;
-	if(disp->getEvent(&ev) && ev.type == DisplayEventType::KEY_PRESS && ev.keyNum == 4)
-		return MenuEvent::FORWARD;
+	if(getMenuInputEvent(&ev))
+	{
+		if(ev.type == DisplayEventType::KEY_PRESS)
+		{
+			switch(ev.keyNum)
+			{
+				case 1: // Toggle Backlight
+					backlightState = !backlightState;
+					break;
+
+				case 4: // Menu
+					return MenuEvent::FORWARD;
+			}
+		}
+		else if(ev.type == DisplayEventType::KEY_RELEASE)
+		{
+			handleButtonRelease(ev.keyNum);
+		}
+	}
 	return MenuEvent::NOOP;
 }
 
