@@ -69,6 +69,7 @@ void loadConfiguration(DetectorConfiguration* cfg)
 
 		key = "trkNameId" + String(i);
 		cfg->trackNameId[i] = preferences.getUChar(key.c_str(), i);
+		cfg->trackName[i] = trackNames[cfg->trackNameId[i]];
 	}
 
 	preferences.end();
@@ -174,10 +175,10 @@ void printConfiguration(DetectorConfiguration* cfg)
 		Serial.println(cfg->milepost[i]);
 
 		Serial.print("   Track Name ID: ");
-		if(cfg->trackNameId[i] < trackNames.size())
-			Serial.println(trackNames[cfg->trackNameId[i]].c_str());
-		else
-			Serial.println("ERROR!");
+		Serial.println(cfg->trackNameId[i]);
+		
+		Serial.print("   Track Name: ");
+		Serial.println(cfg->trackName[i].c_str());
 	}
 }
 

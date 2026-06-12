@@ -105,10 +105,7 @@ std::string* transformMessage(std::string* inputMessage, DetectorConfiguration *
 		}
 		else if("#track" == token)
 		{
-			uint8_t id = cfg->trackNameId[trackNum];
-			if(id >= trackNames.size())
-				id = trackNames.size() - 1;
-			(*outputMessage) += trackNames[id];
+			(*outputMessage) += cfg->trackName[trackNum];
 		}
 		else if("#axle" == token)
 		{

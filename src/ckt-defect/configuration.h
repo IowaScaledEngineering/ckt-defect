@@ -32,6 +32,7 @@ struct DetectorConfiguration {
 
 	bool trackNameEnable;
 	uint8_t trackNameId[NUM_TRACKS];
+	std::string trackName[NUM_TRACKS];
 
 	// Speed
 	bool speedEnable;
