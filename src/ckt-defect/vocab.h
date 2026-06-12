@@ -23,7 +23,7 @@ LICENSE:
 
 #include "sound.h"
 
-void vocabDelete(void);
+void vocabReset(void);
 size_t vocabGetSize(void);
 Sound* vocabGetWord(const std::string& word);
 

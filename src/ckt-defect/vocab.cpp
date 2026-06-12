@@ -87,6 +87,7 @@ Sound* vocabGetWord(const std::string& word)
 #include "vocab/include/integrity.h"
 #include "vocab/include/journal.h"
 #include "vocab/include/m.h"
+#include "vocab/include/main.h"
 #include "vocab/include/milepost.h"
 #include "vocab/include/near.h"
 #include "vocab/include/no.h"
@@ -139,6 +140,7 @@ void loadInternalVocab(void)
 	vocab.push_back(new MemSound("integrity", vocab_integrity, vocab_integrity_len, 16000));
 	vocab.push_back(new MemSound("journal", vocab_journal, vocab_journal_len, 16000));
 	vocab.push_back(new MemSound("m", vocab_m, vocab_m_len, 16000));
+	vocab.push_back(new MemSound("main", vocab_main, vocab_main_len, 16000));
 	vocab.push_back(new MemSound("milepost", vocab_milepost, vocab_milepost_len, 16000));
 	vocab.push_back(new MemSound("near", vocab_near, vocab_near_len, 16000));
 	vocab.push_back(new MemSound("no", vocab_no, vocab_no_len, 16000));
