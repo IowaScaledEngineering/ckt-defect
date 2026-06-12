@@ -352,6 +352,43 @@ void loop()
 	home->addChild(mainSel);
 
 	// Milepost Menus
+	auto menuMilepostConfig = std::make_shared<MenuListSelector>("Milepost Config");
+	mainSel->addChild(menuMilepostConfig);
+
+	auto menuMilepost = std::make_shared<MenuDigitThumbwheel>(
+		"Milepost",
+		&cfg.milepost,
+		false,
+		4,
+		1,
+		true,
+		[&cfg]() { saveConfiguration(&cfg); }
+	);
+
+	auto updateMilepostMenuVisibility = [&cfg, menuMilepost]()
+	{
+		if (cfg.milepostEnable)
+		{
+			menuMilepost->unhide();
+		}
+		else
+		{
+			menuMilepost->hide();
+		}
+	};
+
+	auto menuMilepostEn = std::make_shared<MenuBoolSelector>(
+		"Milepost Enable",
+		&cfg.milepostEnable, 
+		false, 
+		"On", "ON", 
+		"Off", "OFF",
+		[updateMilepostMenuVisibility, &cfg]() { saveConfiguration(&cfg); updateMilepostMenuVisibility(); }
+	);
+
+	updateMilepostMenuVisibility();
+	menuMilepostConfig->addChild(menuMilepostEn);
+	menuMilepostConfig->addChild(menuMilepost);
 
 	// Track Menus
 	auto menuTrackConfig = std::make_shared<MenuListSelector>("Track Config");
@@ -359,8 +396,7 @@ void loop()
 
 	auto menuTrackNameA = std::make_shared<MenuOptionSelector>(
 		"Track A Name", 
-		[&cfg]() -> uint32_t { return cfg.trackNameId[0]; },
-		[&cfg](uint32_t val) { cfg.trackNameId[0] = (unsigned char)val; },
+		&cfg.trackNameId[0],
 		false,
 		trackNames,
 		[&cfg]() { saveConfiguration(&cfg); loadConfiguration(&cfg); }  // Load afterwards to reset the track name string
@@ -368,14 +404,13 @@ void loop()
 
 	auto menuTrackNameB = std::make_shared<MenuOptionSelector>(
 		"Track B Name", 
-		[&cfg]() -> uint32_t { return cfg.trackNameId[1]; },
-		[&cfg](uint32_t val) { cfg.trackNameId[1] = (unsigned char)val; },
+		&cfg.trackNameId[1],
 		false,
 		trackNames,
 		[&cfg]() { saveConfiguration(&cfg); loadConfiguration(&cfg); }  // Load afterwards to reset the track name string
 	);
 
-	auto updateTrackVisibility = [&cfg, menuTrackNameA, menuTrackNameB]()
+	auto updateTrackNameMenuVisibility = [&cfg, menuTrackNameA, menuTrackNameB]()
 	{
 		if (cfg.trackNameEnable)
 		{
@@ -395,10 +430,10 @@ void loop()
 		false, 
 		"On", "ON", 
 		"Off", "OFF",
-		[updateTrackVisibility, &cfg]() { saveConfiguration(&cfg); updateTrackVisibility(); }
+		[updateTrackNameMenuVisibility, &cfg]() { saveConfiguration(&cfg); updateTrackNameMenuVisibility(); }
 	);
 
-	updateTrackVisibility();
+	updateTrackNameMenuVisibility();
 	menuTrackConfig->addChild(menuTrackNameEn);
 	menuTrackConfig->addChild(menuTrackNameA);
 	menuTrackConfig->addChild(menuTrackNameB);

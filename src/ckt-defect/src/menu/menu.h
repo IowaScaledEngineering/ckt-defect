@@ -112,10 +112,12 @@ class MenuDigitThumbwheel : public Menu
 
 	public:
 		// Constructor for direct pointers
-		MenuDigitThumbwheel(const std::string &name, uint32_t *p, bool realTimeUpdate, uint32_t i, uint32_t f, bool suppressLeadingZeros, std::function<void()> onSave = nullptr)
+		template <typename T>
+		MenuDigitThumbwheel(const std::string &name, T *p, bool realTimeUpdate, uint32_t i, uint32_t f, bool suppressLeadingZeros, std::function<void()> onSave = nullptr)
 		    : Menu(name), iDigits(i), fDigits(f), suppressLeadingZeros(suppressLeadingZeros)
 		{
-			valPtr32 = p;
+			getFunc32 = [p]() -> uint32_t { return static_cast<uint32_t>(*p); };
+			setFunc32 = [p](uint32_t val) { *p = static_cast<T>(val); };
 			realTime = realTimeUpdate;
 			saveCallback = std::move(onSave);
 		}
@@ -213,14 +215,19 @@ class MenuOptionSelector : public Menu
 
 	public:
 		// Constructor for direct pointers
-		MenuOptionSelector(const std::string &name, uint32_t *p, bool realTimeUpdate, const std::vector<std::string> &opts, std::function<void()> onSave = nullptr)
+		template <typename T>
+		MenuOptionSelector(const std::string &name, T *p, bool realTimeUpdate, const std::vector<std::string> &opts, std::function<void()> onSave = nullptr)
 		    : Menu(name), currentVal(0), options(opts)
 		{
-			valPtr32 = p;
+			static_assert(std::is_integral<T>::value, "MenuOptionSelector requires an integer type pointer.");
+			// Capture the typed pointer into type-safe lambdas
+			getFunc32 = [p]() -> uint32_t { return static_cast<uint32_t>(*p); };
+			setFunc32 = [p](uint32_t val) { *p = static_cast<T>(val); };
 			realTime = realTimeUpdate;
 			saveCallback = std::move(onSave);
 		}
 
+		// Constructor using std::function callbacks
 		MenuOptionSelector(const std::string &name, std::function<uint32_t()> getter,
 				   std::function<void(uint32_t)> setter, bool realTimeUpdate,
 				   const std::vector<std::string> &opts, std::function<void()> onSave = nullptr)

@@ -65,18 +65,38 @@ void printMessages(MessageBundle* msgs)
 	Serial.println(msgs->detectorBlockedMsg.c_str());
 }
 
-void insertNumber(std::string& str, float_t num, uint8_t precision)
+void insertNumber(std::string& str, uint32_t num, uint8_t fractionalDigits)
 {
-	std::ostringstream tmpString;
-	tmpString << std::fixed << std::setprecision(precision) << num;
-	for(char c : tmpString.str())
+	// Convert the raw integer to its base string representation
+	std::string numStr = std::to_string(num);
+	std::string formatted;
+
+	// Handle leading zeros if fractionalDigits is greater than the total digits
+	if (fractionalDigits >= numStr.length()) {
+		size_t leadingZeros = fractionalDigits - numStr.length() + 1; // +1 for the leading '0' before '.'
+		formatted.append(leadingZeros, '0');
+		formatted.insert(1, 1, '.'); // Insert decimal after the first '0'
+		formatted.append(numStr);
+	} 
+	// Normal case: Precision fits inside the number length
+	else {
+		formatted = numStr;
+		if (fractionalDigits > 0) {
+			// Insert '.' 'fractionalDigits' places from the end
+			formatted.insert(formatted.length() - fractionalDigits, 1, '.');
+		}
+	}
+
+	// Interleave with spaces into the target string
+	for (char c : formatted)
 	{
 		str.push_back(c);
 		str.push_back(' ');
 	}
-	if(!str.empty())
+
+	// Remove the trailing space
+	if (!str.empty())
 	{
-		// Remove last space
 		str.pop_back();
 	}
 }
@@ -101,7 +121,8 @@ std::string* transformMessage(std::string* inputMessage, DetectorConfiguration *
 		
 		if("#milepost" == token)
 		{
-			insertNumber(*outputMessage, cfg->milepost[trackNum], 1);
+			if(cfg->milepostEnable)
+				insertNumber(*outputMessage, cfg->milepost, 1);
 		}
 		else if("#track" == token)
 		{

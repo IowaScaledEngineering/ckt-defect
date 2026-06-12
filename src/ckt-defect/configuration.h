@@ -28,7 +28,7 @@ struct DetectorConfiguration {
 	uint8_t lcdBrightness;
 
 	bool milepostEnable;
-	float_t milepost[NUM_TRACKS];
+	uint16_t milepost;
 
 	bool trackNameEnable;
 	uint8_t trackNameId[NUM_TRACKS];

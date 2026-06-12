@@ -33,7 +33,7 @@ LICENSE:
 #define SPEED_EN_DEFAULT        true
 #define AXLE_EN_DEFAULT         true
 #define TEMPERATURE_EN_DEFAULT  true
-#define MILEPOST_DEFAULT        346.9
+#define MILEPOST_DEFAULT        3469
 
 #define MIN_SPEED_TYPE_DEFAULT  0 // Corresponds to MinSpeed::Off
 #define MIN_SPEED_DEFAULT       10
@@ -62,11 +62,10 @@ void loadConfiguration(DetectorConfiguration* cfg)
 	cfg->minSpeed = preferences.getUChar("minSpd", MIN_SPEED_DEFAULT);
 	cfg->minimumAxles = preferences.getUShort("minAxle", MIN_AXLES_DEFAULT);
 
+	cfg->milepost = preferences.getFloat("mp", MILEPOST_DEFAULT);
+
 	for(uint32_t i=0; i<NUM_TRACKS; i++)
 	{
-		key = "mp" + String(i);
-		cfg->milepost[i] = preferences.getFloat(key.c_str(), MILEPOST_DEFAULT);
-
 		key = "trkNameId" + String(i);
 		cfg->trackNameId[i] = preferences.getUChar(key.c_str(), i);
 		cfg->trackName[i] = trackNames[cfg->trackNameId[i]];
@@ -113,12 +112,11 @@ void saveConfiguration(DetectorConfiguration* cfg)
 	if(cfg->minimumAxles != preferences.getUShort("minAx", MIN_AXLES_DEFAULT))
 		preferences.putUShort("minAxle", cfg->minimumAxles);
 
+	if(cfg->milepost != preferences.getFloat("mp", MILEPOST_DEFAULT))
+		preferences.putFloat("mp", cfg->milepost);
+
 	for(uint32_t i=0; i<NUM_TRACKS; i++)
 	{
-		key = "mp" + String(i);
-		if(cfg->milepost[i] != preferences.getFloat(key.c_str(), MILEPOST_DEFAULT))
-			preferences.putFloat(key.c_str(), cfg->milepost[i]);
-
 		key = "trkNameId" + String(i);
 		if(cfg->trackNameId[i] != preferences.getUChar(key.c_str(), i))
 			preferences.putUChar(key.c_str(), cfg->trackNameId[i]);
@@ -139,6 +137,9 @@ void printConfiguration(DetectorConfiguration* cfg)
 
 	Serial.print("Milepost Enable: ");
 	Serial.println(cfg->milepostEnable);
+
+	Serial.print("Milepost: ");
+	Serial.println(cfg->milepost);
 
 	Serial.print("Track Name Enable: ");
 	Serial.println(cfg->trackNameEnable);
@@ -170,9 +171,6 @@ void printConfiguration(DetectorConfiguration* cfg)
 
 		Serial.print("Track ");
 		Serial.println(i+1);
-
-		Serial.print("   Milepost: ");
-		Serial.println(cfg->milepost[i]);
 
 		Serial.print("   Track Name ID: ");
 		Serial.println(cfg->trackNameId[i]);
