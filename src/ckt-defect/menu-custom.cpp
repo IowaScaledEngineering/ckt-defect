@@ -15,7 +15,7 @@ MenuEvent MenuHome::update()
 	disp->gotoxy(2, 0);
 	disp->print("Milepost ");
 	// FIXME: print milepost
-	disp->gotoxy(7, 1);
+	disp->gotoxy(6, 1);
 	disp->print("STANDBY");
 	disp->gotoxy(5, 2);
 	disp->print("TEMP:");
