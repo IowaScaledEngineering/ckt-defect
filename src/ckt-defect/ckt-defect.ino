@@ -473,16 +473,6 @@ void loop()
 		f.close();
 
 		esp_task_wdt_reset();
-
-		if((rootDir = SD.open("/ambient")))
-		{
-			// Ambient mode, find WAV files
-			Serial.println("\nFound ambient directory");
-//			findWavFiles(&rootDir, "ambient/", &vocab);
-			rootDir.close();
-		}
-
-		esp_task_wdt_reset();
 	}
 
 
@@ -537,7 +527,7 @@ void loop()
 			trackMessages[i].exitDefectMsg = trackMessages[i].entranceMsg + " you have a defect #defectlist" + tmpMessage + " detector out";
 
 			// Detector Integrity Message
-			trackMessages[i].integrityMsg = trackMessages[i].entranceMsg + tmpMessage + " integrity failure";
+			trackMessages[i].integrityMsg = trackMessages[i].entranceMsg + " integrity failure" + tmpMessage ;
 			trackMessages[i].integrityProbability = 50;
 			
 			// Too Slow Message
@@ -810,23 +800,6 @@ clrTestPoint(TP2);
 			Serial.print('\n');
 			Serial.println("---");
 		}
-*/
-
-/*
-		lcd.setCursor(0, 1);
-		lcd.print(millis() / 1000);
-
-		lcd.setCursor(2,3);
-		if(isTrackADetected())
-			lcd.print("TrackA");
-		else
-			lcd.print("      ");
-		
-		lcd.setCursor(12,3);
-		if(isTrackBDetected())
-			lcd.print("TrackB");
-		else
-			lcd.print("      ");
 */
 
 		if(sdCardInserted)
