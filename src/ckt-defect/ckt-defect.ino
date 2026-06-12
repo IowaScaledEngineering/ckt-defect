@@ -346,20 +346,14 @@ void loop()
 	lcd->gotoxy(2,3);
 	lcd->print("www.iascaled.com");
 
-	// Build menus
-	uint32_t valFloat = 4725;
-	uint32_t val2 = 100;
-	bool val3 = false;
-	uint32_t val4 = 3;
-	std::vector<std::string> options = {
-	    "Arizona", "Alaska", "Colorado", "Florida", "Iowa", "Kansas", "Nebraska", "Wyoming",
-	};
-
+	// Create menus
 	auto home = std::make_shared<MenuHome>("Home");
 	auto mainSel = std::make_shared<MenuListSelector>("Main");
 	home->addChild(mainSel);
 
-	// Track Menu
+	// Milepost Menus
+
+	// Track Menus
 	auto menuTrackConfig = std::make_shared<MenuListSelector>("Track Config");
 	mainSel->addChild(menuTrackConfig);
 
@@ -381,30 +375,35 @@ void loop()
 		[&cfg]() { saveConfiguration(&cfg); loadConfiguration(&cfg); }  // Load afterwards to reset the track name string
 	);
 
+	auto updateTrackVisibility = [&cfg, menuTrackNameA, menuTrackNameB]()
+	{
+		if (cfg.trackNameEnable)
+		{
+			menuTrackNameA->unhide();
+			menuTrackNameB->unhide();
+		}
+		else
+		{
+			menuTrackNameA->hide();
+			menuTrackNameB->hide();
+		}
+	};
+
 	auto menuTrackNameEn = std::make_shared<MenuBoolSelector>(
 		"Track Name Enable",
 		&cfg.trackNameEnable, 
 		false, 
 		"On", "ON", 
 		"Off", "OFF",
-		[&cfg, menuTrackNameA, menuTrackNameB]() { saveConfiguration(&cfg); if(cfg.trackNameEnable) {menuTrackNameA->unhide(); menuTrackNameB->unhide();} else {menuTrackNameA->hide(); menuTrackNameB->hide();} }
+		[updateTrackVisibility, &cfg]() { saveConfiguration(&cfg); updateTrackVisibility(); }
 	);
 
-	if(cfg.trackNameEnable)
-	{
-		menuTrackNameA->unhide();
-		menuTrackNameB->unhide();
-	}
-	else
-	{
-		menuTrackNameA->hide();	
-		menuTrackNameB->hide();
-	}
+	updateTrackVisibility();
 	menuTrackConfig->addChild(menuTrackNameEn);
 	menuTrackConfig->addChild(menuTrackNameA);
 	menuTrackConfig->addChild(menuTrackNameB);
 
-	// System Menu
+	// System Menus
 	auto menuSysConfig = std::make_shared<MenuListSelector>("System Config");
 	mainSel->addChild(menuSysConfig);
 
@@ -429,6 +428,17 @@ void loop()
 	menuSysConfig->addChild(menuBacklightLevel);
 	menuSysConfig->addChild(menuVolume);
 
+
+
+	//  FIXME: test menus, remove
+	uint32_t valFloat = 4725;
+	uint32_t val2 = 100;
+	bool val3 = false;
+	uint32_t val4 = 3;
+	std::vector<std::string> options = {
+	    "Arizona", "Alaska", "Colorado", "Florida", "Iowa", "Kansas", "Nebraska", "Wyoming",
+	};
+
 	auto menu1 = std::make_shared<MenuDigitThumbwheel>("Digit Thumbwheel", &valFloat, false, 5, 1, true);
 	auto menu2 = std::make_shared<MenuNumberDial>("Number Dial", &val2, false, 0, 120, "sec");
 	auto menu3 = std::make_shared<MenuBoolSelector>("Bool Select", &val3, false, "Enable", "ENBL", "Disable", "DSBL");
@@ -438,6 +448,9 @@ void loop()
 	mainSel->addChild(menu2);
 	mainSel->addChild(menu3);
 	mainSel->addChild(menu4);
+	///////////////////////////////////////////////
+
+
 
 
 	// Wait for splash screen timeout
