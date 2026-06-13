@@ -5,6 +5,8 @@ class MenuHome : public Menu
 {
 	private:
 		bool backlightState = false;
+		bool delayBacklightOff = false;
+		unsigned long menuEnterTime;
 	public:
 		MenuHome(const std::string &n) : Menu(n) {}
 		void onEnter() override;

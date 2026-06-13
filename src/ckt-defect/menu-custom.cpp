@@ -4,14 +4,27 @@
 void MenuHome::onEnter()
 {
 	Menu::onEnter(); // Call the base implementation to clear display, clear button repeat states, etc.
+	menuEnterTime = millis();
+	if(disp->getBacklight())
+	{
+		// Backlight already on
+		delayBacklightOff = true;
+	}
 }
 
 MenuEvent MenuHome::update()
 {
 	if(backlightState)
+	{
 		disp->backlightOn();
+	}
 	else
-		disp->backlightOff();
+	{
+		if(!delayBacklightOff || (millis() - menuEnterTime > 3000))
+		{
+			disp->backlightOff();
+		}
+	}
 	disp->gotoxy(2, 0);
 	disp->print("Milepost ");
 	// FIXME: print milepost
@@ -22,7 +35,14 @@ MenuEvent MenuHome::update()
 	// FIXME: print temperature
 
 	disp->gotoxy(0,3);
-	disp->print("LIGHT");
+	if(disp->getBacklight())
+	{
+		disp->print("LITE");
+	}
+	else
+	{
+		disp->print("LITE");
+	}
 	disp->gotoxy(16,3);
 	disp->print("MENU");
 
@@ -34,7 +54,11 @@ MenuEvent MenuHome::update()
 			switch(ev.keyNum)
 			{
 				case 1: // Toggle Backlight
-					backlightState = !backlightState;
+					if(delayBacklightOff)
+						backlightState = false;
+					else
+						backlightState = !backlightState;
+					delayBacklightOff = false;  // Force immediate change
 					break;
 
 				case 4: // Menu
