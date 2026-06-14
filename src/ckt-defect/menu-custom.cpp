@@ -11,6 +11,19 @@ void MenuHome::onEnter()
 		// Backlight already on
 		delayBacklightOff = true;
 	}
+
+	byte bulb[8] = {
+	  0b01110,
+	  0b10001,
+	  0b10001,
+	  0b01010,
+	  0b01110,
+	  0b01110,
+	  0b00100,
+	  0b00000,
+	};
+	
+	disp->createCustomChar(0, bulb);
 }
 
 MenuEvent MenuHome::update()
@@ -36,9 +49,10 @@ MenuEvent MenuHome::update()
 	// FIXME: print temperature
 
 	disp->gotoxy(0,3);
+	disp->print((char)0);
 	if(disp->getBacklight())
 	{
-		disp->print("LITE");
+		disp->print("DARK");
 	}
 	else
 	{
