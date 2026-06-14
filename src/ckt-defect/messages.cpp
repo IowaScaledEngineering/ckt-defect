@@ -67,25 +67,7 @@ void printMessages(MessageBundle* msgs)
 
 void insertNumber(std::string& str, uint32_t num, uint32_t fractionalDigits)
 {
-	// Convert the raw integer to its base string representation
-	std::string numStr = std::to_string(num);
-	std::string formatted;
-
-	// Handle leading zeros if fractionalDigits is greater than the total digits
-	if (fractionalDigits >= numStr.length()) {
-		size_t leadingZeros = fractionalDigits - numStr.length() + 1; // +1 for the leading '0' before '.'
-		formatted.append(leadingZeros, '0');
-		formatted.insert(1, 1, '.'); // Insert decimal after the first '0'
-		formatted.append(numStr);
-	} 
-	// Normal case: Precision fits inside the number length
-	else {
-		formatted = numStr;
-		if (fractionalDigits > 0) {
-			// Insert '.' 'fractionalDigits' places from the end
-			formatted.insert(formatted.length() - fractionalDigits, 1, '.');
-		}
-	}
+	std::string formatted = intToString(num, 1, fractionalDigits);
 
 	// Interleave with spaces into the target string
 	for (char c : formatted)

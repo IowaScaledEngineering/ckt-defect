@@ -35,8 +35,36 @@ void toLowercase(std::string& str)
 
 std::string intToString(uint32_t intVal, uint32_t integerDigits, uint32_t fractionalDigits)
 {
-	std::string numStr = std::format("{:{}d}", intVal, integerDigits + fractionalDigits);
-	if(fractionalDigits > 0)
-		numStr.insert(integerDigits, 1, '.');
-	return numStr;
+	// Convert the raw integer to its base string representation
+	std::string numStr = std::to_string(intVal);
+	std::string formatted;
+
+	// Handle leading zero if fractionalDigits is greater than or equal to the total digits
+	if (fractionalDigits >= numStr.length()) {
+		size_t leadingZeros = fractionalDigits - numStr.length() + 1; // +1 for the single leading '0' before '.'
+		formatted.append(leadingZeros, '0');
+		formatted.insert(1, 1, '.'); // Insert decimal after the first '0'
+		formatted.append(numStr);
+	} 
+	// Normal case: Precision fits inside the number length
+	else {
+		formatted = numStr;
+		if (fractionalDigits > 0) {
+			// Insert '.' 'fractionalDigits' places from the end
+			formatted.insert(formatted.length() - fractionalDigits, 1, '.');
+		}
+	}
+
+	// Calculate the length of the integer portion currently in the string
+	size_t currentIntLength = formatted.find('.');
+	if (currentIntLength == std::string::npos) {
+		currentIntLength = formatted.length();
+	}
+
+	// Pad with spaces to satisfy the integerDigits layout requirement
+	if (currentIntLength < integerDigits) {
+		formatted.insert(0, integerDigits - currentIntLength, ' ');
+	}
+
+	return formatted;
 }
