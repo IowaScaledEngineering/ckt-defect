@@ -56,3 +56,4 @@ const std::vector<std::string> minSpeedName = {
 };
 
 void toLowercase(std::string& str);
+std::string intToString(uint32_t intVal, uint32_t integerDigits, uint32_t fractionalDigits);

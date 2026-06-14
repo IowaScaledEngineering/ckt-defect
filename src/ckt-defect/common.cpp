@@ -22,6 +22,7 @@ LICENSE:
 #include <string>
 #include <algorithm> // Required for std::transform
 #include <cctype>    // Required for std::tolower
+#include <format>
 
 #include "common.h"
 
@@ -30,4 +31,12 @@ void toLowercase(std::string& str)
 	std::transform(str.begin(), str.end(), str.begin(),
 		[](unsigned char c){ return std::tolower(c); }
 	);
+}
+
+std::string intToString(uint32_t intVal, uint32_t integerDigits, uint32_t fractionalDigits)
+{
+	std::string numStr = std::format("{:{}d}", intVal, integerDigits + fractionalDigits);
+	if(fractionalDigits > 0)
+		numStr.insert(integerDigits, 1, '.');
+	return numStr;
 }

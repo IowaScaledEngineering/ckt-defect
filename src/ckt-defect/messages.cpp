@@ -65,7 +65,7 @@ void printMessages(MessageBundle* msgs)
 	Serial.println(msgs->detectorBlockedMsg.c_str());
 }
 
-void insertNumber(std::string& str, uint32_t num, uint8_t fractionalDigits)
+void insertNumber(std::string& str, uint32_t num, uint32_t fractionalDigits)
 {
 	// Convert the raw integer to its base string representation
 	std::string numStr = std::to_string(num);

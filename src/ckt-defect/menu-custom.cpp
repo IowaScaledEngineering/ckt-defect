@@ -1,4 +1,5 @@
 #include "menu-custom.h"
+#include "common.h"
 #include <format>
 
 void MenuHome::onEnter()
@@ -27,7 +28,7 @@ MenuEvent MenuHome::update()
 	}
 	disp->gotoxy(2, 0);
 	disp->print("Milepost ");
-	// FIXME: print milepost
+	disp->print(intToString(cfg.milepost, 4, 1).c_str());
 	disp->gotoxy(6, 1);
 	disp->print("STANDBY");
 	disp->gotoxy(5, 2);

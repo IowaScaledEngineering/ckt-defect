@@ -347,7 +347,7 @@ void loop()
 	lcd->print("www.iascaled.com");
 
 	// Create menus
-	auto home = std::make_shared<MenuHome>("Home");
+	auto home = std::make_shared<MenuHome>("Home", cfg);
 	auto mainSel = std::make_shared<MenuListSelector>("Main");
 	home->addChild(mainSel);
 
