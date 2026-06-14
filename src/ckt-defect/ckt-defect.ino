@@ -314,6 +314,11 @@ void loop()
 
 	// Read NVM configuration
 	loadConfiguration(&cfg);
+	for(uint32_t i=0; i<NUM_TRACKS; i++)
+	{
+		// Preload the track name based on loaded configuration.  Might be overwritten below by SD card.
+		cfg->trackName[i] = trackNames[cfg->trackNameId[i]];
+	}
 
 	audioSetVolumeStep(cfg.volumeStep);
 	lcd->setBrightness(cfg.lcdBrightness);
@@ -489,7 +494,7 @@ void loop()
 
 
 	// Wait for splash screen timeout
-	while(millis() < 5000)
+	while(millis() < 3000)
 	{
 		esp_task_wdt_reset();
 	}
@@ -541,6 +546,7 @@ void loop()
 		if (f)
 		{
 			configFilePresent = true;
+			// FIXME: Somewhere in here overwrite trackName[i] from config file
 			while(f.available())
 			{
 				char keyStr[128];

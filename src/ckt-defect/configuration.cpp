@@ -62,13 +62,22 @@ void loadConfiguration(DetectorConfiguration* cfg)
 	cfg->minSpeed = preferences.getUChar("minSpd", MIN_SPEED_DEFAULT);
 	cfg->minimumAxles = preferences.getUShort("minAxle", MIN_AXLES_DEFAULT);
 
-	cfg->milepost = preferences.getFloat("mp", MILEPOST_DEFAULT);
+	cfg->milepost = preferences.getUShort("mp", MILEPOST_DEFAULT);
 
 	for(uint32_t i=0; i<NUM_TRACKS; i++)
 	{
 		key = "trkNameId" + String(i);
-		cfg->trackNameId[i] = preferences.getUChar(key.c_str(), i);
-		cfg->trackName[i] = trackNames[cfg->trackNameId[i]];
+		uint8_t loadedId = preferences.getUChar(key.c_str(), i);
+		
+		// Bounds check protection against trackNames array size
+		if (loadedId >= trackNames.size())
+		{
+			cfg->trackNameId[i] = 0; // Default fallback to index 0 safely
+		}
+		else
+		{
+			cfg->trackNameId[i] = loadedId;
+		}
 	}
 
 	preferences.end();
@@ -103,20 +112,25 @@ void saveConfiguration(DetectorConfiguration* cfg)
 	if(cfg->temperatureEnable != preferences.getBool("tmpEn", TEMPERATURE_EN_DEFAULT))
 		preferences.putBool("tmpEn", cfg->temperatureEnable);
 
-	if(static_cast<uint8_t>(cfg->minSpeedType) != preferences.getUChar("spdTyp", MIN_SPEED_TYPE_DEFAULT))
+	if(static_cast<uint8_t>(cfg->minSpeedType) != preferences.getUChar("spdType", MIN_SPEED_TYPE_DEFAULT))
 		preferences.putUChar("spdType", static_cast<uint8_t>(cfg->minSpeedType));
 
 	if(cfg->minSpeed != preferences.getUChar("minSpd", MIN_SPEED_DEFAULT))
 		preferences.putUChar("minSpd", cfg->minSpeed);
 
-	if(cfg->minimumAxles != preferences.getUShort("minAx", MIN_AXLES_DEFAULT))
+	if(cfg->minimumAxles != preferences.getUShort("minAxle", MIN_AXLES_DEFAULT))
 		preferences.putUShort("minAxle", cfg->minimumAxles);
 
-	if(cfg->milepost != preferences.getFloat("mp", MILEPOST_DEFAULT))
-		preferences.putFloat("mp", cfg->milepost);
+	if(cfg->milepost != preferences.getUShort("mp", MILEPOST_DEFAULT))
+		preferences.putUShort("mp", cfg->milepost);
 
 	for(uint32_t i=0; i<NUM_TRACKS; i++)
 	{
+		// Defensive check: Ensure memory configuration isn't corrupted out-of-bounds before saving
+		if (cfg->trackNameId[i] >= trackNames.size()) {
+			cfg->trackNameId[i] = 0; 
+		}
+
 		key = "trkNameId" + String(i);
 		if(cfg->trackNameId[i] != preferences.getUChar(key.c_str(), i))
 			preferences.putUChar(key.c_str(), cfg->trackNameId[i]);
