@@ -21,6 +21,8 @@ LICENSE:
 
 #pragma once
 
+#include "sound.h"
+
 struct WavSound {
 	Sound *wav;
 	bool seamlessPlay;

@@ -3,6 +3,12 @@
 src/build
 run.sh
 
+.antigravitycli
+.clang-format
+
+src/snd-defect/vocab
+src/snd-defect/vocab16k
+
 # Kicad stuff
 fp-info-cache
 kicad/*/*-backups
