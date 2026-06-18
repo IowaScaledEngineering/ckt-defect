@@ -52,11 +52,11 @@ MenuEvent MenuHome::update()
 	disp->print((char)0);
 	if(disp->getBacklight())
 	{
-		disp->print("DARK");
+		disp->print("OFF");
 	}
 	else
 	{
-		disp->print("LITE");
+		disp->print("ON ");
 	}
 	disp->gotoxy(16,3);
 	disp->print("MENU");
