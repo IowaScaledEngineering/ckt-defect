@@ -25,9 +25,9 @@ LICENSE:
 #include <string>
 
 struct DataBundle {
-	int8_t temperature;
-	uint16_t defectAxle[NUM_TRACKS];
+	uint16_t defectAxle;
 	std::vector<std::string> defects;
-	uint16_t totalAxles[NUM_TRACKS];
-	uint8_t speed[NUM_TRACKS];
+	uint16_t axlesLive;
+	uint16_t totalAxles;
+	uint8_t speed;
 };

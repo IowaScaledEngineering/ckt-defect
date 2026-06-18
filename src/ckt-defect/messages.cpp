@@ -113,19 +113,20 @@ std::string* transformMessage(std::string* inputMessage, DetectorConfiguration *
 		}
 		else if("#axle" == token)
 		{
-			insertNumber(*outputMessage, data->defectAxle[trackNum], 0);
+			insertNumber(*outputMessage, data->defectAxle, 0);
 		}
 		else if("#axles" == token)
 		{
-			insertNumber(*outputMessage, data->totalAxles[trackNum], 0);
+			insertNumber(*outputMessage, data->totalAxles, 0);
 		}
 		else if("#speed" == token)
 		{
-			insertNumber(*outputMessage, data->speed[trackNum], 0);
+			insertNumber(*outputMessage, data->speed, 0);
 		}
 		else if("#temp" == token)
 		{
-			insertNumber(*outputMessage, data->temperature, 0);
+			// FIXME: call accessor function for temperature calculator
+//			insertNumber(*outputMessage, data->temperature, 0);
 		}
 		else if("#defectlist" == token)
 		{

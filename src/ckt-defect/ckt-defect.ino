@@ -287,7 +287,7 @@ void loop()
 	
 	DetectorConfiguration cfg;
 	MessageBundle trackMessages;
-	DataBundle data;
+	DataBundle data[NUM_TRACKS];
 
 	DisplayLcd *lcd = new DisplayLcd();
 	Menu::setDisplay(lcd);
@@ -317,7 +317,7 @@ void loop()
 	for(uint32_t i=0; i<NUM_TRACKS; i++)
 	{
 		// Preload the track name based on loaded configuration.  Might be overwritten below by SD card.
-		cfg->trackName[i] = trackNames[cfg->trackNameId[i]];
+		cfg.trackName[i] = trackNames[cfg.trackNameId[i]];
 	}
 
 	audioSetVolumeStep(cfg.volumeStep);
@@ -404,7 +404,7 @@ void loop()
 		&cfg.trackNameId[0],
 		false,
 		trackNames,
-		[&cfg]() { saveConfiguration(&cfg); loadConfiguration(&cfg); }  // Load afterwards to reset the track name string
+		[&cfg]() { saveConfiguration(&cfg); }
 	);
 
 	auto menuTrackNameB = std::make_shared<MenuOptionSelector>(
@@ -412,7 +412,7 @@ void loop()
 		&cfg.trackNameId[1],
 		false,
 		trackNames,
-		[&cfg]() { saveConfiguration(&cfg); loadConfiguration(&cfg); }  // Load afterwards to reset the track name string
+		[&cfg]() { saveConfiguration(&cfg); }
 	);
 
 	auto updateTrackNameMenuVisibility = [&cfg, menuTrackNameA, menuTrackNameB]()
@@ -739,10 +739,10 @@ clrTestPoint(TP2);
 		switch(state)
 		{
 			case 0:
-				data.temperature = 97;
-				data.defectAxle[0] = 0;
-				data.totalAxles[0] = 0;
-				data.speed[0] = 0;
+//				data.temperature = 97;
+				data[0].defectAxle = 0;
+				data[0].totalAxles = 0;
+				data[0].speed = 0;
 				if(millis() - startTime >= 1000)
 					state++;
 				break;
@@ -752,27 +752,27 @@ clrTestPoint(TP2);
 				msgPtr = &trackMessages.entranceMsg;
 				Serial.print("Pre msg: ");
 				Serial.println(msgPtr->c_str());
-				msg = transformMessage(msgPtr, &cfg, &data, 0);
+				msg = transformMessage(msgPtr, &cfg, &data[0], 0);
 				returnState = state + 1;
 				state = 100;
 				break;
 			case 2:
-				data.speed[0] = 37;
+				data[0].speed = 37;
 				if(millis() - startTime >= 10000)
-					state = 0;
-//					state++;
+//					state = 0;
+					state++;
 				break;
 
 			case 3:
-				data.defectAxle[0] = 29;
+				data[0].defectAxle = 29;
 				msgPtr = &trackMessages.defects[0].detailMsg;
-				msg = transformMessage(msgPtr, &cfg, &data, 0);
-				data.defects.emplace_back(*msg);
+				msg = transformMessage(msgPtr, &cfg, &data[0], 0);
+				data[0].defects.emplace_back(*msg);
 				delete msg;
 				msgPtr = &trackMessages.defects[0].alertMsg;
 				Serial.print("Pre msg: ");
 				Serial.println(msgPtr->c_str());
-				msg = transformMessage(msgPtr, &cfg, &data, 0);
+				msg = transformMessage(msgPtr, &cfg, &data[0], 0);
 				returnState = state + 1;
 				state = 100;
 				break;
@@ -782,15 +782,15 @@ clrTestPoint(TP2);
 				break;
 
 			case 5:
-				data.defectAxle[0] = 108;
+				data[0].defectAxle = 108;
 				msgPtr = &trackMessages.defects[1].detailMsg;
-				msg = transformMessage(msgPtr, &cfg, &data, 0);
-				data.defects.emplace_back(*msg);
+				msg = transformMessage(msgPtr, &cfg, &data[0], 0);
+				data[0].defects.emplace_back(*msg);
 				delete msg;
 				msgPtr = &trackMessages.defects[1].alertMsg;
 				Serial.print("Pre msg: ");
 				Serial.println(msgPtr->c_str());
-				msg = transformMessage(msgPtr, &cfg, &data, 0);
+				msg = transformMessage(msgPtr, &cfg, &data[0], 0);
 				returnState = state + 1;
 				state = 100;
 				break;
@@ -800,11 +800,11 @@ clrTestPoint(TP2);
 				break;
 
 			case 7:
-				data.totalAxles[0] = 184;
+				data[0].totalAxles = 184;
 				msgPtr = &trackMessages.exitDefectMsg;
 				Serial.print("Pre msg: ");
 				Serial.println(msgPtr->c_str());
-				msg = transformMessage(msgPtr, &cfg, &data, 0);
+				msg = transformMessage(msgPtr, &cfg, &data[0], 0);
 				returnState = state + 1;
 				state = 100;
 				break;
@@ -815,7 +815,7 @@ clrTestPoint(TP2);
 
 			case 9:
 				startTime = millis();
-				data.defects.clear();
+				data[0].defects.clear();
 				state++;
 				break;
 			case 10:
