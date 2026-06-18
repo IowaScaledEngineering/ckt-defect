@@ -290,7 +290,6 @@ void loop()
 	DataBundle data[NUM_TRACKS];
 
 	DisplayLcd *lcd = new DisplayLcd();
-	Menu::setDisplay(lcd);
 	bool displayPresent = true;  // Start assuming it's there so we don't take the refresh delay initially
 	bool oldDisplayPresent = true;
 
@@ -354,12 +353,15 @@ void loop()
 
 	// Create menus
 	auto menus = createAppMenu(cfg, lcd);
+
+	Menu::setDisplay(lcd);
 	Menu::setTimingCallback(millis); 
 	Menu::setInitialHoldDelay(1000);
 	Menu::setHoldDelay(400);
 	Menu::setLongHoldDelay(3000);
 	Menu::setFastDelay(100);
-	MenuManager menuManager(lcd, menus);
+
+	MenuManager menuManager(menus);
 
 
 	// Wait for splash screen timeout
