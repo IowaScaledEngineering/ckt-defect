@@ -34,7 +34,6 @@ class Menu
 		static inline bool isHolding = false; // Tracks if initial timeout has expired
 
 		// Centralized value binding fields for underlying model modifications
-		uint32_t *valPtr32 = nullptr;
 		bool *valPtrBool = nullptr;
 		std::function<uint32_t()> getFunc32 = nullptr;
 		std::function<bool()> getFuncBool = nullptr;
@@ -116,6 +115,7 @@ class MenuDigitThumbwheel : public Menu
 		MenuDigitThumbwheel(const std::string &name, T *p, bool realTimeUpdate, uint32_t i, uint32_t f, bool suppressLeadingZeros, std::function<void()> onSave = nullptr)
 		    : Menu(name), iDigits(i), fDigits(f), suppressLeadingZeros(suppressLeadingZeros)
 		{
+			static_assert(std::is_integral<T>::value, "MenuOptionSelector requires an integer type pointer.");
 			getFunc32 = [p]() -> uint32_t { return static_cast<uint32_t>(*p); };
 			setFunc32 = [p](uint32_t val) { *p = static_cast<T>(val); };
 			realTime = realTimeUpdate;
@@ -149,10 +149,13 @@ class MenuNumberDial : public Menu
 
 	public:
 		// Constructor for direct pointers
-		MenuNumberDial(const std::string &name, uint32_t *p, bool realTimeUpdate, uint32_t min, uint32_t max, std::string units, std::function<void()> onSave = nullptr)
+		template <typename T>
+		MenuNumberDial(const std::string &name, T *p, bool realTimeUpdate, uint32_t min, uint32_t max, std::string units, std::function<void()> onSave = nullptr)
 		    : Menu(name), minVal(min), maxVal(max), units(units)
 		{
-			valPtr32 = p;
+			static_assert(std::is_integral<T>::value, "MenuOptionSelector requires an integer type pointer.");
+			getFunc32 = [p]() -> uint32_t { return static_cast<uint32_t>(*p); };
+			setFunc32 = [p](uint32_t val) { *p = static_cast<T>(val); };
 			realTime = realTimeUpdate;
 			saveCallback = std::move(onSave);
 			maxDigits = (int)std::to_string(maxVal).length();
@@ -220,7 +223,6 @@ class MenuOptionSelector : public Menu
 		    : Menu(name), currentVal(0), options(opts)
 		{
 			static_assert(std::is_integral<T>::value, "MenuOptionSelector requires an integer type pointer.");
-			// Capture the typed pointer into type-safe lambdas
 			getFunc32 = [p]() -> uint32_t { return static_cast<uint32_t>(*p); };
 			setFunc32 = [p](uint32_t val) { *p = static_cast<T>(val); };
 			realTime = realTimeUpdate;
@@ -252,10 +254,13 @@ class MenuPercentageBar : public Menu
 
 	public:
 		// Constructor for direct pointers
-		MenuPercentageBar(const std::string &name, uint32_t *p, bool realTimeUpdate, uint32_t max, uint32_t pcntStep, std::function<void()> onSave = nullptr)
+		template <typename T>
+		MenuPercentageBar(const std::string &name, T *p, bool realTimeUpdate, uint32_t max, uint32_t pcntStep, std::function<void()> onSave = nullptr)
 		    : Menu(name), maxVal(max == 0 ? 100 : max), stepVal(pcntStep)
 		{
-			valPtr32 = p;
+			static_assert(std::is_integral<T>::value, "MenuOptionSelector requires an integer type pointer.");
+			getFunc32 = [p]() -> uint32_t { return static_cast<uint32_t>(*p); };
+			setFunc32 = [p](uint32_t val) { *p = static_cast<T>(val); };
 			realTime = realTimeUpdate;
 			saveCallback = std::move(onSave);
 		}

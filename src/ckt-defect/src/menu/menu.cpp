@@ -74,7 +74,6 @@ void Menu::handleButtonRelease(int keyNum)
 uint32_t Menu::getValue()
 {
 	if(getFunc32) return getFunc32();
-	if(valPtr32) return *valPtr32;
 	if(getFuncBool) return getFuncBool() ? 1 : 0;
 	if(valPtrBool) return *valPtrBool ? 1 : 0;
 	return 0;
@@ -83,7 +82,6 @@ uint32_t Menu::getValue()
 void Menu::setValue(uint32_t value)
 {
 	if(setFunc32) setFunc32(value);
-	else if(valPtr32) *valPtr32 = value;
 	else if(setFuncBool) setFuncBool(value != 0);
 	else if(valPtrBool) *valPtrBool = (value != 0);
 }

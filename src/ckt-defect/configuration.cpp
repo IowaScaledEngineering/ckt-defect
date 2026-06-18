@@ -37,7 +37,8 @@ LICENSE:
 
 #define MIN_SPEED_TYPE_DEFAULT  0 // Corresponds to MinSpeed::Off
 #define MIN_SPEED_DEFAULT       10
-#define MIN_AXLES_DEFAULT       4
+#define MIN_AXLES_DEFAULT       8
+#define ENTRANCE_AXLES_DEFAULT  4
 
 #define PREF_NAMESPACE   "defectdetector"
 
@@ -60,7 +61,8 @@ void loadConfiguration(DetectorConfiguration* cfg)
 
 	cfg->minSpeedType = static_cast<MinSpeed>(preferences.getUChar("spdType", MIN_SPEED_TYPE_DEFAULT));
 	cfg->minSpeed = preferences.getUChar("minSpd", MIN_SPEED_DEFAULT);
-	cfg->minimumAxles = preferences.getUShort("minAxle", MIN_AXLES_DEFAULT);
+	cfg->minAxles = preferences.getUShort("minAxle", MIN_AXLES_DEFAULT);
+	cfg->entranceAxles = preferences.getUShort("entAxle", ENTRANCE_AXLES_DEFAULT);
 
 	cfg->milepost = preferences.getUShort("mp", MILEPOST_DEFAULT);
 
@@ -118,8 +120,11 @@ void saveConfiguration(DetectorConfiguration* cfg)
 	if(cfg->minSpeed != preferences.getUChar("minSpd", MIN_SPEED_DEFAULT))
 		preferences.putUChar("minSpd", cfg->minSpeed);
 
-	if(cfg->minimumAxles != preferences.getUShort("minAxle", MIN_AXLES_DEFAULT))
-		preferences.putUShort("minAxle", cfg->minimumAxles);
+	if(cfg->minAxles != preferences.getUShort("minAxle", MIN_AXLES_DEFAULT))
+		preferences.putUShort("minAxle", cfg->minAxles);
+
+	if(cfg->entranceAxles != preferences.getUShort("entAxle", ENTRANCE_AXLES_DEFAULT))
+		preferences.putUShort("entAxle", cfg->entranceAxles);
 
 	if(cfg->milepost != preferences.getUShort("mp", MILEPOST_DEFAULT))
 		preferences.putUShort("mp", cfg->milepost);
@@ -174,7 +179,10 @@ void printConfiguration(DetectorConfiguration* cfg)
 	Serial.println(cfg->axleEnable);
 
 	Serial.print("Minimum Axles: ");
-	Serial.println(cfg->minimumAxles);
+	Serial.println(cfg->minAxles);
+
+	Serial.print("Entrance Axles: ");
+	Serial.println(cfg->entranceAxles);
 
 	Serial.print("Temperature Enable: ");
 	Serial.println(cfg->temperatureEnable);

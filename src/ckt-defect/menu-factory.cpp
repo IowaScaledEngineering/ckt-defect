@@ -106,6 +106,129 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd)
 	menuTrackConfig->addChild(menuTrackNameB);
 
 	// ==========================================
+	// Speed Menus
+	// ==========================================
+	auto menuSpeedConfig = std::make_shared<MenuListSelector>("Speed Config");
+	//mainSel->addChild(menuSpeedConfig);  --> Done down below to put the menu after Axle Config
+
+	auto updateGlobalSpeedMenuVisibility = [&cfg, menuSpeedConfig]()
+	{
+		if (cfg.axleEnable)
+		{
+			menuSpeedConfig->unhide();
+		}
+		else
+		{
+			menuSpeedConfig->hide();
+		}
+	};
+
+/*
+	auto menuEntranceAxles = std::make_shared<MenuNumberDial>(
+		"Entrance Axles",
+		&cfg.entranceAxles,
+		false,
+		0,   // min
+		10,  // max
+		"",
+		[&cfg]() { saveConfiguration(&cfg); }
+	);
+
+	auto menuMinAxles = std::make_shared<MenuNumberDial>(
+		"Minimum Axles",
+		&cfg.minAxles,
+		false,
+		0,   // min
+		100,  // max
+		"",
+		[&cfg]() { saveConfiguration(&cfg); }
+	);
+*/
+	auto updateSpeedMenuVisibility = [&cfg]()
+	{
+		if (cfg.speedEnable)
+		{
+//			menuEntranceAxles->unhide();
+//			menuMinAxles->unhide();
+		}
+		else
+		{
+//			menuEntranceAxles->hide();
+//			menuMinAxles->hide();
+		}
+	};
+
+	auto menuSpeedEn = std::make_shared<MenuBoolSelector>(
+		"Speed Enable",
+		&cfg.speedEnable, 
+		false, 
+		"On", "ON", 
+		"Off", "OFF",
+		[updateSpeedMenuVisibility, &cfg]() { saveConfiguration(&cfg); updateSpeedMenuVisibility(); }
+	);
+
+	updateSpeedMenuVisibility();
+	menuSpeedConfig->addChild(menuSpeedEn);
+//	menuSpeedConfig->addChild(menuMinAxles);
+//	menuSpeedConfig->addChild(menuEntranceAxles);
+
+	// ==========================================
+	// Axle Menus
+	// ==========================================
+	auto menuAxleConfig = std::make_shared<MenuListSelector>("Axle Config");
+	mainSel->addChild(menuAxleConfig);
+	mainSel->addChild(menuSpeedConfig);
+
+	auto menuEntranceAxles = std::make_shared<MenuNumberDial>(
+		"Entrance Axles",
+		&cfg.entranceAxles,
+		false,
+		0,   // min
+		10,  // max
+		"",
+		[&cfg]() { saveConfiguration(&cfg); }
+	);
+
+	auto menuMinAxles = std::make_shared<MenuNumberDial>(
+		"Minimum Axles",
+		&cfg.minAxles,
+		false,
+		0,   // min
+		100,  // max
+		"",
+		[&cfg]() { saveConfiguration(&cfg); }
+	);
+
+	auto updateAxleMenuVisibility = [&cfg, menuEntranceAxles, menuMinAxles]()
+	{
+		if (cfg.axleEnable)
+		{
+			menuEntranceAxles->unhide();
+			menuMinAxles->unhide();
+		}
+		else
+		{
+			menuEntranceAxles->hide();
+			menuMinAxles->hide();
+		}
+	};
+
+	auto menuAxleEn = std::make_shared<MenuBoolSelector>(
+		"Axle Count Enable",
+		&cfg.axleEnable, 
+		false, 
+		"On", "ON", 
+		"Off", "OFF",
+		[updateAxleMenuVisibility, updateGlobalSpeedMenuVisibility, &cfg]() { saveConfiguration(&cfg); updateAxleMenuVisibility(); updateGlobalSpeedMenuVisibility(); }
+	);
+
+	updateAxleMenuVisibility();
+	updateGlobalSpeedMenuVisibility();
+	menuAxleConfig->addChild(menuAxleEn);
+	menuAxleConfig->addChild(menuMinAxles);
+	menuAxleConfig->addChild(menuEntranceAxles);
+
+	// ==========================================
 	// System Menus
 	// ==========================================
 	auto menuSysConfig = std::make_shared<MenuListSelector>("System Config");

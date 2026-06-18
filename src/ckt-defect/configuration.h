@@ -34,15 +34,16 @@ struct DetectorConfiguration {
 	uint8_t trackNameId[NUM_TRACKS];
 	std::string trackName[NUM_TRACKS];
 
+	// Axles	
+	bool axleEnable;
+	uint16_t entranceAxles;
+	uint16_t minAxles;
+	
 	// Speed
 	bool speedEnable;
 	MinSpeed minSpeedType;
 	uint8_t minSpeed;
 
-	// Axles	
-	bool axleEnable;
-	uint16_t minimumAxles;
-	
 	// Other
 	bool temperatureEnable;
 };
