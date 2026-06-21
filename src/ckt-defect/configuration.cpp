@@ -42,6 +42,8 @@ LICENSE:
 #define SPEED_TYPE_ENTER_DEFAULT    true
 #define MIN_SPEED_DEFAULT           10
 
+#define DETECTOR_TIMEOUT_DEFAULT    5
+
 #define TEMPERATURE_EN_DEFAULT      true
 
 #define PREF_NAMESPACE   "defectdetector"
@@ -70,6 +72,8 @@ void loadConfiguration(DetectorConfiguration* cfg)
 	cfg->speedUnitsMph = preferences.getBool("spdUnit", SPEED_UNITS_MPH_DEFAULT);
 	cfg->speedTypeEnter = preferences.getBool("spdTyp", SPEED_TYPE_ENTER_DEFAULT);
 	cfg->minSpeed = preferences.getUChar("minSpd", MIN_SPEED_DEFAULT);
+
+	cfg->detectorTimeout = preferences.getUChar("to", DETECTOR_TIMEOUT_DEFAULT);
 
 	cfg->temperatureEnable = preferences.getBool("tmpEn", TEMPERATURE_EN_DEFAULT);
 
@@ -136,6 +140,9 @@ void saveConfiguration(DetectorConfiguration* cfg)
 	if(cfg->minSpeed != preferences.getUChar("minSpd", MIN_SPEED_DEFAULT))
 		preferences.putUChar("minSpd", cfg->minSpeed);
 
+	if(cfg->detectorTimeout != preferences.getUChar("to", DETECTOR_TIMEOUT_DEFAULT))
+		preferences.putUChar("to", cfg->detectorTimeout);
+
 	if(cfg->temperatureEnable != preferences.getBool("tmpEn", TEMPERATURE_EN_DEFAULT))
 		preferences.putBool("tmpEn", cfg->temperatureEnable);
 
@@ -173,10 +180,19 @@ void printConfiguration(DetectorConfiguration* cfg)
 	Serial.print("Track Name Enable: ");
 	Serial.println(cfg->trackNameEnable);
 
+	Serial.print("Axle Enable: ");
+	Serial.println(cfg->axleEnable);
+
+	Serial.print("Minimum Axles: ");
+	Serial.println(cfg->minAxles);
+
+	Serial.print("Entrance Axles: ");
+	Serial.println(cfg->entranceAxles);
+
 	Serial.print("Speed Enable: ");
 	Serial.println(cfg->speedEnable);
 
-	Serial.print("Min Units: ");
+	Serial.print("Speed Units: ");
 	if(cfg->speedUnitsMph)
 		Serial.println("mph");
 	else
@@ -191,14 +207,8 @@ void printConfiguration(DetectorConfiguration* cfg)
 	Serial.print("Min Speed: ");
 	Serial.println(cfg->minSpeed);
 
-	Serial.print("Axle Enable: ");
-	Serial.println(cfg->axleEnable);
-
-	Serial.print("Minimum Axles: ");
-	Serial.println(cfg->minAxles);
-
-	Serial.print("Entrance Axles: ");
-	Serial.println(cfg->entranceAxles);
+	Serial.print("Detector Timeout: ");
+	Serial.println(cfg->detectorTimeout);
 
 	Serial.print("Temperature Enable: ");
 	Serial.println(cfg->temperatureEnable);

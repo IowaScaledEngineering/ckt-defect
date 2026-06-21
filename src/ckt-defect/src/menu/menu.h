@@ -176,6 +176,7 @@ class MenuNumberDial : public Menu
 
 		void onEnter() override;
 		MenuEvent update() override;
+		void setUnits(const std::string &newUnits) { units = newUnits; }
 };
 
 class MenuBoolSelector : public Menu

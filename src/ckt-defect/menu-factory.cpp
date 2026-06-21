@@ -150,14 +150,6 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd)
 		"On", "ON", 
 		"Off", "OFF"
 	);
-	auto menuSpeedUnits = std::make_shared<MenuBoolSelector>(
-		"Units",
-		&cfg.speedUnitsMph,
-		false, 
-		"Miles/Hour", "MPH",
-		"Kilometers/Hour", "KPH", 
-		[&cfg]() { saveConfiguration(&cfg); }
-	);
 	auto menuSpeedType = std::make_shared<MenuBoolSelector>(
 		"Enter/Exit",
 		&cfg.speedTypeEnter,
@@ -172,7 +164,26 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd)
 		false,
 		0,   // min
 		50,  // max
-		"",
+		cfg.speedUnitsMph ? "mph" : "kph",
+		[&cfg]() { saveConfiguration(&cfg); }
+	);
+	auto menuSpeedUnits = std::make_shared<MenuBoolSelector>(  // Declare after menus that need units updated
+		"Units",
+		&cfg.speedUnitsMph,
+		false, 
+		"Miles/Hour", "MPH",
+		"Kilometers/Hour", "KPH", 
+		[&cfg, menuMinSpeed]() { saveConfiguration(&cfg); menuMinSpeed->setUnits(cfg.speedUnitsMph ? "mph" : "kph"); }
+	);
+
+	// Timeout
+	auto menuDetectorTimeout = std::make_shared<MenuNumberDial>(
+		"Detector Timeout",
+		&cfg.detectorTimeout,
+		false,
+		2,   // min
+		30,  // max
+		"sec",
 		[&cfg]() { saveConfiguration(&cfg); }
 	);
 	
@@ -232,6 +243,8 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd)
 	menuSpeedConfig->addChild(menuSpeedUnits);
 	menuSpeedConfig->addChild(menuSpeedType);
 	menuSpeedConfig->addChild(menuMinSpeed);
+
+	mainSel->addChild(menuDetectorTimeout);
 
 	mainSel->addChild(menuSysConfig);
 	menuSysConfig->addChild(menuBacklightLevel);

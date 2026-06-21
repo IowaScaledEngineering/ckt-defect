@@ -103,8 +103,7 @@ std::string* transformMessage(std::string* inputMessage, DetectorConfiguration *
 		
 		if("#milepost" == token)
 		{
-			if(cfg->milepostEnable)
-				insertNumber(*outputMessage, cfg->milepost, 1);
+			insertNumber(*outputMessage, cfg->milepost, 1);
 		}
 		else if("#track" == token)
 		{

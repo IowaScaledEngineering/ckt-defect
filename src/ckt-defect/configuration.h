@@ -41,11 +41,12 @@ struct DetectorConfiguration {
 	
 	// Speed
 	bool speedEnable;
-	bool speedUnitsMph;      // True = mph, False = kph
-	bool speedTypeEnter;     // True = entrance speed, False = exit speed
+	bool speedUnitsMph;        // True = mph, False = kph
+	bool speedTypeEnter;       // True = entrance speed, False = exit speed
 	uint8_t minSpeed;
 
 	// Other
+	uint8_t detectorTimeout;   // Units = seconds
 	bool temperatureEnable;
 };
 
