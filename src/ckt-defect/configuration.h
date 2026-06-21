@@ -53,4 +53,7 @@ struct DetectorConfiguration {
 void loadConfiguration(DetectorConfiguration* cfg);
 void saveConfiguration(DetectorConfiguration* cfg);
 void printConfiguration(DetectorConfiguration* cfg);
-void resetConfiguration(DetectorConfiguration* cfg);
+void resetConfiguration(void);
+
+void updateTrackNames(DetectorConfiguration* cfg);
+void updateTrackNames(DetectorConfiguration* cfg, std::string trackA, std::string trackB);

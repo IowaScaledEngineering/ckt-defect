@@ -230,9 +230,25 @@ void printConfiguration(DetectorConfiguration* cfg)
 
 
 
-void resetConfiguration(DetectorConfiguration* cfg)
+void resetConfiguration(void)
 {
 	preferences.begin(PREF_NAMESPACE, false);  // Open in read-write mode
 	preferences.clear();
 	preferences.end();
+}
+
+
+
+void updateTrackNames(DetectorConfiguration* cfg)
+{
+	for(uint32_t i=0; i<NUM_TRACKS; i++)
+	{
+		cfg->trackName[i] = cfg->trackNameEnable ? trackNames[cfg->trackNameId[i]] : "";
+	}
+}
+
+void updateTrackNames(DetectorConfiguration* cfg, std::string trackA, std::string trackB)
+{
+	cfg->trackName[0] = trackA;
+	cfg->trackName[1] = trackB;
 }

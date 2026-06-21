@@ -313,11 +313,8 @@ void loop()
 
 	// Read NVM configuration
 	loadConfiguration(&cfg);
-	for(uint32_t i=0; i<NUM_TRACKS; i++)
-	{
-		// Preload the track name based on loaded configuration.  Might be overwritten below by SD card.
-		cfg.trackName[i] = trackNames[cfg.trackNameId[i]];
-	}
+	// Preload the track name based on loaded configuration.  Might be overwritten below by SD card.
+	updateTrackNames(&cfg);
 
 	audioSetVolumeStep(cfg.volumeStep);
 	lcd->setBrightness(cfg.lcdBrightness);
@@ -591,7 +588,7 @@ clrTestPoint(TP2);
 					break;
 				case '~':
 					Serial.print("Clearing preferences...");
-					resetConfiguration(&cfg);
+					resetConfiguration();
 					break;
 			}
 		}
@@ -623,8 +620,8 @@ clrTestPoint(TP2);
 			case 2:
 				data[0].speed = 37;
 				if(millis() - startTime >= 10000)
-//					state = 0;
-					state++;
+					state = 0;
+//					state++;
 				break;
 
 			case 3:
