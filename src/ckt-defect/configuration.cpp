@@ -44,7 +44,11 @@ LICENSE:
 
 #define DETECTOR_TIMEOUT_DEFAULT    5
 
-#define TEMPERATURE_EN_DEFAULT      true
+#define TEMPERATURE_EN_DEFAULT       true
+#define TEMPERATURE_REAL_DEFAULT     true
+#define TEMPERATURE_UNITS_F_DEFAULT  true
+#define MIN_TEMPERATURE_DEFAULT      -20
+#define MAX_TEMPERATURE_DEFAULT      100
 
 #define PREF_NAMESPACE   "defectdetector"
 
@@ -76,6 +80,10 @@ void loadConfiguration(DetectorConfiguration* cfg)
 	cfg->detectorTimeout = preferences.getUChar("to", DETECTOR_TIMEOUT_DEFAULT);
 
 	cfg->temperatureEnable = preferences.getBool("tmpEn", TEMPERATURE_EN_DEFAULT);
+	cfg->temperatureReal = preferences.getBool("tmpReal", TEMPERATURE_REAL_DEFAULT);
+	cfg->temperatureUnitsF = preferences.getBool("tmpUnitF", TEMPERATURE_UNITS_F_DEFAULT);
+	cfg->minTemperature = preferences.getShort("tmpMin", MIN_TEMPERATURE_DEFAULT);
+	cfg->maxTemperature = preferences.getShort("tmpMax", MAX_TEMPERATURE_DEFAULT);
 
 	for(uint32_t i=0; i<NUM_TRACKS; i++)
 	{
@@ -146,6 +154,18 @@ void saveConfiguration(DetectorConfiguration* cfg)
 	if(cfg->temperatureEnable != preferences.getBool("tmpEn", TEMPERATURE_EN_DEFAULT))
 		preferences.putBool("tmpEn", cfg->temperatureEnable);
 
+	if(cfg->temperatureReal != preferences.getBool("tmpReal", TEMPERATURE_REAL_DEFAULT))
+		preferences.putBool("tmpReal", cfg->temperatureReal);
+
+	if(cfg->temperatureUnitsF != preferences.getBool("tmpUnitF", TEMPERATURE_UNITS_F_DEFAULT))
+		preferences.putBool("tmpUnitF", cfg->temperatureUnitsF);
+
+	if(cfg->minTemperature != preferences.getShort("tmpMin", MIN_TEMPERATURE_DEFAULT))
+		preferences.putShort("tmpMin", cfg->minTemperature);
+
+	if(cfg->maxTemperature != preferences.getShort("tmpMax", MAX_TEMPERATURE_DEFAULT))
+		preferences.putShort("tmpMax", cfg->maxTemperature);
+
 	for(uint32_t i=0; i<NUM_TRACKS; i++)
 	{
 		// Defensive check: Ensure memory configuration isn't corrupted out-of-bounds before saving
@@ -212,6 +232,24 @@ void printConfiguration(DetectorConfiguration* cfg)
 
 	Serial.print("Temperature Enable: ");
 	Serial.println(cfg->temperatureEnable);
+
+	Serial.print("Temperature Mode: ");
+	if(cfg->temperatureReal)
+		Serial.println("Real");
+	else
+		Serial.println("Simulated");
+
+	Serial.print("Temperature Units: ");
+	if(cfg->temperatureUnitsF)
+		Serial.println("Fahrenheit (F)");
+	else
+		Serial.println("Celsius (C)");
+
+	Serial.print("Min Temperature Limit: ");
+	Serial.println(cfg->minTemperature);
+
+	Serial.print("Max Temperature Limit: ");
+	Serial.println(cfg->maxTemperature);
 
 	for(uint32_t i=0; i<NUM_TRACKS; i++)
 	{
