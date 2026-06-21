@@ -141,9 +141,9 @@ class MenuDigitThumbwheel : public Menu
 
 class MenuNumberDial : public Menu
 {
-		uint32_t currentVal;
-		uint32_t minVal;
-		uint32_t maxVal;
+		int32_t currentVal;
+		int32_t minVal;
+		int32_t maxVal;
 		int fieldWidth = 0;
 		int maxDigits = 0;
 		std::string units = "";
@@ -151,27 +151,31 @@ class MenuNumberDial : public Menu
 	public:
 		// Constructor for direct pointers
 		template <typename T>
-		MenuNumberDial(const std::string &name, T *p, bool realTimeUpdate, uint32_t min, uint32_t max, std::string units, std::function<void()> onSave = nullptr)
+		MenuNumberDial(const std::string &name, T *p, bool realTimeUpdate, int32_t min, int32_t max, std::string units, std::function<void()> onSave = nullptr)
 		    : Menu(name), minVal(min), maxVal(max), units(units)
 		{
-			static_assert(std::is_integral<T>::value, "MenuOptionSelector requires an integer type pointer.");
-			getFunc32 = [p]() -> uint32_t { return static_cast<uint32_t>(*p); };
-			setFunc32 = [p](uint32_t val) { *p = static_cast<T>(val); };
+			static_assert(std::is_integral<T>::value, "MenuNumberDial requires an integral type pointer.");
+			getFunc32 = [p]() -> uint32_t { return static_cast<uint32_t>(static_cast<int32_t>(*p)); };
+			setFunc32 = [p](uint32_t val) { *p = static_cast<T>(static_cast<int32_t>(val)); };
 			realTime = realTimeUpdate;
 			saveCallback = std::move(onSave);
-			maxDigits = (int)std::to_string(maxVal).length();
+			
+			// Calculate max digits based on whichever absolute limit string is longer (accounting for '-')
+			maxDigits = (int)std::max(std::to_string(minVal).length(), std::to_string(maxVal).length());
 		}
 
 		// Constructor using std::function callbacks
 		MenuNumberDial(const std::string &name, std::function<uint32_t()> getter,
-			       std::function<void(uint32_t)> setter, bool realTimeUpdate, uint32_t min, uint32_t max, std::string units, std::function<void()> onSave = nullptr)
+			       std::function<void(uint32_t)> setter, bool realTimeUpdate, int32_t min, int32_t max, std::string units, std::function<void()> onSave = nullptr)
 		    : Menu(name), minVal(min), maxVal(max), units(units)
 		{
 			getFunc32 = std::move(getter);
 			setFunc32 = std::move(setter);
 			realTime = realTimeUpdate;
 			saveCallback = std::move(onSave);
-			maxDigits = (int)std::to_string(maxVal).length();
+			
+			// Calculate max digits based on whichever absolute limit string is longer (accounting for '-')
+			maxDigits = (int)std::max(std::to_string(minVal).length(), std::to_string(maxVal).length());
 		}
 
 		void onEnter() override;

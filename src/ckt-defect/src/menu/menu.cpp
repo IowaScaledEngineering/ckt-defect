@@ -329,9 +329,9 @@ MenuEvent MenuDigitThumbwheel::update()
 void MenuNumberDial::onEnter()
 {
 	Menu::onEnter();
-	uint32_t initVal = getValue();
+	int32_t initVal = static_cast<int32_t>(getValue());
 	currentVal = std::clamp(initVal, minVal, maxVal);
-	originalVal = currentVal;
+	originalVal = static_cast<uint32_t>(currentVal);
 }
 
 MenuEvent MenuNumberDial::update()
@@ -349,7 +349,7 @@ MenuEvent MenuNumberDial::update()
 	disp->gotoxy(16, 3);
 	disp->print("CNCL");
 
-	// 1. Determine number of digits for the current value
+	// 1. Determine number of characters for the current value (handles '-' inherently)
 	std::string valStr = std::to_string(currentVal);
 	int currentDigits = (int)valStr.length();
 
@@ -379,7 +379,7 @@ MenuEvent MenuNumberDial::update()
 					handleButtonPress(1);
 					if(realTime)
 					{
-						setValue(currentVal);
+						setValue(static_cast<uint32_t>(currentVal));
 					}
 					break;
 				case 2:
@@ -388,11 +388,11 @@ MenuEvent MenuNumberDial::update()
 					handleButtonPress(2);
 					if(realTime)
 					{
-						setValue(currentVal);
+						setValue(static_cast<uint32_t>(currentVal));
 					}
 					break;
 				case 3:
-					applyChange(currentVal);
+					applyChange(static_cast<uint32_t>(currentVal));
 					return MenuEvent::BACK;
 				case 4:
 					cancel();
