@@ -32,7 +32,7 @@ struct DetectorConfiguration {
 
 	bool trackNameEnable;
 	uint8_t trackNameId[NUM_TRACKS];
-	std::string trackName[NUM_TRACKS];
+	std::string trackName[NUM_TRACKS];  // Volatile value, not stored in NVM
 
 	// Axles	
 	bool axleEnable;
@@ -41,7 +41,8 @@ struct DetectorConfiguration {
 	
 	// Speed
 	bool speedEnable;
-	MinSpeed minSpeedType;
+	bool entranceSpeed;
+	bool minSpeedEnable;
 	uint8_t minSpeed;
 
 	// Other

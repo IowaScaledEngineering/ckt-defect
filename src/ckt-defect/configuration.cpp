@@ -26,19 +26,23 @@ LICENSE:
 #include "common.h"
 #include "configuration.h"
 
-#define LCD_BRIGHT_DEFAULT      128
+#define LCD_BRIGHT_DEFAULT          128
 
-#define MILEPOST_EN_DEFAULT     true
-#define TRACK_NAME_EN_DEFAULT   true
-#define SPEED_EN_DEFAULT        true
-#define AXLE_EN_DEFAULT         true
-#define TEMPERATURE_EN_DEFAULT  true
-#define MILEPOST_DEFAULT        3469
+#define MILEPOST_EN_DEFAULT         true
+#define MILEPOST_DEFAULT            3469
 
-#define MIN_SPEED_TYPE_DEFAULT  0 // Corresponds to MinSpeed::Off
-#define MIN_SPEED_DEFAULT       10
-#define MIN_AXLES_DEFAULT       8
-#define ENTRANCE_AXLES_DEFAULT  4
+#define TRACK_NAME_EN_DEFAULT       true
+
+#define AXLE_EN_DEFAULT             true
+#define ENTRANCE_AXLES_DEFAULT      4
+#define MIN_AXLES_DEFAULT           8
+
+#define SPEED_EN_DEFAULT            true
+#define ENTRANCE_SPEED_DEFAULT      0
+#define MIN_SPEED_ENABLE_DEFAULT    true
+#define MIN_SPEED_DEFAULT           10
+
+#define TEMPERATURE_EN_DEFAULT      true
 
 #define PREF_NAMESPACE   "defectdetector"
 
@@ -54,17 +58,20 @@ void loadConfiguration(DetectorConfiguration* cfg)
 	cfg->lcdBrightness = preferences.getUChar("lcd", LCD_BRIGHT_DEFAULT);
 
 	cfg->milepostEnable = preferences.getBool("mpEn", MILEPOST_EN_DEFAULT);
-	cfg->trackNameEnable = preferences.getBool("trkNameEn", TRACK_NAME_EN_DEFAULT);
-	cfg->speedEnable = preferences.getBool("spdEn", SPEED_EN_DEFAULT);
-	cfg->axleEnable = preferences.getBool("axleEn", AXLE_EN_DEFAULT);
-	cfg->temperatureEnable = preferences.getBool("tmpEn", TEMPERATURE_EN_DEFAULT);
-
-	cfg->minSpeedType = static_cast<MinSpeed>(preferences.getUChar("spdType", MIN_SPEED_TYPE_DEFAULT));
-	cfg->minSpeed = preferences.getUChar("minSpd", MIN_SPEED_DEFAULT);
-	cfg->minAxles = preferences.getUShort("minAxle", MIN_AXLES_DEFAULT);
-	cfg->entranceAxles = preferences.getUShort("entAxle", ENTRANCE_AXLES_DEFAULT);
-
 	cfg->milepost = preferences.getUShort("mp", MILEPOST_DEFAULT);
+
+	cfg->trackNameEnable = preferences.getBool("trkNameEn", TRACK_NAME_EN_DEFAULT);
+
+	cfg->axleEnable = preferences.getBool("axleEn", AXLE_EN_DEFAULT);
+	cfg->entranceAxles = preferences.getUShort("entAxle", ENTRANCE_AXLES_DEFAULT);
+	cfg->minAxles = preferences.getUShort("minAxle", MIN_AXLES_DEFAULT);
+
+	cfg->speedEnable = preferences.getBool("spdEn", SPEED_EN_DEFAULT);
+	cfg->entranceSpeed = preferences.getBool("entrSpd", ENTRANCE_SPEED_DEFAULT);
+	cfg->minSpeedEnable = preferences.getBool("minSpdEn", MIN_SPEED_ENABLE_DEFAULT);
+	cfg->minSpeed = preferences.getUChar("minSpd", MIN_SPEED_DEFAULT);
+
+	cfg->temperatureEnable = preferences.getBool("tmpEn", TEMPERATURE_EN_DEFAULT);
 
 	for(uint32_t i=0; i<NUM_TRACKS; i++)
 	{
@@ -102,32 +109,35 @@ void saveConfiguration(DetectorConfiguration* cfg)
 	if(cfg->milepostEnable != preferences.getBool("mpEn", MILEPOST_EN_DEFAULT))
 		preferences.putBool("mpEn", cfg->milepostEnable);
 
+	if(cfg->milepost != preferences.getUShort("mp", MILEPOST_DEFAULT))
+		preferences.putUShort("mp", cfg->milepost);
+
 	if(cfg->trackNameEnable != preferences.getBool("trkNameEn", TRACK_NAME_EN_DEFAULT))
 		preferences.putBool("trkNameEn", cfg->trackNameEnable);
-
-	if(cfg->speedEnable != preferences.getBool("spdEn", SPEED_EN_DEFAULT))
-		preferences.putBool("spdEn", cfg->speedEnable);
 
 	if(cfg->axleEnable != preferences.getBool("axleEn", AXLE_EN_DEFAULT))
 		preferences.putBool("axleEn", cfg->axleEnable);
 
-	if(cfg->temperatureEnable != preferences.getBool("tmpEn", TEMPERATURE_EN_DEFAULT))
-		preferences.putBool("tmpEn", cfg->temperatureEnable);
-
-	if(static_cast<uint8_t>(cfg->minSpeedType) != preferences.getUChar("spdType", MIN_SPEED_TYPE_DEFAULT))
-		preferences.putUChar("spdType", static_cast<uint8_t>(cfg->minSpeedType));
-
-	if(cfg->minSpeed != preferences.getUChar("minSpd", MIN_SPEED_DEFAULT))
-		preferences.putUChar("minSpd", cfg->minSpeed);
+	if(cfg->entranceAxles != preferences.getUShort("entAxle", ENTRANCE_AXLES_DEFAULT))
+		preferences.putUShort("entAxle", cfg->entranceAxles);
 
 	if(cfg->minAxles != preferences.getUShort("minAxle", MIN_AXLES_DEFAULT))
 		preferences.putUShort("minAxle", cfg->minAxles);
 
-	if(cfg->entranceAxles != preferences.getUShort("entAxle", ENTRANCE_AXLES_DEFAULT))
-		preferences.putUShort("entAxle", cfg->entranceAxles);
+	if(cfg->speedEnable != preferences.getBool("spdEn", SPEED_EN_DEFAULT))
+		preferences.putBool("spdEn", cfg->speedEnable);
 
-	if(cfg->milepost != preferences.getUShort("mp", MILEPOST_DEFAULT))
-		preferences.putUShort("mp", cfg->milepost);
+	if(cfg->entranceSpeed != preferences.getBool("entrSpd", ENTRANCE_SPEED_DEFAULT))
+		preferences.putBool("entrSpd", cfg->entranceSpeed);
+
+	if(cfg->minSpeed != preferences.getUChar("minSpd", MIN_SPEED_DEFAULT))
+		preferences.putUChar("minSpd", cfg->minSpeed);
+
+	if(cfg->minSpeedEnable != preferences.getBool("minSpdEn", MIN_SPEED_ENABLE_DEFAULT))
+		preferences.putBool("minSpdEn", cfg->minSpeedEnable);
+
+	if(cfg->temperatureEnable != preferences.getBool("tmpEn", TEMPERATURE_EN_DEFAULT))
+		preferences.putBool("tmpEn", cfg->temperatureEnable);
 
 	for(uint32_t i=0; i<NUM_TRACKS; i++)
 	{
@@ -167,10 +177,13 @@ void printConfiguration(DetectorConfiguration* cfg)
 	Serial.println(cfg->speedEnable);
 
 	Serial.print("Min Speed Type: ");
-	if(static_cast<size_t>(cfg->minSpeedType) < minSpeedName.size())
-		Serial.println(minSpeedName[static_cast<size_t>(cfg->minSpeedType)].c_str());
+	if(cfg->entranceSpeed)
+		Serial.println("Entrance");
 	else
-		Serial.println("ERROR!");
+		Serial.println("Exit");
+
+	Serial.print("Min Speed Enable: ");
+	Serial.println(cfg->minSpeedEnable);
 
 	Serial.print("Min Speed: ");
 	Serial.println(cfg->minSpeed);

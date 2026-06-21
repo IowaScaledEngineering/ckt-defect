@@ -180,15 +180,15 @@ class MenuNumberDial : public Menu
 class MenuBoolSelector : public Menu
 {
 		bool currentVal;
-		std::string opt1Name;
-		std::string btn1Name;
-		std::string opt2Name;
-		std::string btn2Name;
+		std::string optTrueName;
+		std::string btnTrueName;
+		std::string optFalseName;
+		std::string btnFalseName;
 
 	public:
 		// Constructor for direct pointers
-		MenuBoolSelector(const std::string &name, bool *p, bool realTimeUpdate, const std::string &opt1, const std::string &btn1, const std::string &opt2, const std::string &btn2, std::function<void()> onSave = nullptr)
-		    : Menu(name), opt1Name(opt1), btn1Name(btn1), opt2Name(opt2), btn2Name(btn2)
+		MenuBoolSelector(const std::string &name, bool *p, bool realTimeUpdate, const std::string &optTrue, const std::string &btnTrue, const std::string &optFalse, const std::string &btnFalse, std::function<void()> onSave = nullptr)
+		    : Menu(name), optTrueName(optTrue), btnTrueName(btnTrue), optFalseName(optFalse), btnFalseName(btnFalse)
 		{
 			valPtrBool = p;
 			realTime = realTimeUpdate;
@@ -196,8 +196,8 @@ class MenuBoolSelector : public Menu
 		}
 
 		// Constructor using std::function callbacks
-		MenuBoolSelector(const std::string &name, std::function<bool()> getter, std::function<void(bool)> setter, bool realTimeUpdate, const std::string &opt1, const std::string &btn1, const std::string &opt2, const std::string &btn2, std::function<void()> onSave = nullptr)
-		    : Menu(name), opt1Name(opt1), btn1Name(btn1), opt2Name(opt2), btn2Name(btn2)
+		MenuBoolSelector(const std::string &name, std::function<bool()> getter, std::function<void(bool)> setter, bool realTimeUpdate, const std::string &optTrue, const std::string &btnTrue, const std::string &optFalse, const std::string &btnFalse, std::function<void()> onSave = nullptr)
+		    : Menu(name), optTrueName(optTrue), btnTrueName(btnTrue), optFalseName(optFalse), btnFalseName(btnFalse)
 		{
 			getFuncBool = std::move(getter);
 			setFuncBool = std::move(setter);

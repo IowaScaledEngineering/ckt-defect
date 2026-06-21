@@ -123,38 +123,59 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd)
 		}
 	};
 
-/*
-	auto menuEntranceAxles = std::make_shared<MenuNumberDial>(
-		"Entrance Axles",
-		&cfg.entranceAxles,
+	auto menuMinSpeed = std::make_shared<MenuNumberDial>(
+		"Minimum Speed",
+		&cfg.minSpeed,
 		false,
 		0,   // min
-		10,  // max
+		50,  // max
 		"",
 		[&cfg]() { saveConfiguration(&cfg); }
 	);
-
-	auto menuMinAxles = std::make_shared<MenuNumberDial>(
-		"Minimum Axles",
-		&cfg.minAxles,
-		false,
-		0,   // min
-		100,  // max
-		"",
-		[&cfg]() { saveConfiguration(&cfg); }
-	);
-*/
-	auto updateSpeedMenuVisibility = [&cfg]()
+	
+	auto updateMinSpeedMenuVisibility = [&cfg, menuMinSpeed]()
 	{
-		if (cfg.speedEnable)
+		if (cfg.minSpeedEnable)
 		{
-//			menuEntranceAxles->unhide();
-//			menuMinAxles->unhide();
+			menuMinSpeed->unhide();
 		}
 		else
 		{
-//			menuEntranceAxles->hide();
-//			menuMinAxles->hide();
+			menuMinSpeed->hide();
+		}
+	};
+
+	auto menuMinSpeedEn = std::make_shared<MenuBoolSelector>(
+		"Min Speed Enable",
+		&cfg.minSpeedEnable,
+		false, 
+		"On", "ON", 
+		"Off", "OFF",
+		[updateMinSpeedMenuVisibility, &cfg]() { saveConfiguration(&cfg); updateMinSpeedMenuVisibility(); }
+	);
+
+	auto menuSpeedType = std::make_shared<MenuBoolSelector>(
+		"Speed Type",
+		&cfg.entranceSpeed,
+		false, 
+		"Entrance", "ENTR",
+		"Exit", "EXIT", 
+		[&cfg]() { saveConfiguration(&cfg); }
+	);
+
+	auto updateSpeedMenuVisibility = [&cfg, menuSpeedType, menuMinSpeedEn, menuMinSpeed]()
+	{
+		if (cfg.speedEnable)
+		{
+			menuSpeedType->unhide();
+			menuMinSpeedEn->unhide();
+			menuMinSpeed->unhide();
+		}
+		else
+		{
+			menuSpeedType->hide();
+			menuMinSpeedEn->hide();
+			menuMinSpeed->hide();
 		}
 	};
 
@@ -169,8 +190,9 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd)
 
 	updateSpeedMenuVisibility();
 	menuSpeedConfig->addChild(menuSpeedEn);
-//	menuSpeedConfig->addChild(menuMinAxles);
-//	menuSpeedConfig->addChild(menuEntranceAxles);
+	menuSpeedConfig->addChild(menuSpeedType);
+	menuSpeedConfig->addChild(menuMinSpeedEn);
+	menuSpeedConfig->addChild(menuMinSpeed);
 
 	// ==========================================
 	// Axle Menus

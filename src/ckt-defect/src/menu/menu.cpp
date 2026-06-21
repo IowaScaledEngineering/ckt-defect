@@ -416,9 +416,9 @@ MenuEvent MenuBoolSelector::update()
 	disp->print(menuName);
 
 	disp->gotoxy(1, 3);
-	disp->print(btn1Name);
+	disp->print(btnTrueName);
 	disp->gotoxy(6, 3);
-	disp->print(btn2Name);
+	disp->print(btnFalseName);
 	disp->gotoxy(11, 3);
 	disp->print("SAVE");
 	disp->gotoxy(16, 3);
@@ -427,13 +427,13 @@ MenuEvent MenuBoolSelector::update()
 	// 1. Render Option 1 (associated with true) on line 1
 	disp->gotoxy(0, 1);
 	disp->print(currentVal ? "[*] " : "[ ] ");
-	disp->print(opt1Name);
+	disp->print(optTrueName);
 	disp->print("    "); // Clear any trailing artifacts
 
 	// 2. Render Option 2 (associated with false) on line 2
 	disp->gotoxy(0, 2);
 	disp->print(!currentVal ? "[*] " : "[ ] ");
-	disp->print(opt2Name);
+	disp->print(optFalseName);
 	disp->print("    "); // Clear any trailing artifacts
 
 	DisplayEvent ev;
