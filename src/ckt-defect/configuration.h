@@ -41,8 +41,8 @@ struct DetectorConfiguration {
 	
 	// Speed
 	bool speedEnable;
-	bool entranceSpeed;
-	bool minSpeedEnable;
+	bool speedUnitsMph;      // True = mph, False = kph
+	bool speedTypeEnter;     // True = entrance speed, False = exit speed
 	uint8_t minSpeed;
 
 	// Other

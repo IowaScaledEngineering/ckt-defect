@@ -38,8 +38,8 @@ LICENSE:
 #define MIN_AXLES_DEFAULT           8
 
 #define SPEED_EN_DEFAULT            true
-#define ENTRANCE_SPEED_DEFAULT      0
-#define MIN_SPEED_ENABLE_DEFAULT    true
+#define SPEED_UNITS_MPH_DEFAULT     true
+#define SPEED_TYPE_ENTER_DEFAULT    true
 #define MIN_SPEED_DEFAULT           10
 
 #define TEMPERATURE_EN_DEFAULT      true
@@ -67,8 +67,8 @@ void loadConfiguration(DetectorConfiguration* cfg)
 	cfg->minAxles = preferences.getUShort("minAxle", MIN_AXLES_DEFAULT);
 
 	cfg->speedEnable = preferences.getBool("spdEn", SPEED_EN_DEFAULT);
-	cfg->entranceSpeed = preferences.getBool("entrSpd", ENTRANCE_SPEED_DEFAULT);
-	cfg->minSpeedEnable = preferences.getBool("minSpdEn", MIN_SPEED_ENABLE_DEFAULT);
+	cfg->speedUnitsMph = preferences.getBool("spdUnit", SPEED_UNITS_MPH_DEFAULT);
+	cfg->speedTypeEnter = preferences.getBool("spdTyp", SPEED_TYPE_ENTER_DEFAULT);
 	cfg->minSpeed = preferences.getUChar("minSpd", MIN_SPEED_DEFAULT);
 
 	cfg->temperatureEnable = preferences.getBool("tmpEn", TEMPERATURE_EN_DEFAULT);
@@ -127,14 +127,14 @@ void saveConfiguration(DetectorConfiguration* cfg)
 	if(cfg->speedEnable != preferences.getBool("spdEn", SPEED_EN_DEFAULT))
 		preferences.putBool("spdEn", cfg->speedEnable);
 
-	if(cfg->entranceSpeed != preferences.getBool("entrSpd", ENTRANCE_SPEED_DEFAULT))
-		preferences.putBool("entrSpd", cfg->entranceSpeed);
+	if(cfg->speedUnitsMph != preferences.getBool("spdUnit", SPEED_UNITS_MPH_DEFAULT))
+		preferences.putBool("spdUnit", cfg->speedUnitsMph);
+
+	if(cfg->speedTypeEnter != preferences.getBool("spdTyp", SPEED_TYPE_ENTER_DEFAULT))
+		preferences.putBool("spdTyp", cfg->speedTypeEnter);
 
 	if(cfg->minSpeed != preferences.getUChar("minSpd", MIN_SPEED_DEFAULT))
 		preferences.putUChar("minSpd", cfg->minSpeed);
-
-	if(cfg->minSpeedEnable != preferences.getBool("minSpdEn", MIN_SPEED_ENABLE_DEFAULT))
-		preferences.putBool("minSpdEn", cfg->minSpeedEnable);
 
 	if(cfg->temperatureEnable != preferences.getBool("tmpEn", TEMPERATURE_EN_DEFAULT))
 		preferences.putBool("tmpEn", cfg->temperatureEnable);
@@ -176,14 +176,17 @@ void printConfiguration(DetectorConfiguration* cfg)
 	Serial.print("Speed Enable: ");
 	Serial.println(cfg->speedEnable);
 
+	Serial.print("Min Units: ");
+	if(cfg->speedUnitsMph)
+		Serial.println("mph");
+	else
+		Serial.println("kph");
+
 	Serial.print("Min Speed Type: ");
-	if(cfg->entranceSpeed)
+	if(cfg->speedTypeEnter)
 		Serial.println("Entrance");
 	else
 		Serial.println("Exit");
-
-	Serial.print("Min Speed Enable: ");
-	Serial.println(cfg->minSpeedEnable);
 
 	Serial.print("Min Speed: ");
 	Serial.println(cfg->minSpeed);
