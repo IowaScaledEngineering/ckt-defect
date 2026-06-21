@@ -58,6 +58,7 @@ class Menu
 		virtual ~Menu() = default;
 		std::string getName() const { return menuName; }
 		static void setDisplay(Display *d) { disp = d; }
+		void setSaveCallback(std::function<void()> onSave);
 		virtual void onEnter()
 		{
 			if(disp) disp->clear();

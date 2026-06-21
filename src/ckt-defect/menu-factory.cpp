@@ -7,6 +7,61 @@
 #include "menu-custom.h"
 #include "audio.h"
 
+struct ManagedMenus {
+	std::shared_ptr<Menu> milepost;
+	std::shared_ptr<Menu> trackNameA;
+	std::shared_ptr<Menu> trackNameB;
+	std::shared_ptr<Menu> speedConfig;
+	std::shared_ptr<Menu> speedType;
+	std::shared_ptr<Menu> minSpeedEn;
+	std::shared_ptr<Menu> minSpeed;
+	std::shared_ptr<Menu> minAxles;
+	std::shared_ptr<Menu> entranceAxles;
+};
+
+void updateAllMenuVisibility(const DetectorConfiguration &cfg, const ManagedMenus &menus)
+{
+	// Milepost Visibility
+	if (cfg.milepostEnable) { if (menus.milepost) menus.milepost->unhide(); }
+	else                    { if (menus.milepost) menus.milepost->hide(); }
+
+	// Track Name Visibility
+	if (cfg.trackNameEnable) {
+		if (menus.trackNameA) menus.trackNameA->unhide();
+		if (menus.trackNameB) menus.trackNameB->unhide();
+	} else {
+		if (menus.trackNameA) menus.trackNameA->hide();
+		if (menus.trackNameB) menus.trackNameB->hide();
+	}
+
+	// Axle Config Visibility & Child Menu Item Visibility
+	if (cfg.axleEnable) {
+		if (menus.speedConfig)   menus.speedConfig->unhide();   
+		if (menus.minAxles)      menus.minAxles->unhide();      
+		if (menus.entranceAxles) menus.entranceAxles->unhide();
+	} else {
+		if (menus.speedConfig)   menus.speedConfig->hide();
+		if (menus.minAxles)      menus.minAxles->hide();        
+		if (menus.entranceAxles) menus.entranceAxles->hide();
+	}
+
+	// Individual Speed Item Visibilities 
+	if (cfg.speedEnable) {
+		if (menus.speedType)   menus.speedType->unhide();
+		if (menus.minSpeedEn)  menus.minSpeedEn->unhide(); 
+		if (menus.minSpeed)    menus.minSpeed->unhide();      
+	} else {
+		if (menus.speedType)   menus.speedType->hide();
+		if (menus.minSpeedEn)  menus.minSpeedEn->hide();   
+		if (menus.minSpeed)    menus.minSpeed->hide();
+	}
+
+	// Sub-dependence: Min Speed layout override
+	if (!cfg.minSpeedEnable) {
+		if (menus.minSpeed) menus.minSpeed->hide();
+	}
+}
+
 std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd)
 {
 	// Create the root home menu and main branch
@@ -15,11 +70,18 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd)
 	home->addChild(mainSel);
 
 	// ==========================================
-	// Milepost Menus
+	// Non-Toggle Menu Objects
 	// ==========================================
-	auto menuMilepostConfig = std::make_shared<MenuListSelector>("Milepost Config");
-	mainSel->addChild(menuMilepostConfig);
 
+	// Milepost
+	auto menuMilepostConfig = std::make_shared<MenuListSelector>("Milepost Config");
+	auto menuMilepostEn = std::make_shared<MenuBoolSelector>(
+		"Milepost Enable",
+		&cfg.milepostEnable, 
+		false, 
+		"On", "ON", 
+		"Off", "OFF"
+	);
 	auto menuMilepost = std::make_shared<MenuDigitThumbwheel>(
 		"Milepost",
 		&cfg.milepost,
@@ -30,37 +92,15 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd)
 		[&cfg]() { saveConfiguration(&cfg); }
 	);
 
-	auto updateMilepostMenuVisibility = [&cfg, menuMilepost]()
-	{
-		if (cfg.milepostEnable)
-		{
-			menuMilepost->unhide();
-		}
-		else
-		{
-			menuMilepost->hide();
-		}
-	};
-
-	auto menuMilepostEn = std::make_shared<MenuBoolSelector>(
-		"Milepost Enable",
-		&cfg.milepostEnable, 
+	// Track
+	auto menuTrackConfig = std::make_shared<MenuListSelector>("Track Config");
+	auto menuTrackNameEn = std::make_shared<MenuBoolSelector>(
+		"Track Name Enable",
+		&cfg.trackNameEnable, 
 		false, 
 		"On", "ON", 
-		"Off", "OFF",
-		[updateMilepostMenuVisibility, &cfg]() { saveConfiguration(&cfg); updateMilepostMenuVisibility(); }
+		"Off", "OFF"
 	);
-
-	updateMilepostMenuVisibility();
-	menuMilepostConfig->addChild(menuMilepostEn);
-	menuMilepostConfig->addChild(menuMilepost);
-
-	// ==========================================
-	// Track Menus
-	// ==========================================
-	auto menuTrackConfig = std::make_shared<MenuListSelector>("Track Config");
-	mainSel->addChild(menuTrackConfig);
-
 	auto menuTrackNameA = std::make_shared<MenuOptionSelector>(
 		"Track A Name", 
 		&cfg.trackNameId[0],
@@ -76,53 +116,31 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd)
 		trackNames,
 		[&cfg]() { saveConfiguration(&cfg); }
 	);
-
-	auto updateTrackNameMenuVisibility = [&cfg, menuTrackNameA, menuTrackNameB]()
-	{
-		if (cfg.trackNameEnable)
-		{
-			menuTrackNameA->unhide();
-			menuTrackNameB->unhide();
-		}
-		else
-		{
-			menuTrackNameA->hide();
-			menuTrackNameB->hide();
-		}
-	};
-
-	auto menuTrackNameEn = std::make_shared<MenuBoolSelector>(
-		"Track Name Enable",
-		&cfg.trackNameEnable, 
+	
+	// Speed
+	auto menuSpeedConfig = std::make_shared<MenuListSelector>("Speed Config");
+	auto menuSpeedEn = std::make_shared<MenuBoolSelector>(
+		"Speed Enable",
+		&cfg.speedEnable, 
 		false, 
 		"On", "ON", 
-		"Off", "OFF",
-		[updateTrackNameMenuVisibility, &cfg]() { saveConfiguration(&cfg); updateTrackNameMenuVisibility(); }
+		"Off", "OFF"
 	);
-
-	updateTrackNameMenuVisibility();
-	menuTrackConfig->addChild(menuTrackNameEn);
-	menuTrackConfig->addChild(menuTrackNameA);
-	menuTrackConfig->addChild(menuTrackNameB);
-
-	// ==========================================
-	// Speed Menus
-	// ==========================================
-	auto menuSpeedConfig = std::make_shared<MenuListSelector>("Speed Config");
-	//mainSel->addChild(menuSpeedConfig);  --> Done down below to put the menu after Axle Config
-
-	auto updateGlobalSpeedMenuVisibility = [&cfg, menuSpeedConfig]()
-	{
-		if (cfg.axleEnable)
-		{
-			menuSpeedConfig->unhide();
-		}
-		else
-		{
-			menuSpeedConfig->hide();
-		}
-	};
-
+	auto menuSpeedType = std::make_shared<MenuBoolSelector>(
+		"Speed Type",
+		&cfg.entranceSpeed,
+		false, 
+		"Entrance", "ENTR",
+		"Exit", "EXIT", 
+		[&cfg]() { saveConfiguration(&cfg); }
+	);
+	auto menuMinSpeedEn = std::make_shared<MenuBoolSelector>(
+		"Min Speed Enable",
+		&cfg.minSpeedEnable,
+		false, 
+		"On", "ON", 
+		"Off", "OFF"
+	);
 	auto menuMinSpeed = std::make_shared<MenuNumberDial>(
 		"Minimum Speed",
 		&cfg.minSpeed,
@@ -133,74 +151,15 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd)
 		[&cfg]() { saveConfiguration(&cfg); }
 	);
 	
-	auto updateMinSpeedMenuVisibility = [&cfg, menuMinSpeed]()
-	{
-		if (cfg.minSpeedEnable)
-		{
-			menuMinSpeed->unhide();
-		}
-		else
-		{
-			menuMinSpeed->hide();
-		}
-	};
-
-	auto menuMinSpeedEn = std::make_shared<MenuBoolSelector>(
-		"Min Speed Enable",
-		&cfg.minSpeedEnable,
-		false, 
-		"On", "ON", 
-		"Off", "OFF",
-		[updateMinSpeedMenuVisibility, &cfg]() { saveConfiguration(&cfg); updateMinSpeedMenuVisibility(); }
-	);
-
-	auto menuSpeedType = std::make_shared<MenuBoolSelector>(
-		"Speed Type",
-		&cfg.entranceSpeed,
-		false, 
-		"Entrance", "ENTR",
-		"Exit", "EXIT", 
-		[&cfg]() { saveConfiguration(&cfg); }
-	);
-
-	auto updateSpeedMenuVisibility = [&cfg, menuSpeedType, menuMinSpeedEn, menuMinSpeed]()
-	{
-		if (cfg.speedEnable)
-		{
-			menuSpeedType->unhide();
-			menuMinSpeedEn->unhide();
-			menuMinSpeed->unhide();
-		}
-		else
-		{
-			menuSpeedType->hide();
-			menuMinSpeedEn->hide();
-			menuMinSpeed->hide();
-		}
-	};
-
-	auto menuSpeedEn = std::make_shared<MenuBoolSelector>(
-		"Speed Enable",
-		&cfg.speedEnable, 
-		false, 
-		"On", "ON", 
-		"Off", "OFF",
-		[updateSpeedMenuVisibility, &cfg]() { saveConfiguration(&cfg); updateSpeedMenuVisibility(); }
-	);
-
-	updateSpeedMenuVisibility();
-	menuSpeedConfig->addChild(menuSpeedEn);
-	menuSpeedConfig->addChild(menuSpeedType);
-	menuSpeedConfig->addChild(menuMinSpeedEn);
-	menuSpeedConfig->addChild(menuMinSpeed);
-
-	// ==========================================
-	// Axle Menus
-	// ==========================================
+	// Axle
 	auto menuAxleConfig = std::make_shared<MenuListSelector>("Axle Config");
-	mainSel->addChild(menuAxleConfig);
-	mainSel->addChild(menuSpeedConfig);
-
+	auto menuAxleEn = std::make_shared<MenuBoolSelector>(
+		"Axle Count Enable",
+		&cfg.axleEnable, 
+		false, 
+		"On", "ON", 
+		"Off", "OFF"
+	);
 	auto menuEntranceAxles = std::make_shared<MenuNumberDial>(
 		"Entrance Axles",
 		&cfg.entranceAxles,
@@ -210,7 +169,6 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd)
 		"",
 		[&cfg]() { saveConfiguration(&cfg); }
 	);
-
 	auto menuMinAxles = std::make_shared<MenuNumberDial>(
 		"Minimum Axles",
 		&cfg.minAxles,
@@ -221,41 +179,8 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd)
 		[&cfg]() { saveConfiguration(&cfg); }
 	);
 
-	auto updateAxleMenuVisibility = [&cfg, menuEntranceAxles, menuMinAxles]()
-	{
-		if (cfg.axleEnable)
-		{
-			menuEntranceAxles->unhide();
-			menuMinAxles->unhide();
-		}
-		else
-		{
-			menuEntranceAxles->hide();
-			menuMinAxles->hide();
-		}
-	};
-
-	auto menuAxleEn = std::make_shared<MenuBoolSelector>(
-		"Axle Count Enable",
-		&cfg.axleEnable, 
-		false, 
-		"On", "ON", 
-		"Off", "OFF",
-		[updateAxleMenuVisibility, updateGlobalSpeedMenuVisibility, &cfg]() { saveConfiguration(&cfg); updateAxleMenuVisibility(); updateGlobalSpeedMenuVisibility(); }
-	);
-
-	updateAxleMenuVisibility();
-	updateGlobalSpeedMenuVisibility();
-	menuAxleConfig->addChild(menuAxleEn);
-	menuAxleConfig->addChild(menuMinAxles);
-	menuAxleConfig->addChild(menuEntranceAxles);
-
-	// ==========================================
-	// System Menus
-	// ==========================================
+	// System	
 	auto menuSysConfig = std::make_shared<MenuListSelector>("System Config");
-	mainSel->addChild(menuSysConfig);
-
 	auto menuBacklightLevel = std::make_shared<MenuPercentageBar>(
 		"Backlight Level", 
 		[lcd]() { return lcd->getBrightness(); },
@@ -265,7 +190,6 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd)
 		10,
 		[lcd, &cfg]() { cfg.lcdBrightness = lcd->getBrightness(); saveConfiguration(&cfg); }
 	);
-
 	auto menuVolume = std::make_shared<MenuVolume>(
 		"Audio Volume",
 		audioGetVolumeStep,
@@ -274,30 +198,50 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd)
 		[lcd, &cfg]() { cfg.volumeStep = audioGetVolumeStep(); saveConfiguration(&cfg); }
 	);
 
+	// Package up all managed controls into our visibility group
+	ManagedMenus managed = {
+		menuMilepost, menuTrackNameA, menuTrackNameB, 
+		menuSpeedConfig, menuSpeedType, menuMinSpeedEn, menuMinSpeed, 
+		menuMinAxles, menuEntranceAxles
+	};
+
+	// ==========================================
+	// Assign Button Callbacks
+	// ==========================================
+	menuMilepostEn->setSaveCallback([&cfg, managed]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg, managed); });
+	menuTrackNameEn->setSaveCallback([&cfg, managed]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg, managed); });
+	menuMinSpeedEn->setSaveCallback([&cfg, managed]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg, managed); });
+	menuSpeedEn->setSaveCallback([&cfg, managed]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg, managed); });
+	menuAxleEn->setSaveCallback([&cfg, managed]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg, managed); });
+		
+	// ==========================================
+	// Assemble Menus
+	// ==========================================
+	mainSel->addChild(menuMilepostConfig);
+	menuMilepostConfig->addChild(menuMilepostEn);
+	menuMilepostConfig->addChild(menuMilepost);
+
+	mainSel->addChild(menuTrackConfig);
+	menuTrackConfig->addChild(menuTrackNameEn);
+	menuTrackConfig->addChild(menuTrackNameA);
+	menuTrackConfig->addChild(menuTrackNameB);
+
+	mainSel->addChild(menuAxleConfig);
+	menuAxleConfig->addChild(menuAxleEn);
+	menuAxleConfig->addChild(menuMinAxles);
+	menuAxleConfig->addChild(menuEntranceAxles);
+
+	mainSel->addChild(menuSpeedConfig);
+	menuSpeedConfig->addChild(menuSpeedEn);
+	menuSpeedConfig->addChild(menuSpeedType);
+	menuSpeedConfig->addChild(menuMinSpeedEn);
+	menuSpeedConfig->addChild(menuMinSpeed);
+
+	mainSel->addChild(menuSysConfig);
 	menuSysConfig->addChild(menuBacklightLevel);
 	menuSysConfig->addChild(menuVolume);
 
-	// ==========================================
-	// Test Menus (FIXME: remove later)
-	// ==========================================
-	static uint32_t valFloat = 4725;
-	static uint32_t val2 = 100;
-	static bool val3 = false;
-	static uint32_t val4 = 3;
+	updateAllMenuVisibility(cfg, managed);
 	
-	std::vector<std::string> options = {
-		"Arizona", "Alaska", "Colorado", "Florida", "Iowa", "Kansas", "Nebraska", "Wyoming",
-	};
-
-	auto menu1 = std::make_shared<MenuDigitThumbwheel>("Digit Thumbwheel", &valFloat, false, 5, 1, true);
-	auto menu2 = std::make_shared<MenuNumberDial>("Number Dial", &val2, false, 0, 120, "sec");
-	auto menu3 = std::make_shared<MenuBoolSelector>("Bool Select", &val3, false, "Enable", "ENBL", "Disable", "DSBL");
-	auto menu4 = std::make_shared<MenuOptionSelector>("Option Select", &val4, false, options);
-
-	mainSel->addChild(menu1);
-	mainSel->addChild(menu2);
-	mainSel->addChild(menu3);
-	mainSel->addChild(menu4);
-
 	return home;
 }

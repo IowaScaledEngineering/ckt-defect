@@ -71,6 +71,11 @@ void Menu::handleButtonRelease(int keyNum)
 	}
 }
 
+void Menu::setSaveCallback(std::function<void()> onSave)
+{
+	saveCallback = std::move(onSave);
+}
+
 uint32_t Menu::getValue()
 {
 	if(getFunc32) return getFunc32();
