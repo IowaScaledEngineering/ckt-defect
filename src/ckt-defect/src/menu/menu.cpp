@@ -431,16 +431,28 @@ MenuEvent MenuBoolSelector::update()
 
 	// 1. Render Option 1 (associated with true) on line 1
 	disp->gotoxy(0, 1);
-	disp->print(currentVal ? "[*] " : "[ ] ");
+	std::string prefixTrue = currentVal ? "[*] " : "[ ] ";
+	disp->print(prefixTrue);
 	disp->print(optTrueName);
-	disp->print("    "); // Clear any trailing artifacts
+	// Total available columns = 20. Calculate exactly how many spaces are left.
+	int remainingTrue = 20 - (int)(prefixTrue.length() + optTrueName.length());
+	if (remainingTrue > 0)
+	{
+		disp->print(std::string(remainingTrue, ' '));
+	}
 
 	// 2. Render Option 2 (associated with false) on line 2
 	disp->gotoxy(0, 2);
-	disp->print(!currentVal ? "[*] " : "[ ] ");
+	std::string prefixFalse = !currentVal ? "[*] " : "[ ] ";
+	disp->print(prefixFalse);
 	disp->print(optFalseName);
-	disp->print("    "); // Clear any trailing artifacts
-
+	// Total available columns = 20. Calculate exactly how many spaces are left.
+	int remainingFalse = 20 - (int)(prefixFalse.length() + optFalseName.length());
+	if (remainingFalse > 0)
+	{
+		disp->print(std::string(remainingFalse, ' '));
+	}
+	
 	DisplayEvent ev;
 	if(getMenuInputEvent(&ev)) // Now robustly tracks hold configurations consistently
 	{
