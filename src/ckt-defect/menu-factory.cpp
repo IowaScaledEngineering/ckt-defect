@@ -97,7 +97,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd)
 	// ==========================================
 
 	// Milepost
-	auto menuMilepostConfig = std::make_shared<MenuListSelector>("Milepost Config");
+	auto menuMilepostConfig = std::make_shared<MenuListSelector>("Milepost");
 	auto menuMilepostEn = std::make_shared<MenuBoolSelector>(
 		"Milepost Enable",
 		&cfg.milepostEnable, 
@@ -116,7 +116,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd)
 	);
 
 	// Track
-	auto menuTrackConfig = std::make_shared<MenuListSelector>("Track Config");
+	auto menuTrackConfig = std::make_shared<MenuListSelector>("Track Name");
 	auto menuTrackNameEn = std::make_shared<MenuBoolSelector>(
 		"Track Name Enable",
 		&cfg.trackNameEnable, 
@@ -141,9 +141,9 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd)
 	);
 	
 	// Axle
-	auto menuAxleConfig = std::make_shared<MenuListSelector>("Axle Config");
+	auto menuAxleConfig = std::make_shared<MenuListSelector>("Axle Sensor");
 	auto menuAxleEn = std::make_shared<MenuBoolSelector>(
-		"Axle Count Enable",
+		"Axle Sensor Enable",
 		&cfg.axleEnable, 
 		false, 
 		"On", "ON", 
@@ -169,7 +169,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd)
 	);
 
 	// Speed
-	auto menuSpeedConfig = std::make_shared<MenuListSelector>("Speed Config");
+	auto menuSpeedConfig = std::make_shared<MenuListSelector>("Speed");
 	auto menuSpeedEn = std::make_shared<MenuBoolSelector>(
 		"Speed Enable",
 		&cfg.speedEnable, 
@@ -215,7 +215,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd)
 	);
 	
 	// Temperature
-	auto menuTemperatureConfig = std::make_shared<MenuListSelector>("Temperature Config");
+	auto menuTemperatureConfig = std::make_shared<MenuListSelector>("Temperature");
 	auto menuTemperatureEn = std::make_shared<MenuBoolSelector>(
 		"Temperature Enable",
 		&cfg.temperatureEnable, 
@@ -260,7 +260,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd)
 	);
 
 	// System	
-	auto menuSysConfig = std::make_shared<MenuListSelector>("System Config");
+	auto menuSysConfig = std::make_shared<MenuListSelector>("System");
 	auto menuBacklightLevel = std::make_shared<MenuPercentageBar>(
 		"Backlight Level", 
 		[lcd]() { return lcd->getBrightness(); },
