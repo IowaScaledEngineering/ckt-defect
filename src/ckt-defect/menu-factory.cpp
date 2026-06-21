@@ -11,12 +11,16 @@ struct ManagedMenus {
 	std::shared_ptr<Menu> milepost;
 	std::shared_ptr<Menu> trackNameA;
 	std::shared_ptr<Menu> trackNameB;
+	std::shared_ptr<Menu> minAxles;
+	std::shared_ptr<Menu> entranceAxles;
 	std::shared_ptr<Menu> speedConfig;
 	std::shared_ptr<Menu> speedUnits;
 	std::shared_ptr<Menu> speedType;
 	std::shared_ptr<Menu> minSpeed;
-	std::shared_ptr<Menu> minAxles;
-	std::shared_ptr<Menu> entranceAxles;
+	std::shared_ptr<Menu> tempUnits;
+	std::shared_ptr<Menu> tempType;
+	std::shared_ptr<Menu> minTemp;
+	std::shared_ptr<Menu> maxTemp;
 };
 
 void updateAllMenuVisibility(const DetectorConfiguration &cfg, const ManagedMenus &menus)
@@ -56,6 +60,29 @@ void updateAllMenuVisibility(const DetectorConfiguration &cfg, const ManagedMenu
 		if (menus.minSpeed)    menus.minSpeed->hide();
 	}
 
+	// Temperature
+	if(cfg.temperatureEnable)
+	{
+		if(menus.tempUnits) menus.tempUnits->unhide();
+		if(menus.tempType)  menus.tempType->unhide();
+		if(!cfg.temperatureReal)
+		{
+			if(menus.minTemp)   menus.minTemp->unhide();
+			if(menus.maxTemp)   menus.maxTemp->unhide();
+		}
+		else
+		{
+			if(menus.minTemp)   menus.minTemp->hide();
+			if(menus.maxTemp)   menus.maxTemp->hide();
+		}
+	}
+	else
+	{
+		if(menus.tempUnits) menus.tempUnits->hide();
+		if(menus.tempType)  menus.tempType->hide();
+		if(menus.minTemp)   menus.minTemp->hide();
+		if(menus.maxTemp)   menus.maxTemp->hide();
+	}
 }
 
 std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd)
@@ -187,6 +214,51 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd)
 		[&cfg]() { saveConfiguration(&cfg); }
 	);
 	
+	// Temperature
+	auto menuTemperatureConfig = std::make_shared<MenuListSelector>("Temperature Config");
+	auto menuTemperatureEn = std::make_shared<MenuBoolSelector>(
+		"Temperature Enable",
+		&cfg.temperatureEnable, 
+		false, 
+		"On", "ON", 
+		"Off", "OFF"
+	);
+	auto menuTemperatureType = std::make_shared<MenuBoolSelector>(
+		"Real/Simulated",
+		&cfg.temperatureReal,
+		false, 
+		"Real", "REAL",
+		"Simulated", "SIM" 
+	);
+	std::string degF("\xDF" "F", 2);
+	std::string degC("\xDF" "C", 2);
+	auto menuMinTemperature = std::make_shared<MenuNumberDial>(
+		"Minimum Temp",
+		&cfg.minTemperature,
+		false,
+		-100,   // min
+		150,  // max
+		cfg.temperatureUnitsF ? degF : degC,
+		[&cfg]() { saveConfiguration(&cfg); }
+	);
+	auto menuMaxTemperature = std::make_shared<MenuNumberDial>(
+		"Maximum Temp",
+		&cfg.maxTemperature,
+		false,
+		-100,   // min
+		150,  // max
+		cfg.temperatureUnitsF ? degF : degC,
+		[&cfg]() { saveConfiguration(&cfg); }
+	);
+	auto menuTemperatureUnits = std::make_shared<MenuBoolSelector>(  // Declare after menus that need units updated
+		"Units",
+		&cfg.temperatureUnitsF,
+		false, 
+		"Fahrenheit", degF,
+		"Celsius", degC, 
+		[&cfg, menuMinTemperature, menuMaxTemperature, degF, degC]() { saveConfiguration(&cfg); menuMinTemperature->setUnits(cfg.temperatureUnitsF ? degF : degC); menuMaxTemperature->setUnits(cfg.temperatureUnitsF ? degF : degC); }
+	);
+
 	// System	
 	auto menuSysConfig = std::make_shared<MenuListSelector>("System Config");
 	auto menuBacklightLevel = std::make_shared<MenuPercentageBar>(
@@ -209,8 +281,9 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd)
 	// Package up all managed controls into our visibility group
 	ManagedMenus managed = {
 		menuMilepost, menuTrackNameA, menuTrackNameB, 
-		menuSpeedConfig, menuSpeedUnits, menuSpeedType, menuMinSpeed, 
-		menuMinAxles, menuEntranceAxles
+		menuMinAxles, menuEntranceAxles,
+		menuSpeedConfig, menuSpeedUnits, menuSpeedType, menuMinSpeed,
+		menuTemperatureUnits, menuTemperatureType, menuMinTemperature, menuMaxTemperature
 	};
 
 	// ==========================================
@@ -218,8 +291,10 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd)
 	// ==========================================
 	menuMilepostEn->setSaveCallback([&cfg, managed]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg, managed); });
 	menuTrackNameEn->setSaveCallback([&cfg, managed]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg, managed); updateTrackNames(&cfg); });
-	menuSpeedEn->setSaveCallback([&cfg, managed]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg, managed); });
 	menuAxleEn->setSaveCallback([&cfg, managed]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg, managed); });
+	menuSpeedEn->setSaveCallback([&cfg, managed]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg, managed); });
+	menuTemperatureEn->setSaveCallback([&cfg, managed]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg, managed); });
+	menuTemperatureType->setSaveCallback([&cfg, managed]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg, managed); });
 		
 	// ==========================================
 	// Assemble Menus
@@ -245,6 +320,13 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd)
 	menuSpeedConfig->addChild(menuMinSpeed);
 
 	mainSel->addChild(menuDetectorTimeout);
+
+	mainSel->addChild(menuTemperatureConfig);
+	menuTemperatureConfig->addChild(menuTemperatureEn);
+	menuTemperatureConfig->addChild(menuTemperatureUnits);
+	menuTemperatureConfig->addChild(menuTemperatureType);
+	menuTemperatureConfig->addChild(menuMinTemperature);
+	menuTemperatureConfig->addChild(menuMaxTemperature);
 
 	mainSel->addChild(menuSysConfig);
 	menuSysConfig->addChild(menuBacklightLevel);

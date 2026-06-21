@@ -47,7 +47,13 @@ struct DetectorConfiguration {
 
 	// Other
 	uint8_t detectorTimeout;   // Units = seconds
+
+	// Temperature
 	bool temperatureEnable;
+	bool temperatureReal;
+	bool temperatureUnitsF;
+	int16_t minTemperature;
+	int16_t maxTemperature;
 };
 
 void loadConfiguration(DetectorConfiguration* cfg);
