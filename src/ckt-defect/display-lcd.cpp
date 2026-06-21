@@ -102,6 +102,8 @@ void DisplayLcd::refresh(void)
 	command(CLEAR_COMMAND);
 	delay(5); // Settle time for a screen clear
 
+	// FIXME: refresh custom chars
+
 	// 3. Loop through the entire local cache and dump it directly to hardware
 	for (int r = 0; r < LCD_ROWS; ++r) {
 		// Reposition the physical LCD cursor to the start of this row
@@ -224,6 +226,7 @@ void DisplayLcd::print(const std::string &str)
 
 void DisplayLcd::createCustomChar(uint8_t location, const uint8_t* charmap)
 {
+	// FIXME: save custom characters in memory so they can be refreshed
 	location &= 0x07; // OpenLCD has 8 slots available: 0-7
 	
 	beginTransmission();
