@@ -25,9 +25,14 @@ LICENSE:
 #include <string>
 
 struct DataBundle {
-	uint16_t defectAxle;
+	uint16_t defectAxle = 0;
 	std::vector<std::string> defects;
-	uint16_t axlesLive;
-	uint16_t totalAxles;
-	uint8_t speed;
+	uint16_t axleCount = 0;
+	uint16_t totalAxles = 0;
+	uint8_t speed = 0;
+	bool irInput = false;
+	bool axleInput1 = false;
+	bool axleInput2 = false;
+	bool irDetect = false;
+	bool axleDetect = false;
 };

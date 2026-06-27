@@ -24,8 +24,12 @@ LICENSE:
 #include "common.h"
 #include "io.h"
 
-#define INPUT_TRKA    0x01
-#define INPUT_TRKB    0x02
+#define INPUT_TRKA      0x01
+#define INPUT_TRKB      0x02
+#define INPUT_AXLE_A1   0x10
+#define INPUT_AXLE_A2   0x20
+#define INPUT_AXLE_B1   0x40
+#define INPUT_AXLE_B2   0x80
 
 static uint8_t debouncedInputs = 0;
 
@@ -148,27 +152,67 @@ void ioProcessInputs(void)
 	uint8_t inputStatus = 0;
 	
 	if(gpio_get_level(TRKA))
-		inputStatus &= ~INPUT_TRKA;
-	else
 		inputStatus |= INPUT_TRKA;
+	else
+		inputStatus &= ~INPUT_TRKA;
+	
+	if(gpio_get_level(AXLE_A1))
+		inputStatus |= INPUT_AXLE_A1;
+	else
+		inputStatus &= ~INPUT_AXLE_A1;
+	
+	if(gpio_get_level(AXLE_A2))
+		inputStatus |= INPUT_AXLE_A2;
+	else
+		inputStatus &= ~INPUT_AXLE_A2;
 	
 	if(gpio_get_level(TRKB))
-		inputStatus &= ~INPUT_TRKB;
-	else
 		inputStatus |= INPUT_TRKB;
+	else
+		inputStatus &= ~INPUT_TRKB;
+	
+	if(gpio_get_level(AXLE_B1))
+		inputStatus |= INPUT_AXLE_B1;
+	else
+		inputStatus &= ~INPUT_AXLE_B1;
+	
+	if(gpio_get_level(AXLE_B2))
+		inputStatus |= INPUT_AXLE_B2;
+	else
+		inputStatus &= ~INPUT_AXLE_B2;
 	
 	debouncedInputs = debounce(debouncedInputs, inputStatus);
 }
 
 
-bool isTrackADetected(void)
+bool getIrA(void)
 {
 	return debouncedInputs & INPUT_TRKA;
 }
 
-bool isTrackBDetected(void)
+bool getAxleA1(void)
+{
+	return debouncedInputs & INPUT_AXLE_A1;
+}
+
+bool getAxleA2(void)
+{
+	return debouncedInputs & INPUT_AXLE_A2;
+}
+
+bool getIrB(void)
 {
 	return debouncedInputs & INPUT_TRKB;
+}
+
+bool getAxleB1(void)
+{
+	return debouncedInputs & INPUT_AXLE_B1;
+}
+
+bool getAxleB2(void)
+{
+	return debouncedInputs & INPUT_AXLE_B2;
 }
 
 

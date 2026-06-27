@@ -38,9 +38,9 @@ typedef enum
 	AXLE_1_COUNT,
 	AXLE_2_SPEED,
 	AXLE_2_COUNT,
-} AxleState;
+} AxleIsrState;
 
-AxleState axleState[NUM_TRACKS];
+AxleIsrState axleIsrState[NUM_TRACKS];
 
 /*
    ISR Notes:
@@ -60,13 +60,13 @@ AxleState axleState[NUM_TRACKS];
 void IRAM_ATTR axle_A1_isr(void *arg)
 {
 	unsigned long time = micros();
-	switch(axleState[0])
+	switch(axleIsrState[0])
 	{
 		case AXLE_IDLE:
 			axleCount[0]++;
 			firstAxleTime[0] = time;
 			currentAxleTime[0] = time;
-			axleState[0] = AXLE_1_SPEED;
+			axleIsrState[0] = AXLE_1_SPEED;
 			break;
 		#pragma GCC diagnostic push
 		#pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
@@ -78,7 +78,7 @@ void IRAM_ATTR axle_A1_isr(void *arg)
 			break;
 		case AXLE_2_SPEED:
 			entranceDeltaMicros[0] = time - firstAxleTime[0];
-			axleState[0] = AXLE_2_COUNT;
+			axleIsrState[0] = AXLE_2_COUNT;
 			break;
 		case AXLE_2_COUNT:
 			exitDeltaMicros[0] = time - currentAxleTime[0];
@@ -89,13 +89,13 @@ void IRAM_ATTR axle_A1_isr(void *arg)
 void IRAM_ATTR axle_A2_isr(void *arg)
 {
 	unsigned long time = micros();
-	switch(axleState[0])
+	switch(axleIsrState[0])
 	{
 		case AXLE_IDLE:
 			axleCount[0]++;
 			firstAxleTime[0] = time;
 			currentAxleTime[0] = time;
-			axleState[0] = AXLE_2_SPEED;
+			axleIsrState[0] = AXLE_2_SPEED;
 			break;
 		#pragma GCC diagnostic push
 		#pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
@@ -107,7 +107,7 @@ void IRAM_ATTR axle_A2_isr(void *arg)
 			break;
 		case AXLE_1_SPEED:
 			entranceDeltaMicros[0] = time - firstAxleTime[0];
-			axleState[0] = AXLE_1_COUNT;
+			axleIsrState[0] = AXLE_1_COUNT;
 			break;
 		case AXLE_1_COUNT:
 			exitDeltaMicros[0] = time - currentAxleTime[0];
@@ -118,13 +118,13 @@ void IRAM_ATTR axle_A2_isr(void *arg)
 void IRAM_ATTR axle_B1_isr(void *arg)
 {
 	unsigned long time = micros();
-	switch(axleState[1])
+	switch(axleIsrState[1])
 	{
 		case AXLE_IDLE:
 			axleCount[1]++;
 			firstAxleTime[1] = time;
 			currentAxleTime[1] = time;
-			axleState[1] = AXLE_1_SPEED;
+			axleIsrState[1] = AXLE_1_SPEED;
 			break;
 		#pragma GCC diagnostic push
 		#pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
@@ -136,7 +136,7 @@ void IRAM_ATTR axle_B1_isr(void *arg)
 			break;
 		case AXLE_2_SPEED:
 			entranceDeltaMicros[1] = time - firstAxleTime[1];
-			axleState[1] = AXLE_2_COUNT;
+			axleIsrState[1] = AXLE_2_COUNT;
 			break;
 		case AXLE_2_COUNT:
 			exitDeltaMicros[1] = time - currentAxleTime[1];
@@ -147,13 +147,13 @@ void IRAM_ATTR axle_B1_isr(void *arg)
 void IRAM_ATTR axle_B2_isr(void *arg)
 {
 	unsigned long time = micros();
-	switch(axleState[1])
+	switch(axleIsrState[1])
 	{
 		case AXLE_IDLE:
 			axleCount[1]++;
 			firstAxleTime[1] = time;
 			currentAxleTime[1] = time;
-			axleState[1] = AXLE_2_SPEED;
+			axleIsrState[1] = AXLE_2_SPEED;
 			break;
 		#pragma GCC diagnostic push
 		#pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
@@ -165,7 +165,7 @@ void IRAM_ATTR axle_B2_isr(void *arg)
 			break;
 		case AXLE_1_SPEED:
 			entranceDeltaMicros[1] = time - firstAxleTime[1];
-			axleState[1] = AXLE_1_COUNT;
+			axleIsrState[1] = AXLE_1_COUNT;
 			break;
 		case AXLE_1_COUNT:
 			exitDeltaMicros[1] = time - currentAxleTime[1];
@@ -210,7 +210,7 @@ void axleReset(uint32_t track)
 	currentAxleTime[track] = 0;
 	entranceDeltaMicros[track] = 0;
 	exitDeltaMicros[track] = 0;
-	axleState[track] = AXLE_IDLE;
+	axleIsrState[track] = AXLE_IDLE;
 }
 
 void axleTerminate(void)

@@ -46,6 +46,7 @@ LICENSE:
 #include "src/menu/menu.h"
 #include "src/menu/menu-mgr.h"
 #include "menu-factory.h"
+#include "state-machine.h"
 
 
 // 3 sec watchdog 
@@ -58,7 +59,6 @@ struct WavData {
 	uint32_t wavDataSize;
 	size_t dataStartPosition;
 };
-
 
 char* rtrim(char* in)
 {
@@ -288,7 +288,7 @@ void loop()
 	DetectorConfiguration cfg;
 	MessageBundle trackMessages;
 	DataBundle data[NUM_TRACKS];
-
+	
 	DisplayLcd *lcd = new DisplayLcd();
 	bool displayPresent = true;  // Start assuming it's there so we don't take the refresh delay initially
 	bool oldDisplayPresent = true;
@@ -297,6 +297,7 @@ void loop()
 	bool configFilePresent = false;
 	bool externalVocabPresent = false;
 
+/*
 	uint8_t state = 255;  // Start in default
 	uint8_t returnState = 0;
 	ParserObject obj;
@@ -304,12 +305,20 @@ void loop()
 	std::string* msgPtr;
 	unsigned long startTime;
 	unsigned long axleTime = millis();
+*/
 
 	bool sdCardInserted = false;
 	unsigned long sdDetectTime = 0;
-	
-	esp_task_wdt_reset();
 
+	std::array<IrStateMachine, 2> irStateMachines = {
+		IrStateMachine(&cfg, &data[0]),
+		IrStateMachine(&cfg, &data[1])
+	};
+
+	uint32_t centisecs = 0;
+	bool decisecsTick = false;
+
+	esp_task_wdt_reset();
 
 	// Read NVM configuration
 	loadConfiguration(&cfg);
@@ -542,6 +551,8 @@ void loop()
 	axleReset(0);
 	axleReset(1);
 
+	audioUnmute();
+
 	while(1)
 	{
 		esp_task_wdt_reset();
@@ -550,13 +561,30 @@ void loop()
 		if(timerTick)
 		{
 setTestPoint(TP2);
-			audioProcessVolume();
-			ioProcessInputs();
 			timerTick = false;
+			audioProcessVolume();
 			displayPresent = lcd->readKeys();
 
 			menuManager.process();
 clrTestPoint(TP2);
+			if(++centisecs >= 10)
+			{
+				centisecs -= 10;
+				decisecsTick = true;
+			}
+		}
+		
+		// Do things on a 100ms interval
+		if(decisecsTick)
+		{
+			decisecsTick = false;
+			ioProcessInputs();
+			data[0].irInput = getIrA();
+			data[0].axleInput1 = getAxleA1();
+			data[0].axleInput2 = getAxleA2();
+			data[1].irInput = getIrB();
+			data[1].axleInput1 = getAxleB1();
+			data[1].axleInput2 = getAxleB2();
 		}
 
 		if(displayPresent && !oldDisplayPresent)
@@ -593,10 +621,19 @@ clrTestPoint(TP2);
 			}
 		}
 
-		audioUnmute();
+
+		
+		// Update IR State Machines
+		for(uint32_t i = 0; i<NUM_TRACKS; i++)
+		{
+			irStateMachines[i].update();
+		}
+
+
+
 
 		// FIXME Send some test audio
-
+/*
 		switch(state)
 		{
 			case 0:
@@ -711,6 +748,7 @@ clrTestPoint(TP2);
 				state = 0;
 				break;
 		}
+*/
 
 /*
 		if(millis() - axleTime >= 1000)

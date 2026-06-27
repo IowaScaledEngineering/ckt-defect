@@ -60,8 +60,12 @@ void enableAuxRelay(void);
 void disableAuxRelay(void);
 
 void ioProcessInputs(void);
-bool isTrackADetected(void);
-bool isTrackBDetected(void);
+bool getIrA(void);
+bool getAxleA1(void);
+bool getAxleA2(void);
+bool getIrB(void);
+bool getAxleB1(void);
+bool getAxleB2(void);
 
 void setTestPoint(gpio_num_t tp);
 void clrTestPoint(gpio_num_t tp);
