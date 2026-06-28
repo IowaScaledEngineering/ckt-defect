@@ -421,6 +421,10 @@ void loop()
 	printMemoryUsage();
 	printNVSStats();
 
+	Serial.print("Random Number: ");
+	Serial.println(rollDice());
+	Serial.print('\n');
+
 	// Set up audio
 	audioSetPttEnableCallback(enableAuxRelay);
 	audioSetPttDisableCallback(disableAuxRelay);

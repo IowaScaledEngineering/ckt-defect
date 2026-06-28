@@ -19,10 +19,12 @@ LICENSE:
 
 *************************************************************************/
 
+#include <Arduino.h>
 #include <string>
 #include <algorithm> // Required for std::transform
 #include <cctype>    // Required for std::tolower
 #include <format>
+#include "bootloader_random.h"
 
 #include "common.h"
 
@@ -67,4 +69,12 @@ std::string intToString(uint32_t intVal, uint32_t integerDigits, uint32_t fracti
 	}
 
 	return formatted;
+}
+
+uint32_t rollDice(void)
+{
+	bootloader_random_enable();
+	uint32_t raw = esp_random();
+	bootloader_random_disable();
+	return raw % (PROBABILITY_MAX);
 }
