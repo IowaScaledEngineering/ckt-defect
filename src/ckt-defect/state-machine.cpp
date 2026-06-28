@@ -148,6 +148,29 @@ DetectorStateMachine::DetectorStateMachine(DetectorConfiguration* config, DataBu
 	: BaseStateMachine<DetectorState>(config, dataBundle, DetectorState::IDLE, "Detector")
 { }
 
+const char* DetectorStateMachine::getStateName(DetectorState state) const
+{
+	switch (state)
+	{
+		case DetectorState::IDLE:                    return "IDLE";
+		case DetectorState::ENTRANCE_AXLES:          return "ENTRANCE_AXLES";
+		case DetectorState::ENTRANCE_DEFECT:         return "ENTRANCE_DEFECT";
+		case DetectorState::ENTRANCE_SPEED:          return "ENTRANCE_SPEED";
+		case DetectorState::ENTRANCE_QUEUE:          return "ENTRANCE_QUEUE";
+		case DetectorState::MINIMUM_AXLES:           return "MINIMUM_AXLES";
+		case DetectorState::AXLE_COUNT:              return "AXLE_COUNT";
+		case DetectorState::AXLE_DEFECT:             return "AXLE_DEFECT";
+		case DetectorState::AXLE_DEFECT_QUEUE:       return "AXLE_DEFECT_QUEUE";
+		case DetectorState::EXIT_SPEED:              return "EXIT_SPEED";
+		case DetectorState::EXIT_QUEUE:              return "EXIT_QUEUE";
+		case DetectorState::TOO_SLOW_QUEUE:          return "TOO_SLOW_QUEUE";
+		case DetectorState::INTEGRITY_DEFECT_QUEUE:  return "INTEGRITY_DEFECT_QUEUE";
+		case DetectorState::BLOCKED_DEFECT_QUEUE:    return "BLOCKED_DEFECT_QUEUE";
+		case DetectorState::WAIT_NO_EXIT:            return "WAIT_NO_EXIT";
+		default:                                     return "UNKNOWN";
+	}
+}
+
 void DetectorStateMachine::update()
 {
 	currentState = nextState;
