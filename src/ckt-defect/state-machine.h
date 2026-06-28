@@ -83,6 +83,7 @@ protected:
 	DataBundle* data;
 	unsigned long lastStateTime;
 
+	// Store both current and next state so transitions can be detected (current != next)
 	StateType currentState;
 	StateType nextState;
 	const char* name; // Stores the name of the machine (e.g., "IR", "Axle")
