@@ -23,6 +23,7 @@ LICENSE:
 
 #include "configuration.h"
 #include "data.h"
+#include "messages.h"
 
 // --- State Enumerations ---
 
@@ -120,7 +121,11 @@ public:
 
 class DetectorStateMachine : public BaseStateMachine<DetectorState> {
 public:
-	DetectorStateMachine(DetectorConfiguration* config, DataBundle* dataBundle);
+	DetectorStateMachine(DetectorConfiguration* config, DataBundle* dataBundle, MessageBundle* messageBundle);
 	void update() override;
 	const char* getStateName(DetectorState state) const override;
+
+protected:
+	MessageBundle* msgs;
 };
+

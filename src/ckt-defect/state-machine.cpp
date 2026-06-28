@@ -144,8 +144,8 @@ void AxleStateMachine::update()
 // DetectorStateMachine Implementation
 // ==========================================
 
-DetectorStateMachine::DetectorStateMachine(DetectorConfiguration* config, DataBundle* dataBundle)
-	: BaseStateMachine<DetectorState>(config, dataBundle, DetectorState::IDLE, "Detector")
+DetectorStateMachine::DetectorStateMachine(DetectorConfiguration* config, DataBundle* dataBundle, MessageBundle* messageBundle)
+	: BaseStateMachine<DetectorState>(config, dataBundle, DetectorState::IDLE, "Detector"), msgs(messageBundle)
 { }
 
 const char* DetectorStateMachine::getStateName(DetectorState state) const

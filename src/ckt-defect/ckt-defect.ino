@@ -346,6 +346,11 @@ void loop()
 		AxleStateMachine(&cfg, &data[1])
 	};
 
+	std::array<DetectorStateMachine, 2> detectorStateMachines = {
+		DetectorStateMachine(&cfg, &data[0], &trackMessages),
+		DetectorStateMachine(&cfg, &data[1], &trackMessages)
+	};
+
 	uint32_t centisecs = 0;
 	bool decisecsTick = false;
 
@@ -681,6 +686,9 @@ clrTestPoint(TP2);
 				Serial.print(data[i].speedFloat);
 				Serial.println(")");
 			}
+
+			//  Finally, update the main detector state machine
+			detectorStateMachines[i].update();
 		}
 
 		// Check for serial input
