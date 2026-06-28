@@ -28,6 +28,8 @@ LICENSE:
 #include <sstream>
 #include <iomanip>
 #include <math.h>
+#include <nvs_flash.h>
+#include <nvs.h>
 #include "driver/i2s_std.h"
 #include "driver/gpio.h"
 #include "esp_task_wdt.h"
@@ -59,6 +61,35 @@ struct WavData {
 	uint32_t wavDataSize;
 	size_t dataStartPosition;
 };
+
+void printMemoryUsage(void)
+{
+	Serial.printf("\n[SYS]: stack: %u heap: %u\n\n", uxTaskGetStackHighWaterMark(NULL), xPortGetFreeHeapSize());
+}
+
+void printNVSStats()
+{
+	nvs_stats_t nvs_stats;
+	
+	// Get stats for the default "nvs" partition
+	esp_err_t err = nvs_get_stats(NULL, &nvs_stats);
+	
+	if (err == ESP_OK)
+	{
+		Serial.println("--- NVS Preferences Stats ---");
+		Serial.print("Used Entries: ");
+		Serial.println(nvs_stats.used_entries);
+		Serial.print("Free Entries: ");
+		Serial.println(nvs_stats.free_entries);
+		Serial.print("Total Entries: ");
+		Serial.println(nvs_stats.total_entries);
+		Serial.println('');
+	}
+	else
+	{
+		Serial.println("Failed to get NVS stats");
+	}
+}
 
 char* rtrim(char* in)
 {
@@ -122,12 +153,6 @@ bool configKeyValueSplit(char* key, uint32_t keySz, char* value, uint32_t valueS
 	}
 	strncpy(value, lineBufferPtr, valueSz);
 	return true;
-}
-
-
-void printMemoryUsage(void)
-{
-	Serial.printf("\n[SYS]: stack: %u heap: %u\n\n", uxTaskGetStackHighWaterMark(NULL), xPortGetFreeHeapSize());
 }
 
 
@@ -393,7 +418,7 @@ void loop()
 	Serial.println(GIT_REV);
 
 	printMemoryUsage();
-
+	printNVSStats();
 
 	// Set up audio
 	audioSetPttEnableCallback(enableAuxRelay);

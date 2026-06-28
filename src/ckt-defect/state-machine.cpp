@@ -177,6 +177,11 @@ void DetectorStateMachine::update()
 	switch (currentState)
 	{
 		case DetectorState::IDLE:
+			
+			break;
+		case DetectorState::ENTRANCE_AXLES:
+			break;
+		case DetectorState::ENTRANCE_DEFECT:
 			break;
 	}
 }
