@@ -615,8 +615,10 @@ clrTestPoint(TP2);
 		{
 			irStateMachines[i].update();
 			axleStateMachines[i].update();
+
 			if(AxleStateMachine::AxleState::RESET == axleStateMachines[i].getCurrentState())
 				axleReset(i);
+
 			else if(AxleStateMachine::AxleState::TIMEOUT == axleStateMachines[i].getCurrentState() && !cfg.speedTypeEnter)
 			{
 				// Calculate exit speed
@@ -636,7 +638,7 @@ clrTestPoint(TP2);
 				data[i].speed = data[i].speedFloat + 0.5;
 			}
 			
-			if(AxleStateMachine::AxleState::RESET == axleStateMachines[i].getCurrentState())
+			if(AxleStateMachine::AxleState::TIMEOUT == axleStateMachines[i].getCurrentState())
 			{
 				// Print some data if leaving timeout state (-> reset)
 				Serial.print("Track ");

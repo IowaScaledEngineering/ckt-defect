@@ -26,38 +26,29 @@ LICENSE:
 
 class IrStateMachine {
 public:
-	// Enumeration for the 3 required states
 	enum class IrState {
 		IDLE,
 		DETECT,
 		TIMER
 	};
 
-	// Constructor taking pointers to your configuration and live data
 	IrStateMachine(DetectorConfiguration* config, DataBundle* dataBundle);
-	
-	// Destructor
 	~IrStateMachine() = default;
-
-	// Main update loop to process state transitions and actions
 	void update();
-
-	// Getter to inspect the current state if needed externally
 	IrState getCurrentState() const { return currentState; }
+	IrState getNextState() const { return nextState; }
 
 private:
-	// Pointers to the external configuration and live data bundles
 	DetectorConfiguration* cfg;
 	DataBundle* data;
 	unsigned long irTime;
 
-	// The current state tracker
 	IrState currentState;
+	IrState nextState;
 };
 
 class AxleStateMachine {
 public:
-	// Enumeration for the 3 required states
 	enum class AxleState {
 		RESET,
 		IDLE,
@@ -65,24 +56,52 @@ public:
 		TIMEOUT
 	};
 
-	// Constructor taking pointers to your configuration and live data
 	AxleStateMachine(DetectorConfiguration* config, DataBundle* dataBundle);
-	
-	// Destructor
 	~AxleStateMachine() = default;
-
-	// Main update loop to process state transitions and actions
 	void update();
-
-	// Getter to inspect the current state if needed externally
 	AxleState getCurrentState() const { return currentState; }
+	AxleState getNextState() const { return nextState; }
 
 private:
-	// Pointers to the external configuration and live data bundles
 	DetectorConfiguration* cfg;
 	DataBundle* data;
 	unsigned long axleTime;
 
-	// The current state tracker
 	AxleState currentState;
+	AxleState nextState;
+};
+
+class DetectorStateMachine {
+public:
+	enum class DetectorState {
+		IDLE,
+		ENTRANCE_AXLES,
+		ENTRANCE_DEFECT,
+		ENTRANCE_SPEED,
+		ENTRANCE_QUEUE,
+		MINIMUM_AXLES,
+		AXLE_COUNT,
+		AXLE_DEFECT,
+		AXLE_DEFECT_QUEUE,
+		EXIT_SPEED,
+		EXIT_QUEUE,
+		TOO_SLOW_QUEUE,
+		INTEGRITY_DEFECT_QUEUE,
+		BLOCKED_DEFECT_QUEUE,
+		WAIT_NO_EXIT,
+	};
+
+	DetectorStateMachine(DetectorConfiguration* config, DataBundle* dataBundle);
+	~DetectorStateMachine() = default;
+	void update();
+	DetectorState getCurrentState() const { return currentState; }
+	DetectorState getNextState() const { return nextState; }
+
+private:
+	DetectorConfiguration* cfg;
+	DataBundle* data;
+	unsigned long axleTime;
+
+	DetectorState currentState;
+	DetectorState nextState;
 };

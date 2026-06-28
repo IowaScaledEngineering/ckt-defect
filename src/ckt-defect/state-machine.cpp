@@ -26,16 +26,20 @@ IrStateMachine::IrStateMachine(DetectorConfiguration* config, DataBundle* dataBu
 	: cfg(config)
 	, data(dataBundle)
 	, currentState(IrState::IDLE)
+	, nextState(IrState::IDLE)
 { }
 
-void IrStateMachine::update() {
-	switch (currentState) {
+void IrStateMachine::update()
+{
+	currentState = nextState;
+	switch (currentState)
+	{
 		case IrState::IDLE:
 			data->irDetect = false;
 			if(data->irInput)
 			{
 				Serial.println("IR State -> DETECT");
-				currentState = IrState::DETECT;
+				nextState = IrState::DETECT;
 			}
 			break;
 
@@ -45,7 +49,7 @@ void IrStateMachine::update() {
 			if(!data->irInput)
 			{
 				Serial.println("IR State -> TIMER");
-				currentState = IrState::TIMER;
+				nextState = IrState::TIMER;
 			}
 			break;
 
@@ -53,32 +57,38 @@ void IrStateMachine::update() {
 			if(data->irInput)
 			{
 				Serial.println("IR State -> DETECT");
-				currentState = IrState::DETECT;
+				nextState = IrState::DETECT;
 			}
 			else if(((millis() - irTime)/1000) >= cfg->detectorTimeout)
 			{
 				Serial.println("IR State -> IDLE");
-				currentState = IrState::IDLE;
+				nextState = IrState::IDLE;
 			}
 			
 			break;
 	}
 }
 
+
+
 AxleStateMachine::AxleStateMachine(DetectorConfiguration* config, DataBundle* dataBundle)
 	: cfg(config)
 	, data(dataBundle)
 	, currentState(AxleState::RESET)
+	, nextState(AxleState::RESET)
 { }
 
-void AxleStateMachine::update() {
-	switch (currentState) {
+void AxleStateMachine::update()
+{
+	currentState = nextState;
+	switch (currentState)
+	{
 		case AxleState::RESET:
 			data->axleCount = 0;
 			data->newAxle = false;
 			data->axleDetect = false;
 			Serial.println("Axle State -> IDLE");
-			currentState = AxleState::IDLE;
+			nextState = AxleState::IDLE;
 			break;
 
 		case AxleState::IDLE:
@@ -91,12 +101,12 @@ void AxleStateMachine::update() {
 					data->speed = 0;
 				}
 				Serial.println("Axle State -> DETECT");
-				currentState = AxleState::DETECT;
+				nextState = AxleState::DETECT;
 			}
 			else if(data->axleDetect && (((millis() - axleTime)/1000) >= cfg->detectorTimeout))
 			{
 				Serial.println("Axle State -> TIMEOUT");
-				currentState = AxleState::TIMEOUT;
+				nextState = AxleState::TIMEOUT;
 			}
 			break;
 
@@ -106,13 +116,32 @@ void AxleStateMachine::update() {
 			data->axleDetect = true;
 			axleTime = millis();
 			Serial.println("Axle State -> IDLE");
-			currentState = AxleState::IDLE;
+			nextState = AxleState::IDLE;
 			break;
 
 		case AxleState::TIMEOUT:
 			data->totalAxles = data->axleCount;
 			Serial.println("Axle State -> RESET");
-			currentState = AxleState::RESET;
+			nextState = AxleState::RESET;
+			break;
+	}
+}
+
+
+
+DetectorStateMachine::DetectorStateMachine(DetectorConfiguration* config, DataBundle* dataBundle)
+	: cfg(config)
+	, data(dataBundle)
+	, currentState(DetectorState::IDLE)
+	, nextState(DetectorState::IDLE)
+{ }
+
+void DetectorStateMachine::update()
+{
+	currentState = nextState;
+	switch (currentState)
+	{
+		case DetectorState::IDLE:
 			break;
 	}
 }
