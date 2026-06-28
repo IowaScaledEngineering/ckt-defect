@@ -62,6 +62,9 @@ struct DetectorConfiguration {
 	bool temperatureUnitsF;
 	int16_t minTemperature;
 	int16_t maxTemperature;
+
+	// Operation Mode
+	bool infrastructureMode;
 };
 
 void loadConfiguration(DetectorConfiguration* cfg);

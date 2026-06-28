@@ -268,7 +268,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd)
 		"sec",
 		[&cfg]() { saveConfiguration(&cfg); }
 	);
-	
+
 	// Temperature
 	auto menuTemperatureConfig = std::make_shared<MenuListSelector>("Temperature");
 	auto menuTemperatureEn = std::make_shared<MenuBoolSelector>(
@@ -314,6 +314,16 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd)
 		[&cfg, menuMinTemperature, menuMaxTemperature, degF, degC]() { saveConfiguration(&cfg); menuMinTemperature->setUnits(cfg.temperatureUnitsF ? degF : degC); menuMaxTemperature->setUnits(cfg.temperatureUnitsF ? degF : degC); }
 	);
 
+	// Operation Mode
+	auto menuOperationMode = std::make_shared<MenuBoolSelector>(
+		"Operation Mode",
+		&cfg.infrastructureMode,
+		false,
+		"Infrastructure", "INFR",
+		"Defect Detect", "DFCT",
+		[&cfg]() { saveConfiguration(&cfg); }
+	);
+	
 	// System	
 	auto menuSysConfig = std::make_shared<MenuListSelector>("System");
 	auto menuBacklightLevel = std::make_shared<MenuPercentageBar>(
@@ -408,6 +418,8 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd)
 	menuTemperatureConfig->addChild(menuTemperatureType);
 	menuTemperatureConfig->addChild(menuMinTemperature);
 	menuTemperatureConfig->addChild(menuMaxTemperature);
+
+	mainSel->addChild(menuOperationMode);
 
 	mainSel->addChild(menuSysConfig);
 	menuSysConfig->addChild(menuBacklightLevel);

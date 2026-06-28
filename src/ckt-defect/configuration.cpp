@@ -54,6 +54,8 @@ LICENSE:
 #define TRIGGER_DIR1_ONLY_DEFAULT    false
 #define TRIGGER_DIR2_ONLY_DEFAULT    false
 
+#define INFRASTRUCTURE_MODE_DEFAULT  false
+
 #define PREF_NAMESPACE   "defectdetector"
 
 Preferences preferences;
@@ -99,6 +101,8 @@ void loadConfiguration(DetectorConfiguration* cfg)
 
 	cfg->triggerDirection1Only = preferences.getBool("trigDir1", TRIGGER_DIR1_ONLY_DEFAULT);
 	cfg->triggerDirection2Only = preferences.getBool("trigDir2", TRIGGER_DIR2_ONLY_DEFAULT);
+
+	cfg->infrastructureMode = preferences.getBool("infra", INFRASTRUCTURE_MODE_DEFAULT);
 
 	for(uint32_t i=0; i<NUM_TRACKS; i++)
 	{
@@ -197,6 +201,9 @@ void saveConfiguration(DetectorConfiguration* cfg)
 
 	if(cfg->triggerDirection2Only != preferences.getBool("trigDir2", TRIGGER_DIR2_ONLY_DEFAULT))
 		preferences.putBool("trigDir2", cfg->triggerDirection2Only);
+
+	if(cfg->infrastructureMode != preferences.getBool("infra", INFRASTRUCTURE_MODE_DEFAULT))
+		preferences.putBool("infra", cfg->infrastructureMode);
 
 	for(uint32_t i=0; i<NUM_TRACKS; i++)
 	{
@@ -297,6 +304,12 @@ void printConfiguration(DetectorConfiguration* cfg)
 	Serial.println(cfg->triggerDirection1Only);
 	Serial.print("   Trigger Direction 2 Only: ");
 	Serial.println(cfg->triggerDirection2Only);
+
+	Serial.print("Operation Mode: ");
+	if(cfg->infrastructureMode)
+		Serial.println("Infrastructure");
+	else
+		Serial.println("Defect Detect");
 
 	for(uint32_t i=0; i<NUM_TRACKS; i++)
 	{
