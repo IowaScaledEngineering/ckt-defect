@@ -27,7 +27,7 @@ LICENSE:
 
 uint32_t axleCount[NUM_TRACKS];
 unsigned long firstAxleTime[NUM_TRACKS];
-unsigned long currentAxleTime[NUM_TRACKS];
+unsigned long currentAxleTime[NUM_TRACKS];   // FIXME is this needed?
 unsigned long entranceDeltaMicros[NUM_TRACKS];
 unsigned long exitDeltaMicros[NUM_TRACKS];
 

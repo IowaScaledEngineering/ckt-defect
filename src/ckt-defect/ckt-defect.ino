@@ -292,6 +292,7 @@ void loop()
 	DisplayLcd *lcd = new DisplayLcd();
 	bool displayPresent = true;  // Start assuming it's there so we don't take the refresh delay initially
 	bool oldDisplayPresent = true;
+	bool lcdRefresh = false;
 
 	bool sdCardPresent = false;
 	bool configFilePresent = false;
@@ -313,6 +314,11 @@ void loop()
 	std::array<IrStateMachine, 2> irStateMachines = {
 		IrStateMachine(&cfg, &data[0]),
 		IrStateMachine(&cfg, &data[1])
+	};
+
+	std::array<AxleStateMachine, 2> axleStateMachines = {
+		AxleStateMachine(&cfg, &data[0]),
+		AxleStateMachine(&cfg, &data[1])
 	};
 
 	uint32_t centisecs = 0;
@@ -585,15 +591,65 @@ clrTestPoint(TP2);
 			data[1].irInput = getIrB();
 			data[1].axleInput1 = getAxleB1();
 			data[1].axleInput2 = getAxleB2();
-		}
 
-		if(displayPresent && !oldDisplayPresent)
-		{
-			esp_task_wdt_reset();
-			delay(100);  // Wait for things to settle
-			lcd->refresh();
+			// Refresh display if needed
+			if(lcdRefresh)
+			{
+				Serial.println("*** Refreshing display ***");
+				lcd->refresh();
+				lcdRefresh = false;
+			}
+			else if(displayPresent && !oldDisplayPresent)
+			{
+				lcdRefresh = true;  // Refresh next time through to give things time to settle
+			}
+			oldDisplayPresent = displayPresent;
 		}
-		oldDisplayPresent = displayPresent;
+		
+		// Update the axle counts
+		data[0].axleCountLive = axleGetCount(0);
+		data[1].axleCountLive = axleGetCount(1);
+
+		// Update State Machines
+		for(uint32_t i = 0; i<NUM_TRACKS; i++)
+		{
+			irStateMachines[i].update();
+			axleStateMachines[i].update();
+			if(AxleStateMachine::AxleState::RESET == axleStateMachines[i].getCurrentState())
+				axleReset(i);
+			else if(AxleStateMachine::AxleState::TIMEOUT == axleStateMachines[i].getCurrentState() && !cfg.speedTypeEnter)
+			{
+				// Calculate exit speed
+				// FIXME: add scale ratio and units
+				data[i].speedFloat = 4943182.0/(axleGetExitDeltaMicros(i));
+				data[i].speed = data[i].speedFloat + 0.5;
+			}
+
+			if((axleGetEntranceDeltaMicros(i) > 0) && cfg.speedTypeEnter && (0 == data[i].speed))
+			{
+				// Calculate entrance speed
+				// FIXME: Add scale ratio and units
+				// 87 * 1000000 us/s * 3600 s/hr               us * mile
+				// ----------------------------- = 4,943,182 * ---------
+				// 12 in/ft * 5280ft/mile                       in * hr
+				data[i].speedFloat = 4943182.0/(axleGetEntranceDeltaMicros(i));
+				data[i].speed = data[i].speedFloat + 0.5;
+			}
+			
+			if(AxleStateMachine::AxleState::RESET == axleStateMachines[i].getCurrentState())
+			{
+				// Print some data if leaving timeout state (-> reset)
+				Serial.print("Track ");
+				Serial.println((char)('A' + i));
+				Serial.print("Total Axles: ");
+				Serial.println(data[i].totalAxles);
+				Serial.print("Speed: ");
+				Serial.print(data[i].speed);
+				Serial.print(" (");
+				Serial.print(data[i].speedFloat);
+				Serial.println(")");
+			}
+		}
 
 		// Check for serial input
 		if(Serial.available() > 0)
@@ -622,12 +678,6 @@ clrTestPoint(TP2);
 		}
 
 
-		
-		// Update IR State Machines
-		for(uint32_t i = 0; i<NUM_TRACKS; i++)
-		{
-			irStateMachines[i].update();
-		}
 
 
 

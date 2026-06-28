@@ -26,31 +26,63 @@ LICENSE:
 
 class IrStateMachine {
 public:
-    // Enumeration for the 3 required states
-    enum class IrState {
-        IDLE,
-        DETECT,
-        TIMER
-    };
+	// Enumeration for the 3 required states
+	enum class IrState {
+		IDLE,
+		DETECT,
+		TIMER
+	};
 
-    // Constructor taking pointers to your configuration and live data
-    IrStateMachine(DetectorConfiguration* config, DataBundle* dataBundle);
-    
-    // Destructor
-    ~IrStateMachine() = default;
+	// Constructor taking pointers to your configuration and live data
+	IrStateMachine(DetectorConfiguration* config, DataBundle* dataBundle);
+	
+	// Destructor
+	~IrStateMachine() = default;
 
-    // Main update loop to process state transitions and actions
-    void update();
+	// Main update loop to process state transitions and actions
+	void update();
 
-    // Getter to inspect the current state if needed externally
-    IrState getCurrentState() const { return currentState; }
+	// Getter to inspect the current state if needed externally
+	IrState getCurrentState() const { return currentState; }
 
 private:
-    // Pointers to the external configuration and live data bundles
-    DetectorConfiguration* cfg;
-    DataBundle* data;
-    unsigned long irTime;
+	// Pointers to the external configuration and live data bundles
+	DetectorConfiguration* cfg;
+	DataBundle* data;
+	unsigned long irTime;
 
-    // The current state tracker
-    IrState currentState;
+	// The current state tracker
+	IrState currentState;
+};
+
+class AxleStateMachine {
+public:
+	// Enumeration for the 3 required states
+	enum class AxleState {
+		RESET,
+		IDLE,
+		DETECT,
+		TIMEOUT
+	};
+
+	// Constructor taking pointers to your configuration and live data
+	AxleStateMachine(DetectorConfiguration* config, DataBundle* dataBundle);
+	
+	// Destructor
+	~AxleStateMachine() = default;
+
+	// Main update loop to process state transitions and actions
+	void update();
+
+	// Getter to inspect the current state if needed externally
+	AxleState getCurrentState() const { return currentState; }
+
+private:
+	// Pointers to the external configuration and live data bundles
+	DetectorConfiguration* cfg;
+	DataBundle* data;
+	unsigned long axleTime;
+
+	// The current state tracker
+	AxleState currentState;
 };

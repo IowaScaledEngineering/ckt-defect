@@ -30,9 +30,16 @@ struct DataBundle {
 	uint16_t axleCount = 0;
 	uint16_t totalAxles = 0;
 	uint8_t speed = 0;
+	float speedFloat = 0;
+
+	//  Inter-state machine communication
+	bool irDetect = false;
+	bool axleDetect = false;
+	bool newAxle = false;
+
+	//  Loaded by main loop, consumed by state machine(s)
+	uint16_t axleCountLive = 0;
 	bool irInput = false;
 	bool axleInput1 = false;
 	bool axleInput2 = false;
-	bool irDetect = false;
-	bool axleDetect = false;
 };
