@@ -50,6 +50,10 @@ LICENSE:
 #define MIN_TEMPERATURE_DEFAULT      -20
 #define MAX_TEMPERATURE_DEFAULT      100
 
+#define DIRECTION_EN_DEFAULT         true
+#define TRIGGER_DIR1_ONLY_DEFAULT    false
+#define TRIGGER_DIR2_ONLY_DEFAULT    false
+
 #define PREF_NAMESPACE   "defectdetector"
 
 Preferences preferences;
@@ -84,6 +88,17 @@ void loadConfiguration(DetectorConfiguration* cfg)
 	cfg->temperatureUnitsF = preferences.getBool("tmpUnitF", TEMPERATURE_UNITS_F_DEFAULT);
 	cfg->minTemperature = preferences.getShort("tmpMin", MIN_TEMPERATURE_DEFAULT);
 	cfg->maxTemperature = preferences.getShort("tmpMax", MAX_TEMPERATURE_DEFAULT);
+
+	cfg->directionEnable = preferences.getBool("dirEn", DIRECTION_EN_DEFAULT);
+	
+	uint8_t loadedDir1Id = preferences.getUChar("dir1Id", 0);
+	cfg->direction1NameId = (loadedDir1Id >= directionNames.size()) ? 0 : loadedDir1Id;
+	
+	uint8_t loadedDir2Id = preferences.getUChar("dir2Id", 1); // fallback default to 1 if available
+	cfg->direction2NameId = (loadedDir2Id >= directionNames.size()) ? 0 : loadedDir2Id;
+
+	cfg->triggerDirection1Only = preferences.getBool("trigDir1", TRIGGER_DIR1_ONLY_DEFAULT);
+	cfg->triggerDirection2Only = preferences.getBool("trigDir2", TRIGGER_DIR2_ONLY_DEFAULT);
 
 	for(uint32_t i=0; i<NUM_TRACKS; i++)
 	{
@@ -165,6 +180,23 @@ void saveConfiguration(DetectorConfiguration* cfg)
 
 	if(cfg->maxTemperature != preferences.getShort("tmpMax", MAX_TEMPERATURE_DEFAULT))
 		preferences.putShort("tmpMax", cfg->maxTemperature);
+
+	if(cfg->directionEnable != preferences.getBool("dirEn", DIRECTION_EN_DEFAULT))
+		preferences.putBool("dirEn", cfg->directionEnable);
+
+	if (cfg->direction1NameId >= directionNames.size()) cfg->direction1NameId = 0;
+	if(cfg->direction1NameId != preferences.getUChar("dir1Id", 0))
+		preferences.putUChar("dir1Id", cfg->direction1NameId);
+
+	if (cfg->direction2NameId >= directionNames.size()) cfg->direction2NameId = 0;
+	if(cfg->direction2NameId != preferences.getUChar("dir2Id", 1))
+		preferences.putUChar("dir2Id", cfg->direction2NameId);
+
+	if(cfg->triggerDirection1Only != preferences.getBool("trigDir1", TRIGGER_DIR1_ONLY_DEFAULT))
+		preferences.putBool("trigDir1", cfg->triggerDirection1Only);
+
+	if(cfg->triggerDirection2Only != preferences.getBool("trigDir2", TRIGGER_DIR2_ONLY_DEFAULT))
+		preferences.putBool("trigDir2", cfg->triggerDirection2Only);
 
 	for(uint32_t i=0; i<NUM_TRACKS; i++)
 	{
@@ -251,6 +283,21 @@ void printConfiguration(DetectorConfiguration* cfg)
 	Serial.print("Max Temperature Limit: ");
 	Serial.println(cfg->maxTemperature);
 
+	Serial.print("Direction Enable: ");
+	Serial.println(cfg->directionEnable);
+	Serial.print("   Direction 1 Name ID: ");
+	Serial.println(cfg->direction1NameId);
+	Serial.print("   Direction 1 Name: ");
+	Serial.println(cfg->direction1Name.c_str());
+	Serial.print("   Direction 2 Name ID: ");
+	Serial.println(cfg->direction2NameId);
+	Serial.print("   Direction 2 Name: ");
+	Serial.println(cfg->direction2Name.c_str());
+	Serial.print("   Trigger Direction 1 Only: ");
+	Serial.println(cfg->triggerDirection1Only);
+	Serial.print("   Trigger Direction 2 Only: ");
+	Serial.println(cfg->triggerDirection2Only);
+
 	for(uint32_t i=0; i<NUM_TRACKS; i++)
 	{
 		Serial.print('\n');
@@ -290,3 +337,16 @@ void updateTrackNames(DetectorConfiguration* cfg, std::string trackA, std::strin
 	cfg->trackName[0] = trackA;
 	cfg->trackName[1] = trackB;
 }
+
+void updateDirectionNames(DetectorConfiguration* cfg)
+{
+	cfg->direction1Name = cfg->directionEnable ? directionNames[cfg->direction1NameId] : "";
+	cfg->direction2Name = cfg->directionEnable ? directionNames[cfg->direction2NameId] : "";
+}
+
+void updateDirectionNames(DetectorConfiguration* cfg, std::string dir1, std::string dir2)
+{
+	cfg->direction1Name = dir1;
+	cfg->direction2Name = dir2;
+}
+

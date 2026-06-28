@@ -21,6 +21,10 @@ struct ManagedMenus {
 	std::shared_ptr<Menu> tempType;
 	std::shared_ptr<Menu> minTemp;
 	std::shared_ptr<Menu> maxTemp;
+	std::shared_ptr<Menu> directionName1;
+	std::shared_ptr<Menu> directionName2;
+	std::shared_ptr<Menu> triggerDir1;
+	std::shared_ptr<Menu> triggerDir2;
 };
 
 void updateAllMenuVisibility(const DetectorConfiguration &cfg, const ManagedMenus &menus)
@@ -82,6 +86,19 @@ void updateAllMenuVisibility(const DetectorConfiguration &cfg, const ManagedMenu
 		if(menus.tempType)  menus.tempType->hide();
 		if(menus.minTemp)   menus.minTemp->hide();
 		if(menus.maxTemp)   menus.maxTemp->hide();
+	}
+
+	// Direction Visibility
+	if (cfg.directionEnable) {
+		if (menus.directionName1) menus.directionName1->unhide();
+		if (menus.directionName2) menus.directionName2->unhide();
+		if (menus.triggerDir1)    menus.triggerDir1->unhide();
+		if (menus.triggerDir2)    menus.triggerDir2->unhide();
+	} else {
+		if (menus.directionName1) menus.directionName1->hide();
+		if (menus.directionName2) menus.directionName2->hide();
+		if (menus.triggerDir1)    menus.triggerDir1->hide();
+		if (menus.triggerDir2)    menus.triggerDir2->hide();
 	}
 }
 
@@ -203,6 +220,44 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd)
 		[&cfg, menuMinSpeed]() { saveConfiguration(&cfg); menuMinSpeed->setUnits(cfg.speedUnitsMph ? "mph" : "kph"); }
 	);
 
+	// Direction
+	auto menuDirectionConfig = std::make_shared<MenuListSelector>("Direction");
+	auto menuDirectionEn = std::make_shared<MenuBoolSelector>(
+		"Direction Enable",
+		&cfg.directionEnable, 
+		false, 
+		"On", "ON", 
+		"Off", "OFF"
+	);
+	auto menuDirectionName1 = std::make_shared<MenuOptionSelector>(
+		"Direction 1 Name", 
+		&cfg.direction1NameId,
+		false,
+		directionNames,
+		[&cfg]() { saveConfiguration(&cfg); }
+	);
+	auto menuDirectionName2 = std::make_shared<MenuOptionSelector>(
+		"Direction 2 Name", 
+		&cfg.direction2NameId,
+		false,
+		directionNames,
+		[&cfg]() { saveConfiguration(&cfg); }
+	);
+	auto menuTriggerDir1 = std::make_shared<MenuBoolSelector>(
+		"Trigger Dir 1 Only",
+		&cfg.triggerDirection1Only,
+		false,
+		"On", "ON",
+		"Off", "OFF"
+	);
+	auto menuTriggerDir2 = std::make_shared<MenuBoolSelector>(
+		"Trigger Dir 2 Only",
+		&cfg.triggerDirection2Only,
+		false,
+		"On", "ON",
+		"Off", "OFF"
+	);
+
 	// Timeout
 	auto menuDetectorTimeout = std::make_shared<MenuNumberDial>(
 		"Detector Timeout",
@@ -283,7 +338,8 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd)
 		menuMilepost, menuTrackNameA, menuTrackNameB, 
 		menuMinAxles, menuEntranceAxles,
 		menuSpeedConfig, menuSpeedUnits, menuSpeedType, menuMinSpeed,
-		menuTemperatureUnits, menuTemperatureType, menuMinTemperature, menuMaxTemperature
+		menuTemperatureUnits, menuTemperatureType, menuMinTemperature, menuMaxTemperature,
+		menuDirectionName1, menuDirectionName2, menuTriggerDir1, menuTriggerDir2
 	};
 
 	// ==========================================
@@ -295,6 +351,24 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd)
 	menuSpeedEn->setSaveCallback([&cfg, managed]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg, managed); });
 	menuTemperatureEn->setSaveCallback([&cfg, managed]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg, managed); });
 	menuTemperatureType->setSaveCallback([&cfg, managed]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg, managed); });
+	menuDirectionEn->setSaveCallback([&cfg, managed]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg, managed); updateDirectionNames(&cfg); });
+	menuDirectionName1->setSaveCallback([&cfg]() { saveConfiguration(&cfg); updateDirectionNames(&cfg); });
+	menuDirectionName2->setSaveCallback([&cfg]() { saveConfiguration(&cfg); updateDirectionNames(&cfg); });
+
+	// Trigger 1 and Trigger 2 mutual-exclusion callbacks
+	menuTriggerDir1->setSaveCallback([&cfg]() {
+		if (cfg.triggerDirection1Only) {
+			cfg.triggerDirection2Only = false;
+		}
+		saveConfiguration(&cfg);
+	});
+
+	menuTriggerDir2->setSaveCallback([&cfg]() {
+		if (cfg.triggerDirection2Only) {
+			cfg.triggerDirection1Only = false;
+		}
+		saveConfiguration(&cfg);
+	});
 		
 	// ==========================================
 	// Assemble Menus
@@ -319,6 +393,13 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd)
 	menuSpeedConfig->addChild(menuSpeedType);
 	menuSpeedConfig->addChild(menuMinSpeed);
 
+	mainSel->addChild(menuDirectionConfig);
+	menuDirectionConfig->addChild(menuDirectionEn);
+	menuDirectionConfig->addChild(menuDirectionName1);
+	menuDirectionConfig->addChild(menuDirectionName2);
+	menuDirectionConfig->addChild(menuTriggerDir1);
+	menuDirectionConfig->addChild(menuTriggerDir2);
+
 	mainSel->addChild(menuDetectorTimeout);
 
 	mainSel->addChild(menuTemperatureConfig);
@@ -333,6 +414,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd)
 	menuSysConfig->addChild(menuVolume);
 
 	updateAllMenuVisibility(cfg, managed);
+	updateDirectionNames(&cfg);
 	
 	return home;
 }

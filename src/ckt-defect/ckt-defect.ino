@@ -355,6 +355,7 @@ void loop()
 	loadConfiguration(&cfg);
 	// Preload the track name based on loaded configuration.  Might be overwritten below by SD card.
 	updateTrackNames(&cfg);
+	updateDirectionNames(&cfg);
 
 	audioSetVolumeStep(cfg.volumeStep);
 	lcd->setBrightness(cfg.lcdBrightness);

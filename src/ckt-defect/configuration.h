@@ -71,3 +71,6 @@ void resetConfiguration(void);
 
 void updateTrackNames(DetectorConfiguration* cfg);
 void updateTrackNames(DetectorConfiguration* cfg, std::string trackA, std::string trackB);
+
+void updateDirectionNames(DetectorConfiguration* cfg);
+void updateDirectionNames(DetectorConfiguration* cfg, std::string dir1, std::string dir2);
