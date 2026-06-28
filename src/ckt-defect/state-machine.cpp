@@ -22,12 +22,24 @@ LICENSE:
 #include <Arduino.h>
 #include "state-machine.h"
 
+// ==========================================
+// IrStateMachine Implementation
+// ==========================================
+
 IrStateMachine::IrStateMachine(DetectorConfiguration* config, DataBundle* dataBundle)
-	: cfg(config)
-	, data(dataBundle)
-	, currentState(IrState::IDLE)
-	, nextState(IrState::IDLE)
+	: BaseStateMachine<IrState>(config, dataBundle, IrState::IDLE, "IR")
 { }
+
+const char* IrStateMachine::getStateName(IrState state) const
+{
+	switch (state)
+	{
+		case IrState::IDLE:   return "IDLE";
+		case IrState::DETECT: return "DETECT";
+		case IrState::TIMER:  return "TIMER";
+		default:              return "UNKNOWN";
+	}
+}
 
 void IrStateMachine::update()
 {
@@ -36,47 +48,53 @@ void IrStateMachine::update()
 	{
 		case IrState::IDLE:
 			data->irDetect = false;
-			if(data->irInput)
+			if (data->irInput)
 			{
-				Serial.println("IR State -> DETECT");
-				nextState = IrState::DETECT;
+				transitionTo(IrState::DETECT);
 			}
 			break;
 
 		case IrState::DETECT:
 			data->irDetect = true;
-			irTime = millis();
-			if(!data->irInput)
+			lastStateTime = millis();
+			if (!data->irInput)
 			{
-				Serial.println("IR State -> TIMER");
-				nextState = IrState::TIMER;
+				transitionTo(IrState::TIMER);
 			}
 			break;
 
 		case IrState::TIMER:
-			if(data->irInput)
+			if (data->irInput)
 			{
-				Serial.println("IR State -> DETECT");
-				nextState = IrState::DETECT;
+				transitionTo(IrState::DETECT);
 			}
-			else if(((millis() - irTime)/1000) >= cfg->detectorTimeout)
+			else if (((millis() - lastStateTime) / 1000) >= cfg->detectorTimeout)
 			{
-				Serial.println("IR State -> IDLE");
-				nextState = IrState::IDLE;
+				transitionTo(IrState::IDLE);
 			}
-			
 			break;
 	}
 }
 
-
+// ==========================================
+// AxleStateMachine Implementation
+// ==========================================
 
 AxleStateMachine::AxleStateMachine(DetectorConfiguration* config, DataBundle* dataBundle)
-	: cfg(config)
-	, data(dataBundle)
-	, currentState(AxleState::RESET)
-	, nextState(AxleState::RESET)
+	: BaseStateMachine<AxleState>(config, dataBundle, AxleState::RESET, "Axle")
 { }
+
+const char* AxleStateMachine::getStateName(AxleState state) const
+{
+	switch (state)
+	{
+		case AxleState::RESET:   return "RESET";
+		case AxleState::IDLE:    return "IDLE";
+		case AxleState::DETECT:  return "DETECT";
+		case AxleState::TIMEOUT: return "TIMEOUT";
+		default:                 return "UNKNOWN";
+	}
+}
 
 void AxleStateMachine::update()
 {
@@ -87,26 +105,23 @@ void AxleStateMachine::update()
 			data->axleCount = 0;
 			data->newAxle = false;
 			data->axleDetect = false;
-			Serial.println("Axle State -> IDLE");
-			nextState = AxleState::IDLE;
+			transitionTo(AxleState::IDLE);
 			break;
 
 		case AxleState::IDLE:
 			data->newAxle = false;
-			if(data->axleCountLive > data->axleCount)
+			if (data->axleCountLive > data->axleCount)
 			{
 				// If this is the first axle, clear the previous speed; used in main loop to detect first axle
-				if(0 == data->axleCount)
+				if (0 == data->axleCount)
 				{
 					data->speed = 0;
 				}
-				Serial.println("Axle State -> DETECT");
-				nextState = AxleState::DETECT;
+				transitionTo(AxleState::DETECT);
 			}
-			else if(data->axleDetect && (((millis() - axleTime)/1000) >= cfg->detectorTimeout))
+			else if (data->axleDetect && (((millis() - lastStateTime) / 1000) >= cfg->detectorTimeout))
 			{
-				Serial.println("Axle State -> TIMEOUT");
-				nextState = AxleState::TIMEOUT;
+				transitionTo(AxleState::TIMEOUT);
 			}
 			break;
 
@@ -114,26 +129,23 @@ void AxleStateMachine::update()
 			data->axleCount = data->axleCountLive;
 			data->newAxle = true;
 			data->axleDetect = true;
-			axleTime = millis();
-			Serial.println("Axle State -> IDLE");
-			nextState = AxleState::IDLE;
+			lastStateTime = millis();
+			transitionTo(AxleState::IDLE);
 			break;
 
 		case AxleState::TIMEOUT:
 			data->totalAxles = data->axleCount;
-			Serial.println("Axle State -> RESET");
-			nextState = AxleState::RESET;
+			transitionTo(AxleState::RESET);
 			break;
 	}
 }
 
-
+// ==========================================
+// DetectorStateMachine Implementation
+// ==========================================
 
 DetectorStateMachine::DetectorStateMachine(DetectorConfiguration* config, DataBundle* dataBundle)
-	: cfg(config)
-	, data(dataBundle)
-	, currentState(DetectorState::IDLE)
-	, nextState(DetectorState::IDLE)
+	: BaseStateMachine<DetectorState>(config, dataBundle, DetectorState::IDLE, "Detector")
 { }
 
 void DetectorStateMachine::update()

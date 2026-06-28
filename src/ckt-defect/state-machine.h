@@ -24,84 +24,102 @@ LICENSE:
 #include "configuration.h"
 #include "data.h"
 
-class IrStateMachine {
-public:
-	enum class IrState {
-		IDLE,
-		DETECT,
-		TIMER
-	};
+// --- State Enumerations ---
 
+enum class IrState {
+	IDLE,
+	DETECT,
+	TIMER
+};
+
+enum class AxleState {
+	RESET,
+	IDLE,
+	DETECT,
+	TIMEOUT
+};
+
+enum class DetectorState {
+	IDLE,
+	ENTRANCE_AXLES,
+	ENTRANCE_DEFECT,
+	ENTRANCE_SPEED,
+	ENTRANCE_QUEUE,
+	MINIMUM_AXLES,
+	AXLE_COUNT,
+	AXLE_DEFECT,
+	AXLE_DEFECT_QUEUE,
+	EXIT_SPEED,
+	EXIT_QUEUE,
+	TOO_SLOW_QUEUE,
+	INTEGRITY_DEFECT_QUEUE,
+	BLOCKED_DEFECT_QUEUE,
+	WAIT_NO_EXIT,
+};
+
+// --- Base State Machine Template ---
+
+template <typename StateType>
+class BaseStateMachine {
+public:
+	BaseStateMachine(DetectorConfiguration* config, DataBundle* dataBundle, StateType initialState, const char* machineName)
+		: cfg(config)
+		, data(dataBundle)
+		, lastStateTime(0)
+		, currentState(initialState)
+		, nextState(initialState)
+		, name(machineName)
+	{ }
+
+	virtual ~BaseStateMachine() = default;
+	
+	virtual void update() = 0;
+
+	StateType getCurrentState() const { return currentState; }
+	StateType getNextState() const { return nextState; }
+
+protected:
+	DetectorConfiguration* cfg;
+	DataBundle* data;
+	unsigned long lastStateTime;
+
+	StateType currentState;
+	StateType nextState;
+	const char* name; // Stores the name of the machine (e.g., "IR", "Axle")
+
+	// Centralized transition helper
+	void transitionTo(StateType newState) {
+		if (newState != currentState) {
+			Serial.print(name);
+			Serial.print(" State -> ");
+			Serial.println(getStateName(newState));
+			nextState = newState;
+		}
+	}
+
+	// Must be implemented by derived classes to convert enum to string
+	virtual const char* getStateName(StateType state) const = 0;
+};
+
+// --- Derived State Machines ---
+
+class IrStateMachine : public BaseStateMachine<IrState> {
+public:
 	IrStateMachine(DetectorConfiguration* config, DataBundle* dataBundle);
-	~IrStateMachine() = default;
-	void update();
-	IrState getCurrentState() const { return currentState; }
-	IrState getNextState() const { return nextState; }
-
-private:
-	DetectorConfiguration* cfg;
-	DataBundle* data;
-	unsigned long irTime;
-
-	IrState currentState;
-	IrState nextState;
+	void update() override;
+	const char* getStateName(IrState state) const override;
 };
 
-class AxleStateMachine {
+class AxleStateMachine : public BaseStateMachine<AxleState> {
 public:
-	enum class AxleState {
-		RESET,
-		IDLE,
-		DETECT,
-		TIMEOUT
-	};
-
 	AxleStateMachine(DetectorConfiguration* config, DataBundle* dataBundle);
-	~AxleStateMachine() = default;
-	void update();
-	AxleState getCurrentState() const { return currentState; }
-	AxleState getNextState() const { return nextState; }
-
-private:
-	DetectorConfiguration* cfg;
-	DataBundle* data;
-	unsigned long axleTime;
-
-	AxleState currentState;
-	AxleState nextState;
+	void update() override;
+	const char* getStateName(AxleState state) const override;
 };
 
-class DetectorStateMachine {
+class DetectorStateMachine : public BaseStateMachine<DetectorState> {
 public:
-	enum class DetectorState {
-		IDLE,
-		ENTRANCE_AXLES,
-		ENTRANCE_DEFECT,
-		ENTRANCE_SPEED,
-		ENTRANCE_QUEUE,
-		MINIMUM_AXLES,
-		AXLE_COUNT,
-		AXLE_DEFECT,
-		AXLE_DEFECT_QUEUE,
-		EXIT_SPEED,
-		EXIT_QUEUE,
-		TOO_SLOW_QUEUE,
-		INTEGRITY_DEFECT_QUEUE,
-		BLOCKED_DEFECT_QUEUE,
-		WAIT_NO_EXIT,
-	};
-
 	DetectorStateMachine(DetectorConfiguration* config, DataBundle* dataBundle);
-	~DetectorStateMachine() = default;
-	void update();
-	DetectorState getCurrentState() const { return currentState; }
-	DetectorState getNextState() const { return nextState; }
-
-private:
-	DetectorConfiguration* cfg;
-	DataBundle* data;
-	unsigned long axleTime;
-
-	DetectorState currentState;
-	DetectorState nextState;
+	void update() override;
+	const char* getStateName(DetectorState state) const override;
 };
