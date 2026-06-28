@@ -83,7 +83,7 @@ void printNVSStats()
 		Serial.println(nvs_stats.free_entries);
 		Serial.print("Total Entries: ");
 		Serial.println(nvs_stats.total_entries);
-		Serial.println('');
+		Serial.print('\n');
 	}
 	else
 	{
