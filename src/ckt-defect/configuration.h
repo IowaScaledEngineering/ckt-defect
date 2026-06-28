@@ -34,6 +34,14 @@ struct DetectorConfiguration {
 	uint8_t trackNameId[NUM_TRACKS];
 	std::string trackName[NUM_TRACKS];  // Volatile value, not stored in NVM
 
+	bool directionEnable;
+	uint8_t direction1NameId;
+	uint8_t direction2NameId;
+	std::string direction1Name;  // Volatile value, not stored in NVM
+	std::string direction2Name;  // Volatile value, not stored in NVM
+	bool triggerDirection1Only;
+	bool triggerDirection2Only;
+
 	// Axles	
 	bool axleEnable;
 	uint16_t entranceAxles;

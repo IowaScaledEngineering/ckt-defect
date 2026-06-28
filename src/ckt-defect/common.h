@@ -43,10 +43,11 @@ const std::vector<std::string> trackNames = {
 	"West Track",
 };
 
-const std::vector<std::string> minSpeedName = {
-	"Off",
-	"Entrance",
-	"Exit",
+const std::vector<std::string> directionNames = {
+	"Eastbound",
+	"Westbound",
+	"Northbound",
+	"Southbound",
 };
 
 void toLowercase(std::string& str);
