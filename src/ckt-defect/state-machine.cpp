@@ -177,11 +177,29 @@ void DetectorStateMachine::update()
 	switch (currentState)
 	{
 		case DetectorState::IDLE:
-			
+			if( !cfg->infrastructureMode && data->axleDetect )
+			{
+				transitionTo(DetectorState::ENTRANCE_AXLES);
+			}
+			else if( cfg->infrastructureMode && data->irDetect )
+			{
+				transitionTo(DetectorState::ENTRANCE_DEFECT);
+			}
 			break;
 		case DetectorState::ENTRANCE_AXLES:
+			if( !data->axleDetect && !data->irDetect )
+			{
+				// We didn't get enough axles and everything has timed out (maybe a hand waved over the sensor)
+				transitionTo(DetectorState::IDLE);
+			}
+			else if( data->axleCount >= cfg->entranceAxles )
+			{
+				// We have enough axles, so let's continue
+				transitionTo(DetectorState::ENTRANCE_DEFECT);
+			}
 			break;
 		case DetectorState::ENTRANCE_DEFECT:
+			// Roll the dice
 			break;
 	}
 }
