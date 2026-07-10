@@ -40,7 +40,7 @@ typedef enum
 
 ParserState parserState;
 
-bool killParser = false;
+volatile bool killParser = false;
 
 TaskHandle_t parseTaskHandle = NULL;
 
@@ -66,8 +66,7 @@ BaseType_t parserQueuePop(ParserObject* obj)
 static void parseTask(void *args)
 {
 	parserState = PARSER_IDLE;
-	WavSound wavSound;
-	wavSound.seamlessPlay = true;
+	WavSound wavSound = { nullptr, true };
 
 	ParserObject obj;
 

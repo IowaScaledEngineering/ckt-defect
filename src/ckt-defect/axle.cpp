@@ -25,11 +25,11 @@ LICENSE:
 #include "io.h"
 #include "axle.h"
 
-uint32_t axleCount[NUM_TRACKS];
-unsigned long firstAxleTime[NUM_TRACKS];
-unsigned long currentAxleTime[NUM_TRACKS];   // FIXME is this needed?
-unsigned long entranceDeltaMicros[NUM_TRACKS];
-unsigned long exitDeltaMicros[NUM_TRACKS];
+volatile uint32_t axleCount[NUM_TRACKS];
+volatile unsigned long firstAxleTime[NUM_TRACKS];
+volatile unsigned long currentAxleTime[NUM_TRACKS];
+volatile unsigned long entranceDeltaMicros[NUM_TRACKS];
+volatile unsigned long exitDeltaMicros[NUM_TRACKS];
 
 enum class AxleIsrState
 {
@@ -40,7 +40,7 @@ enum class AxleIsrState
 	COUNT_2,
 };
 
-AxleIsrState axleIsrState[NUM_TRACKS];
+volatile AxleIsrState axleIsrState[NUM_TRACKS];
 
 /*
    ISR Notes:
@@ -63,7 +63,7 @@ void IRAM_ATTR axle_A1_isr(void *arg)
 	switch(axleIsrState[0])
 	{
 		case AxleIsrState::IDLE:
-			axleCount[0]++;
+			axleCount[0] = axleCount[0] + 1;
 			firstAxleTime[0] = time;
 			currentAxleTime[0] = time;
 			axleIsrState[0] = AxleIsrState::SPEED_1;
@@ -73,7 +73,7 @@ void IRAM_ATTR axle_A1_isr(void *arg)
 		case AxleIsrState::SPEED_1:
 		case AxleIsrState::COUNT_1:
 		#pragma GCC diagnostic pop
-			axleCount[0]++;
+			axleCount[0] = axleCount[0] + 1;
 			currentAxleTime[0] = time;
 			break;
 		case AxleIsrState::SPEED_2:
@@ -92,7 +92,7 @@ void IRAM_ATTR axle_A2_isr(void *arg)
 	switch(axleIsrState[0])
 	{
 		case AxleIsrState::IDLE:
-			axleCount[0]++;
+			axleCount[0] = axleCount[0] + 1;
 			firstAxleTime[0] = time;
 			currentAxleTime[0] = time;
 			axleIsrState[0] = AxleIsrState::SPEED_2;
@@ -102,7 +102,7 @@ void IRAM_ATTR axle_A2_isr(void *arg)
 		case AxleIsrState::SPEED_2:
 		case AxleIsrState::COUNT_2:
 		#pragma GCC diagnostic pop
-			axleCount[0]++;
+			axleCount[0] = axleCount[0] + 1;
 			currentAxleTime[0] = time;
 			break;
 		case AxleIsrState::SPEED_1:
@@ -121,7 +121,7 @@ void IRAM_ATTR axle_B1_isr(void *arg)
 	switch(axleIsrState[1])
 	{
 		case AxleIsrState::IDLE:
-			axleCount[1]++;
+			axleCount[1] = axleCount[1] + 1;
 			firstAxleTime[1] = time;
 			currentAxleTime[1] = time;
 			axleIsrState[1] = AxleIsrState::SPEED_1;
@@ -131,7 +131,7 @@ void IRAM_ATTR axle_B1_isr(void *arg)
 		case AxleIsrState::SPEED_1:
 		case AxleIsrState::COUNT_1:
 		#pragma GCC diagnostic pop
-			axleCount[1]++;
+			axleCount[1] = axleCount[1] + 1;
 			currentAxleTime[1] = time;
 			break;
 		case AxleIsrState::SPEED_2:
@@ -150,7 +150,7 @@ void IRAM_ATTR axle_B2_isr(void *arg)
 	switch(axleIsrState[1])
 	{
 		case AxleIsrState::IDLE:
-			axleCount[1]++;
+			axleCount[1] = axleCount[1] + 1;
 			firstAxleTime[1] = time;
 			currentAxleTime[1] = time;
 			axleIsrState[1] = AxleIsrState::SPEED_2;
@@ -160,7 +160,7 @@ void IRAM_ATTR axle_B2_isr(void *arg)
 		case AxleIsrState::SPEED_2:
 		case AxleIsrState::COUNT_2:
 		#pragma GCC diagnostic pop
-			axleCount[1]++;
+			axleCount[1] = axleCount[1] + 1;
 			currentAxleTime[1] = time;
 			break;
 		case AxleIsrState::SPEED_1:

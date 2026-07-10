@@ -52,8 +52,8 @@ typedef enum
 } PlayerState;
 
 static PlayerState playerState;
-static bool stopPlayer;
-static bool killPlayer = false;
+static volatile bool stopPlayer;
+static volatile bool killPlayer = false;
 
 static bool unmute;
 static uint8_t audioVolumeStep = VOL_STEP_NOM;
@@ -236,7 +236,7 @@ static void audioPump(void *args)
 	size_t bytesWritten;
 	i2s_std_clk_config_t clk_cfg;
 	uint32_t outputValue;
-	WavSound wavSound;
+	WavSound wavSound = { nullptr, false };
 	uint32_t oldSampleRate = 0;
 	uint32_t flushCount = 0;
 	unsigned long timeoutStartTime;
@@ -299,6 +299,10 @@ static void audioPump(void *args)
 				if(stopPlayer)
 				{
 					stopPlayer = false;
+					if(nullptr != wavSound.wav)
+					{
+						wavSound.wav->close();
+					}
 					playerState = PLAYER_FLUSH;
 				}
 				else if(wavSound.wav->available())

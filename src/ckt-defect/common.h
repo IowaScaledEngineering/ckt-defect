@@ -34,23 +34,8 @@ LICENSE:
 #include <vector>
 #include <string>
 
-const std::vector<std::string> trackNames = {
-	"Track 1",
-	"Track 2",
-	"Main 1",
-	"Main 2",
-	"North Track",
-	"South Track",
-	"East Track",
-	"West Track",
-};
-
-const std::vector<std::string> directionNames = {
-	"Eastbound",
-	"Westbound",
-	"Northbound",
-	"Southbound",
-};
+extern const std::vector<std::string> trackNames;
+extern const std::vector<std::string> directionNames;
 
 void toLowercase(std::string& str);
 std::string intToString(uint32_t intVal, uint32_t integerDigits, uint32_t fractionalDigits);

@@ -28,6 +28,24 @@ LICENSE:
 
 #include "common.h"
 
+const std::vector<std::string> trackNames = {
+	"Track 1",
+	"Track 2",
+	"Main 1",
+	"Main 2",
+	"North Track",
+	"South Track",
+	"East Track",
+	"West Track",
+};
+
+const std::vector<std::string> directionNames = {
+	"Eastbound",
+	"Westbound",
+	"Northbound",
+	"Southbound",
+};
+
 void toLowercase(std::string& str)
 {
 	std::transform(str.begin(), str.end(), str.begin(),
