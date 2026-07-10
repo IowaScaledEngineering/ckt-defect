@@ -336,7 +336,9 @@ void DetectorStateMachine::update()
 				if(dice < msgs->defects[i].probability)
 				{
 					// Defect
-					data->defects.push_back(msgs->defects[i].detailMsg);
+					std::string* transformedDetail = transformMessage(&msgs->defects[i].detailMsg, cfg, data, trackNum);
+					data->defects.push_back(*transformedDetail);
+					delete transformedDetail;
 					// FIXME: send summaryMsg to display
 					enqueueMessage(&msgs->defects[i].alertMsg);
 					break;
