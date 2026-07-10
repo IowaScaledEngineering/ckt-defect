@@ -262,9 +262,13 @@ static void audioPump(void *args)
 				break;
 
 			case PLAYER_PTT_DELAY:
-				if((millis() - pttStartTime) > audioPttDelayMillis)
+				if((millis() - pttStartTime) >= audioPttDelayMillis)
 				{
 					playerState = PLAYER_INIT;
+				}
+				else
+				{
+					vTaskDelay(10 / portTICK_PERIOD_MS);
 				}
 				break;
 

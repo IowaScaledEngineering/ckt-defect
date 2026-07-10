@@ -104,7 +104,7 @@ static void parseTask(void *args)
 setTestPoint(TP1);
 						while(!audioQueueEmpty())
 						{
-							vTaskDelay(1 / portTICK_PERIOD_MS);   // Wait 1ms
+							vTaskDelay(10 / portTICK_PERIOD_MS);   // Wait 10ms
 						}
 clrTestPoint(TP1);
 
