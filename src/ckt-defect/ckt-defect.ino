@@ -611,9 +611,11 @@ clrTestPoint(TP2);
 		{
 			decisecsTick = false;
 			ioProcessInputs();
+
 			data[0].irInput = getIrA();
 			data[0].axleInput1 = getAxleA1();
 			data[0].axleInput2 = getAxleA2();
+
 			data[1].irInput = getIrB();
 			data[1].axleInput1 = getAxleB1();
 			data[1].axleInput2 = getAxleB2();

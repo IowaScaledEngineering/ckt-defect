@@ -42,6 +42,7 @@ enum class AxleState {
 };
 
 enum class DetectorState {
+	RESET,
 	IDLE,
 	ENTRANCE_AXLES,
 	ENTRANCE_DEFECT,
@@ -51,7 +52,6 @@ enum class DetectorState {
 	MINIMUM_AXLES,
 	AXLE_COUNT,
 	AXLE_DEFECT,
-	AXLE_DEFECT_QUEUE,
 	EXIT_SPEED,
 	EXIT_QUEUE,
 	TOO_SLOW_QUEUE,
@@ -132,7 +132,7 @@ protected:
 	uint8_t trackNum;
 	uint32_t dice;
 	ParserObject parserObj;
-	std::string* msgOrig;
-	std::string* msgFull;
+
+	void enqueueMessage(std::string* message);
 };
 

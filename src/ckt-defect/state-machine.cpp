@@ -146,13 +146,14 @@ void AxleStateMachine::update()
 // ==========================================
 
 DetectorStateMachine::DetectorStateMachine(DetectorConfiguration* config, DataBundle* dataBundle, MessageBundle* messageBundle, uint8_t track)
-	: BaseStateMachine<DetectorState>(config, dataBundle, DetectorState::IDLE, "Detector"), msgs(messageBundle), trackNum(track)
+	: BaseStateMachine<DetectorState>(config, dataBundle, DetectorState::RESET, "Detector"), msgs(messageBundle), trackNum(track)
 { }
 
 const char* DetectorStateMachine::getStateName(DetectorState state) const
 {
 	switch (state)
 	{
+		case DetectorState::RESET:                   return "RESET";
 		case DetectorState::IDLE:                    return "IDLE";
 		case DetectorState::ENTRANCE_AXLES:          return "ENTRANCE_AXLES";
 		case DetectorState::ENTRANCE_DEFECT:         return "ENTRANCE_DEFECT";
@@ -162,7 +163,6 @@ const char* DetectorStateMachine::getStateName(DetectorState state) const
 		case DetectorState::MINIMUM_AXLES:           return "MINIMUM_AXLES";
 		case DetectorState::AXLE_COUNT:              return "AXLE_COUNT";
 		case DetectorState::AXLE_DEFECT:             return "AXLE_DEFECT";
-		case DetectorState::AXLE_DEFECT_QUEUE:       return "AXLE_DEFECT_QUEUE";
 		case DetectorState::EXIT_SPEED:              return "EXIT_SPEED";
 		case DetectorState::EXIT_QUEUE:              return "EXIT_QUEUE";
 		case DetectorState::TOO_SLOW_QUEUE:          return "TOO_SLOW_QUEUE";
@@ -173,11 +173,26 @@ const char* DetectorStateMachine::getStateName(DetectorState state) const
 	}
 }
 
+void DetectorStateMachine::enqueueMessage(std::string* message)
+{
+	parserObj.msg = transformMessage(message, cfg, data, trackNum);
+	parserObj.deleteWhenDone = true;
+	Serial.print("--> ");
+	Serial.println(parserObj.msg->c_str());
+	parserQueuePush(&parserObj);
+}
+
 void DetectorStateMachine::update()
 {
 	currentState = nextState;
 	switch (currentState)
 	{
+		case DetectorState::RESET:
+			// Cleanup
+			data->defects.clear();
+			transitionTo(DetectorState::IDLE);
+			break;
+
 		case DetectorState::IDLE:
 			if( !cfg->infrastructureMode && data->axleDetect )
 			{
@@ -193,7 +208,7 @@ void DetectorStateMachine::update()
 			if( !data->axleDetect && !data->irDetect )
 			{
 				// We didn't get enough axles and everything has timed out (maybe a hand waved over the sensor)
-				transitionTo(DetectorState::IDLE);
+				transitionTo(DetectorState::RESET);
 			}
 			else if( data->axleCount >= cfg->entranceAxles )
 			{
@@ -215,6 +230,7 @@ void DetectorStateMachine::update()
 				// No defect
 				if(!cfg->infrastructureMode && (cfg->speedEnable && cfg->speedTypeEnter))
 				{
+					// Not infrastructure mode and entrance speed enabled
 					transitionTo(DetectorState::ENTRANCE_SPEED);
 				}
 				else
@@ -253,15 +269,7 @@ void DetectorStateMachine::update()
 			break;
 			
 		case DetectorState::ENTRANCE_QUEUE:
-			// Start message queue
-			msgOrig = &msgs->entranceMsg;
-			msgFull = transformMessage(msgOrig, cfg, data, trackNum);
-			parserObj.msg = msgFull;
-			parserObj.deleteWhenDone = true;
-			Serial.print("--> ");
-			Serial.println(parserObj.msg->c_str());
-			parserQueuePush(&parserObj);
-			// End message queue
+			enqueueMessage(&msgs->entranceMsg);
 			if(!cfg->infrastructureMode)
 			{
 				// Not infrastructure mode
@@ -275,6 +283,119 @@ void DetectorStateMachine::update()
 			break;
 			
 		case DetectorState::MINIMUM_AXLES:
+			if( data->axleCount >= cfg->minAxles )
+			{
+				// We have enough axles, so let's continue
+				transitionTo(DetectorState::AXLE_COUNT);
+			}
+			else if(!data->axleDetect)
+			{
+				// Timed out before min axles
+				if(data->axleInput1 || data->axleInput2)
+				{
+					// Something is blocking one of the axle counters
+					transitionTo(DetectorState::BLOCKED_DEFECT_QUEUE);
+				}
+				else
+				{
+					transitionTo(DetectorState::INTEGRITY_DEFECT_QUEUE);
+				}
+			}
+			break;
+			
+		case DetectorState::AXLE_COUNT:
+			if( data->newAxle )
+			{
+				transitionTo(DetectorState::AXLE_DEFECT);
+			}
+			else if(!data->axleDetect && !data->irDetect)
+			{
+				// Timed out
+				if(data->axleInput1 || data->axleInput2)
+				{
+					// Something is blocking one of the axle counters
+					transitionTo(DetectorState::BLOCKED_DEFECT_QUEUE);
+				}
+				else if(cfg->speedEnable && !cfg->speedTypeEnter)
+				{
+					// Exit speed enabled
+					transitionTo(DetectorState::EXIT_SPEED);
+				}
+				else
+				{
+					transitionTo(DetectorState::EXIT_QUEUE);
+				}
+			}
+			break;
+			
+		case DetectorState::AXLE_DEFECT:
+			// Roll the dice
+			dice = rollDice();
+			for(uint32_t i = 0; i < msgs->defects.size(); i++)
+			{
+				if(dice < msgs->defects[i].probability)
+				{
+					// Defect
+					data->defects.push_back(msgs->defects[i].detailMsg);
+					// FIXME: send summaryMsg to display
+					enqueueMessage(&msgs->defects[i].alertMsg);
+					break;
+				}
+			}
+			transitionTo(DetectorState::AXLE_COUNT);
+			break;
+			
+		case DetectorState::EXIT_SPEED:
+			if(data->speed >= cfg->minSpeed)
+			{
+				transitionTo(DetectorState::EXIT_QUEUE);
+			}
+			else
+			{
+				transitionTo(DetectorState::TOO_SLOW_QUEUE);
+			}
+			break;
+			
+		case DetectorState::EXIT_QUEUE:
+			if(data->defects.size() > 0)
+			{
+				// We have defects
+				enqueueMessage(&msgs->exitDefectMsg);
+			}
+			else
+			{
+				enqueueMessage(&msgs->exitCleanMsg);
+			}
+			transitionTo(DetectorState::RESET);
+			break;
+			
+		case DetectorState::INFRASTRUCTURE_WAIT:
+			if(!data->irDetect)
+			{
+				transitionTo(DetectorState::EXIT_QUEUE);
+			}
+			break;
+			
+		case DetectorState::TOO_SLOW_QUEUE:
+			enqueueMessage(&msgs->tooSlowMsg);
+			transitionTo(DetectorState::WAIT_NO_EXIT);
+			break;
+			
+		case DetectorState::INTEGRITY_DEFECT_QUEUE:
+			enqueueMessage(&msgs->integrityMsg);
+			transitionTo(DetectorState::WAIT_NO_EXIT);
+			break;
+			
+		case DetectorState::BLOCKED_DEFECT_QUEUE:
+			enqueueMessage(&msgs->detectorBlockedMsg);
+			transitionTo(DetectorState::WAIT_NO_EXIT);
+			break;
+			
+		case DetectorState::WAIT_NO_EXIT:
+			if(!data->axleDetect && !data->irDetect && !data->axleInput1 && !data->axleInput2)
+			{
+				transitionTo(DetectorState::RESET);
+			}
 			break;
 			
 	}
