@@ -347,8 +347,8 @@ void loop()
 	};
 
 	std::array<DetectorStateMachine, 2> detectorStateMachines = {
-		DetectorStateMachine(&cfg, &data[0], &trackMessages),
-		DetectorStateMachine(&cfg, &data[1], &trackMessages)
+		DetectorStateMachine(&cfg, &data[0], &trackMessages, 0),
+		DetectorStateMachine(&cfg, &data[1], &trackMessages, 1)
 	};
 
 	uint32_t centisecs = 0;

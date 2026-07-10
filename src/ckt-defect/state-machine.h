@@ -24,6 +24,7 @@ LICENSE:
 #include "configuration.h"
 #include "data.h"
 #include "messages.h"
+#include "parser.h"
 
 // --- State Enumerations ---
 
@@ -46,6 +47,7 @@ enum class DetectorState {
 	ENTRANCE_DEFECT,
 	ENTRANCE_SPEED,
 	ENTRANCE_QUEUE,
+	INFRASTRUCTURE_WAIT,
 	MINIMUM_AXLES,
 	AXLE_COUNT,
 	AXLE_DEFECT,
@@ -121,12 +123,16 @@ public:
 
 class DetectorStateMachine : public BaseStateMachine<DetectorState> {
 public:
-	DetectorStateMachine(DetectorConfiguration* config, DataBundle* dataBundle, MessageBundle* messageBundle);
+	DetectorStateMachine(DetectorConfiguration* config, DataBundle* dataBundle, MessageBundle* messageBundle, uint8_t track);
 	void update() override;
 	const char* getStateName(DetectorState state) const override;
 
 protected:
 	MessageBundle* msgs;
+	uint8_t trackNum;
 	uint32_t dice;
+	ParserObject parserObj;
+	std::string* msgOrig;
+	std::string* msgFull;
 };
 

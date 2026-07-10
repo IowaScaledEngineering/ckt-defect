@@ -145,8 +145,8 @@ void AxleStateMachine::update()
 // DetectorStateMachine Implementation
 // ==========================================
 
-DetectorStateMachine::DetectorStateMachine(DetectorConfiguration* config, DataBundle* dataBundle, MessageBundle* messageBundle)
-	: BaseStateMachine<DetectorState>(config, dataBundle, DetectorState::IDLE, "Detector"), msgs(messageBundle)
+DetectorStateMachine::DetectorStateMachine(DetectorConfiguration* config, DataBundle* dataBundle, MessageBundle* messageBundle, uint8_t track)
+	: BaseStateMachine<DetectorState>(config, dataBundle, DetectorState::IDLE, "Detector"), msgs(messageBundle), trackNum(track)
 { }
 
 const char* DetectorStateMachine::getStateName(DetectorState state) const
@@ -158,6 +158,7 @@ const char* DetectorStateMachine::getStateName(DetectorState state) const
 		case DetectorState::ENTRANCE_DEFECT:         return "ENTRANCE_DEFECT";
 		case DetectorState::ENTRANCE_SPEED:          return "ENTRANCE_SPEED";
 		case DetectorState::ENTRANCE_QUEUE:          return "ENTRANCE_QUEUE";
+		case DetectorState::INFRASTRUCTURE_WAIT:     return "INFRASTRUCTURE_WAIT";
 		case DetectorState::MINIMUM_AXLES:           return "MINIMUM_AXLES";
 		case DetectorState::AXLE_COUNT:              return "AXLE_COUNT";
 		case DetectorState::AXLE_DEFECT:             return "AXLE_DEFECT";
@@ -252,6 +253,28 @@ void DetectorStateMachine::update()
 			break;
 			
 		case DetectorState::ENTRANCE_QUEUE:
+			// Start message queue
+			msgOrig = &msgs->entranceMsg;
+			msgFull = transformMessage(msgOrig, cfg, data, trackNum);
+			parserObj.msg = msgFull;
+			parserObj.deleteWhenDone = true;
+			Serial.print("--> ");
+			Serial.println(parserObj.msg->c_str());
+			parserQueuePush(&parserObj);
+			// End message queue
+			if(!cfg->infrastructureMode)
+			{
+				// Not infrastructure mode
+				transitionTo(DetectorState::MINIMUM_AXLES);
+			}
+			else
+			{
+				// Infrastructure mode
+				transitionTo(DetectorState::INFRASTRUCTURE_WAIT);
+			}
+			break;
+			
+		case DetectorState::MINIMUM_AXLES:
 			break;
 			
 	}
