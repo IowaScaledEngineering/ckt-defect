@@ -31,6 +31,7 @@ journal
 m
 main
 milepost
+minus
 near
 no
 north
