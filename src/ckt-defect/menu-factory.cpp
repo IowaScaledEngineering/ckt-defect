@@ -140,7 +140,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd)
 		&cfg.trackNameId[0],
 		false,
 		trackNames,
-		[&cfg]() { saveConfiguration(&cfg); }
+		[&cfg]() { saveConfiguration(&cfg); updateTrackNames(&cfg); }
 	);
 
 	auto menuTrackNameB = std::make_shared<MenuOptionSelector>(
@@ -148,7 +148,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd)
 		&cfg.trackNameId[1],
 		false,
 		trackNames,
-		[&cfg]() { saveConfiguration(&cfg); }
+		[&cfg]() { saveConfiguration(&cfg); updateTrackNames(&cfg); }
 	);
 	
 	// Axle
