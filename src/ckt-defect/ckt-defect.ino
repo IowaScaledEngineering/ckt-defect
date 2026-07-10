@@ -353,6 +353,8 @@ void loop()
 
 	uint32_t centisecs = 0;
 	bool decisecsTick = false;
+	uint32_t decisecs = 0;
+	bool secondsTick = false;
 
 	esp_task_wdt_reset();
 
@@ -632,6 +634,19 @@ clrTestPoint(TP2);
 				lcdRefresh = true;  // Refresh next time through to give things time to settle
 			}
 			oldDisplayPresent = displayPresent;
+
+			if(++decisecs >= 10)
+			{
+				decisecs -= 10;
+				secondsTick = true;
+			}
+		}
+
+		// Do things on a 1s interval
+		if(secondsTick)
+		{
+			secondsTick = false;
+//			printMemoryUsage();
 		}
 		
 		// Update the axle counts
