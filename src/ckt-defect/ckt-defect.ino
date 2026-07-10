@@ -565,6 +565,8 @@ void loop()
 	Serial.print('\n');
 	printMessages(&trackMessages);
 	Serial.print('\n');
+	printConfiguration(&cfg);
+	Serial.print('\n');
 	
 
 
