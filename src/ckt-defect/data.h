@@ -29,7 +29,7 @@ struct DataBundle {
 	std::vector<std::string> defects;
 	uint16_t axleCount = 0;
 	uint16_t totalAxles = 0;
-	uint8_t speed = 0;
+	uint16_t speed = 0;
 	float speedFloat = 0;
 
 	//  Inter-state machine communication

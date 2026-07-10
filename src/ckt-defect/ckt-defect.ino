@@ -560,17 +560,8 @@ void loop()
 		});
 
 	// Print configuration values
-	printConfiguration(&cfg);
-
-	for(uint32_t i=0; i<NUM_TRACKS; i++)
-	{
-		Serial.print('\n');
-
-		Serial.print("Track ");
-		Serial.println(i+1);
-
-		printMessages(&trackMessages);
-	}
+	Serial.print('\n');
+	printMessages(&trackMessages);
 	Serial.print('\n');
 	
 

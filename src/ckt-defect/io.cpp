@@ -64,10 +64,10 @@ void ioInit(void)
 	io_conf.pin_bit_mask = (1ULL << AXLE_B2_EN);
 	gpio_config(&io_conf);
 
-	gpio_set_level(AXLE_A1_EN, 0);
-	gpio_set_level(AXLE_A2_EN, 0);
-	gpio_set_level(AXLE_B1_EN, 0);
-	gpio_set_level(AXLE_B2_EN, 0);
+	gpio_set_level(AXLE_A1_EN, 1);
+	gpio_set_level(AXLE_A2_EN, 1);
+	gpio_set_level(AXLE_B1_EN, 1);
+	gpio_set_level(AXLE_B2_EN, 1);
 
 	// AXLE_nn: input
 	io_conf.mode = GPIO_MODE_INPUT;

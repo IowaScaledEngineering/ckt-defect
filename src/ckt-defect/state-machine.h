@@ -127,5 +127,6 @@ public:
 
 protected:
 	MessageBundle* msgs;
+	uint32_t dice;
 };
 

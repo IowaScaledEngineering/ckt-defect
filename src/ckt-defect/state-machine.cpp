@@ -20,6 +20,7 @@ LICENSE:
 *************************************************************************/
 
 #include <Arduino.h>
+#include "common.h"
 #include "state-machine.h"
 
 // ==========================================
@@ -186,6 +187,7 @@ void DetectorStateMachine::update()
 				transitionTo(DetectorState::ENTRANCE_DEFECT);
 			}
 			break;
+
 		case DetectorState::ENTRANCE_AXLES:
 			if( !data->axleDetect && !data->irDetect )
 			{
@@ -198,8 +200,59 @@ void DetectorStateMachine::update()
 				transitionTo(DetectorState::ENTRANCE_DEFECT);
 			}
 			break;
+
 		case DetectorState::ENTRANCE_DEFECT:
 			// Roll the dice
+			dice = rollDice();
+			if(dice < msgs->integrityProbability)
+			{
+				// Integrity defect
+				transitionTo(DetectorState::INTEGRITY_DEFECT_QUEUE);
+			}
+			else
+			{
+				// No defect
+				if(!cfg->infrastructureMode && (cfg->speedEnable && cfg->speedTypeEnter))
+				{
+					transitionTo(DetectorState::ENTRANCE_SPEED);
+				}
+				else
+				{
+					transitionTo(DetectorState::ENTRANCE_QUEUE);
+				}
+			}
 			break;
+
+		case DetectorState::ENTRANCE_SPEED:
+			if(data->speed > 0)
+			{
+				// We have a valid speed
+				if(data->speed >= cfg->minSpeed)
+				{
+					transitionTo(DetectorState::ENTRANCE_QUEUE);
+				}
+				else
+				{
+					transitionTo(DetectorState::TOO_SLOW_QUEUE);
+				}
+			}
+			else if(!data->axleDetect && !data->irDetect)
+			{
+				// State machines have timed out.  IR is part of the logic to allow an IR sensor to keep the detector alive.
+				if(data->axleInput1 || data->axleInput2)
+				{
+					// Debounced axle inputs are high, assume they are blocked
+					transitionTo(DetectorState::BLOCKED_DEFECT_QUEUE);
+				}
+				else
+				{
+					transitionTo(DetectorState::TOO_SLOW_QUEUE);
+				}
+			}
+			break;
+			
+		case DetectorState::ENTRANCE_QUEUE:
+			break;
+			
 	}
 }
