@@ -175,11 +175,11 @@ const char* DetectorStateMachine::getStateName(DetectorState state) const
 
 void DetectorStateMachine::enqueueMessage(const std::string& message)
 {
-	ParserObject obj;
-	transformMessage(message, obj.msg, *cfg, *data, trackNum, true);
-	parserQueuePush(&obj);
+	ParserObject* obj = new ParserObject();
+	transformMessage(message, obj->msg, *cfg, *data, trackNum, true);
+	parserQueuePush(obj);
 	Serial.print("--> ");
-	Serial.println(obj.msg.c_str());
+	Serial.println(obj->msg.c_str());
 }
 
 void DetectorStateMachine::update()
@@ -332,12 +332,12 @@ void DetectorStateMachine::update()
 			{
 				if (rollDice() < msgs->defects[i].probability)
 				{
-					ParserObject obj;
+					std::string temporaryMsg;
 					
 					// Pass by reference explicitly modifies obj.msg on the stack
-					transformMessage(msgs->defects[i].detailMsg, obj.msg, *cfg, *data, trackNum, true);
+					transformMessage(msgs->defects[i].detailMsg, temporaryMsg, *cfg, *data, trackNum, true);
 					
-					data->defects.push_back(obj.msg);
+					data->defects.push_back(temporaryMsg);
 					
 					// FIXME: send summaryMsg to display
 					enqueueMessage(msgs->defects[i].alertMsg);

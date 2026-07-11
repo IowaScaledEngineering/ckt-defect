@@ -33,7 +33,7 @@ struct ParserObject {
 
 bool parserQueueEmpty(void);
 void parserQueuePush(ParserObject* obj);
-BaseType_t parserQueuePop(ParserObject* obj);
+BaseType_t parserQueuePop(ParserObject** obj);
 void parserInit(void);
 void parserTerminate(void);
 std::string getDisplayMessage(void);

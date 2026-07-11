@@ -56,10 +56,10 @@ bool parserQueueEmpty(void)
 
 void parserQueuePush(ParserObject* obj)
 {
-	xQueueSend(parserQueue, obj, portMAX_DELAY);
+	xQueueSend(parserQueue, &obj, portMAX_DELAY);
 }
 
-BaseType_t parserQueuePop(ParserObject* obj)
+BaseType_t parserQueuePop(ParserObject** obj)
 {
 	return xQueueReceive(parserQueue, obj, portMAX_DELAY);
 }
@@ -70,7 +70,7 @@ static void parseTask(void *args)
 	parserState = PARSER_IDLE;
 	WavSound wavSound = { nullptr, true };
 
-	ParserObject obj;
+	ParserObject* obj = nullptr;
 
 	while(1)
 	{
@@ -85,12 +85,12 @@ static void parseTask(void *args)
 				break;
 
 			case PARSER_DO_SOMETHING:
-				if(parserQueuePop(&obj))  // Should only get here when there is something in the queue, so portMAX_DELAY is fine
+				if(parserQueuePop(&obj) && obj != nullptr)  // Should only get here when there is something in the queue, so portMAX_DELAY is fine
 				{
-//					Serial.print("Parsing: ");
-//					Serial.println(obj.msg->c_str());
+					Serial.print("Parsing: ");
+					Serial.println(obj->msg.c_str());
 					
-					std::string_view msg_view(obj.msg);
+					std::string_view msg_view(obj->msg);
 					size_t start = 0;
 					size_t end = 0;
 
@@ -98,7 +98,9 @@ static void parseTask(void *args)
 					{
 						end = msg_view.find_first_of(" \t\r\n", start);
 						std::string_view token = msg_view.substr(start, end - start);
-//						Serial.println(std::string(token).c_str());
+						Serial.print('[');
+						Serial.print(std::string(token).c_str());
+						Serial.println(']');
 
 						// Transform special case tokens
 						std::string_view lookup_token = token;
@@ -219,6 +221,7 @@ clrTestPoint(TP1);
 							break;  // Escape this while loop
 						}
 					}
+					delete obj;
 				}
 				parserState = PARSER_IDLE;
 				break;
@@ -242,7 +245,7 @@ clrTestPoint(TP1);
 
 void parserInit(void)
 {
-	parserQueue = xQueueCreate(10, sizeof(ParserObject));   /// FIXME?  How many queued messages do we want before the main loop blocks?
+	parserQueue = xQueueCreate(10, sizeof(ParserObject*));   /// FIXME?  How many queued messages do we want before the main loop blocks?
 	xTaskCreate(parseTask, "parseTask", 8192, NULL, PARSER_TASK_PRIORITY, &parseTaskHandle);
 }
 
