@@ -20,7 +20,7 @@ LICENSE:
 *************************************************************************/
 
 #include <Arduino.h>
-#include <sstream>
+#include <string_view>
 
 #include "common.h"
 #include "io.h"
@@ -87,22 +87,28 @@ static void parseTask(void *args)
 				{
 //					Serial.print("Parsing: ");
 //					Serial.println(obj.msg->c_str());
-					std::istringstream iss(*(obj.msg));
-					std::string token;
-					while (iss >> token)
+					
+					std::string_view msg_view(*(obj.msg));
+					size_t start = 0;
+					size_t end = 0;
+
+					while((start = msg_view.find_first_not_of(" \t\r\n", end)) != std::string_view::npos)
 					{
-//						Serial.println(token.c_str());
+						end = msg_view.find_first_of(" \t\r\n", start);
+						std::string_view token = msg_view.substr(start, end - start);
+//						Serial.println(std::string(token).c_str());
 
 						// Transform special case tokens
+						std::string_view lookup_token = token;
 						if("." == token)
 						{
 							// Handle '.' as 'point'
-							token = "point";
+							lookup_token = "point";
 						}
 						else if("-" == token)
 						{
 							// Handle '-' as 'minus'
-							token = "minus";
+							lookup_token = "minus";
 						}
 
 setTestPoint(TP1);
@@ -112,24 +118,24 @@ setTestPoint(TP1);
 						}
 clrTestPoint(TP1);
 
-						if(token.starts_with("#tone"))
+						if(lookup_token.starts_with("#tone"))
 						{
 							// 1kHz tone: #tone=M,N
 							// M = length in decisecs [optional]
 							// N = attenuation factor = 1 / (2^N) [optional]
-							size_t pos = token.find('=');
+							size_t pos = lookup_token.find('=');
 							uint32_t decisecs = 10;   // default: 1 sec
 							uint32_t attenuation = 1; // default: 1/2
-							if(pos != std::string::npos)
+							if(pos != std::string_view::npos)
 							{
-								std::string params = token.substr(pos + 1);
-								std::string str_decisecs = "";
-								std::string str_attenuation = "";
+								std::string_view params = lookup_token.substr(pos + 1);
+								std::string_view str_decisecs = "";
+								std::string_view str_attenuation = "";
 								pos = params.find(',');
-								if(pos != std::string::npos)
+								if(pos != std::string_view::npos)
 								{
 									str_decisecs = params.substr(0, pos);
-									str_attenuation = params.substr(pos+1);
+									str_attenuation = params.substr(pos + 1);
 								}
 								else
 								{
@@ -140,7 +146,7 @@ clrTestPoint(TP1);
 								// Convert decisecs
 								try
 								{
-									decisecs = std::stoi(str_decisecs);
+									decisecs = std::stoi(std::string(str_decisecs));
 								}
 								catch (const std::invalid_argument& e)
 								{
@@ -154,7 +160,7 @@ clrTestPoint(TP1);
 								// Convert attenuation
 								try
 								{
-									attenuation = std::stoi(str_attenuation);
+									attenuation = std::stoi(std::string(str_attenuation));
 								}
 								catch (const std::invalid_argument& e)
 								{
@@ -165,23 +171,23 @@ clrTestPoint(TP1);
 									// Do nothing, use defaults
 								}
 							}
-							wavSound.wav = new ToneSound(1600*decisecs, 16000, attenuation);
+							wavSound.wav = new ToneSound(1600 * decisecs, 16000, attenuation);
 							audioQueuePush(&wavSound);
 						}
-						else if(token.starts_with("#pause"))
+						else if(lookup_token.starts_with("#pause"))
 						{
 							// Silence: #pause=M
 							// M = length in decisecs [optional]
-							size_t pos = token.find('=');
+							size_t pos = lookup_token.find('=');
 							uint32_t decisecs = 5;   // default: 0.5 sec
-							if(pos != std::string::npos)
+							if(pos != std::string_view::npos)
 							{
-								std::string str_decisecs = token.substr(pos + 1);
+								std::string_view str_decisecs = lookup_token.substr(pos + 1);
 
 								// Convert decisecs
 								try
 								{
-									decisecs = std::stoi(str_decisecs);
+									decisecs = std::stoi(std::string(str_decisecs));
 								}
 								catch (const std::invalid_argument& e)
 								{
@@ -192,10 +198,10 @@ clrTestPoint(TP1);
 									// Do nothing, use defaults
 								}
 							}
-							wavSound.wav = new SilenceSound(1600*decisecs, 16000);
+							wavSound.wav = new SilenceSound(1600 * decisecs, 16000);
 							audioQueuePush(&wavSound);
 						}
-						else if(NULL != (wavSound.wav = vocabGetWord(token)))
+						else if(NULL != (wavSound.wav = vocabGetWord(std::string(lookup_token))))
 						{
 							audioQueuePush(&wavSound);
 						}
