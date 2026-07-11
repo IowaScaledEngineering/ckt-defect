@@ -20,8 +20,8 @@ LICENSE:
 *************************************************************************/
 
 #include <Arduino.h>
-#include <sstream>
-#include <iomanip>
+#include <cmath>
+#include <cstdlib>
 
 #include "common.h"
 #include "messages.h"
@@ -66,83 +66,200 @@ void printMessages(MessageBundle* msgs)
 	Serial.println(msgs->detectorBlockedMsg.c_str());
 }
 
-void insertNumber(std::string& str, int32_t num, uint32_t fractionalDigits)
+void insertNumber(std::string& str, int32_t num, uint32_t integerDigits, uint32_t fractionalDigits, bool breakDigits)
 {
-	std::string formatted = intToString(num, 1, fractionalDigits);
+	std::string formatted = intToString(num, integerDigits, fractionalDigits);
 
-	// Interleave with spaces into the target string
-	for (char c : formatted)
+	if (breakDigits)
 	{
-		str.push_back(c);
-		str.push_back(' ');
+		for (char c : formatted)
+		{
+			str.push_back(c);
+			str.push_back(' ');
+		}
+		if (!formatted.empty())
+		{
+			str.pop_back();
+		}
 	}
-
-	// Remove the trailing space
-	if (!str.empty())
+	else
 	{
-		str.pop_back();
+		str += formatted;
 	}
 }
 
+static void parseModifier(const std::string& token, size_t colonPos, int32_t& outN, int32_t& outM, bool hasFraction) 
+{
+	std::string mod = token.substr(colonPos + 1);
+	if (hasFraction) 
+	{
+		size_t dotPos = mod.find('.');
+		if (dotPos != std::string::npos) 
+		{
+			outN = std::atoi(mod.substr(0, dotPos).c_str());
+			outM = std::atoi(mod.substr(dotPos + 1).c_str());
+		} 
+		else 
+		{
+			outN = std::atoi(mod.c_str());
+		}
+	} 
+	else 
+	{
+		outN = std::atoi(mod.c_str());
+	}
+}
 
+static void formatStringField(std::string& dest, const std::string& src, int32_t width) 
+{
+	size_t absWidth = std::abs(width);
+	std::string clipped = src.substr(0, absWidth);
+	
+	if (clipped.length() >= absWidth) 
+	{
+		dest += clipped;
+		return;
+	}
 
-std::string* transformMessage(std::string* inputMessage, DetectorConfiguration *cfg, DataBundle *data, uint8_t trackNum)
+	size_t padding = absWidth - clipped.length();
+	if (width >= 0) 
+	{
+		dest.append(padding, ' ');
+		dest += clipped;
+	} 
+	else 
+	{
+		dest += clipped;
+		dest.append(padding, ' ');
+	}
+}
+
+std::string* transformMessage(const std::string& inputMessage, const DetectorConfiguration& cfg, const DataBundle& data, uint8_t trackNum, bool breakDigits)
 {
 	std::string* outputMessage = new std::string();
-	std::istringstream iss(*inputMessage);
-	std::string token;
+	outputMessage->reserve(inputMessage.length() * (breakDigits ? 2 : 1));
+
+	size_t startPos = 0;
 	bool first = true;
-	
-	while (iss >> token)
+
+	while (startPos < inputMessage.length())
 	{
-		if(!first)
+		// Skip leading spaces to handle multiple spaces safely
+		startPos = inputMessage.find_first_not_of(" \t\r\n", startPos);
+		if (startPos == std::string::npos) 
 		{
-			(*outputMessage) += " ";
+			break;
 		}
-	
+
+		// Find the end of the current token
+		size_t endPos = inputMessage.find_first_of(" \t\r\n", startPos);
+		std::string token = (endPos == std::string::npos) ? 
+		                    inputMessage.substr(startPos) : 
+		                    inputMessage.substr(startPos, endPos - startPos);
+
+		if (!first)
+		{
+			outputMessage->push_back(' ');
+		}
 		first = false;
 		
-		if("#milepost" == token)
+		size_t colonPos = token.find(':');
+		std::string baseToken = (colonPos == std::string::npos) ? token : token.substr(0, colonPos);
+
+		if ("#milepost" == baseToken)
 		{
-			insertNumber(*outputMessage, cfg->milepost, 1);
+			int32_t n = 1, m = 1;
+			if (colonPos != std::string::npos) 
+			{
+				parseModifier(token, colonPos, n, m, true);
+			}
+			
+			if (n < 0) 
+			{
+				std::string numStr = intToString(cfg.milepost, 0, m);
+				size_t absN = std::abs(n);
+				(*outputMessage) += numStr;
+				if (numStr.length() < absN) 
+				{
+					outputMessage->append(absN - numStr.length(), ' ');
+				}
+			} 
+			else 
+			{
+				insertNumber(*outputMessage, cfg.milepost, n, m, breakDigits);
+			}
 		}
-		else if("#track" == token)
+		else if ("#track" == baseToken)
 		{
-			(*outputMessage) += cfg->trackName[trackNum];
+			std::string trackName = cfg.trackName[trackNum];
+			if (colonPos != std::string::npos) 
+			{
+				int32_t n = 0, m = 0;
+				parseModifier(token, colonPos, n, m, false);
+				formatStringField(*outputMessage, trackName, n);
+			} 
+			else 
+			{
+				(*outputMessage) += trackName;
+			}
 		}
-		else if("#axle" == token)
+		else if ("#axle" == baseToken || "#axles" == baseToken || "#speed" == baseToken || "#temp" == baseToken)
 		{
-			insertNumber(*outputMessage, data->defectAxle, 0);
+			int32_t val = 0;
+			if ("#axle" == baseToken)       val = data.defectAxle;
+			else if ("#axles" == baseToken) val = data.totalAxles;
+			else if ("#speed" == baseToken) val = data.speed;
+			else if ("#temp" == baseToken)  {
+				TemperatureManager* tempMgr = TemperatureManager::getInstance();
+				val = tempMgr->getTemperature() + 0.5;
+			}
+
+			int32_t n = 1;
+			if (colonPos != std::string::npos) 
+			{
+				int32_t m = 0;
+				parseModifier(token, colonPos, n, m, false);
+			}
+
+			if (n < 0) 
+			{
+				std::string numStr = intToString(val, 0, 0);
+				size_t absN = std::abs(n);
+				(*outputMessage) += numStr;
+				if (numStr.length() < absN) 
+				{
+					outputMessage->append(absN - numStr.length(), ' ');
+				}
+			} 
+			else 
+			{
+				insertNumber(*outputMessage, val, n, 0, breakDigits);
+			}
 		}
-		else if("#axles" == token)
+		else if ("#defectlist" == baseToken)
 		{
-			insertNumber(*outputMessage, data->totalAxles, 0);
-		}
-		else if("#speed" == token)
-		{
-			insertNumber(*outputMessage, data->speed, 0);
-		}
-		else if("#temp" == token)
-		{
-			TemperatureManager* tempMgr = TemperatureManager::getInstance();
-			insertNumber(*outputMessage, tempMgr->getTemperature()+0.5, 0);
-		}
-		else if("#defectlist" == token)
-		{
-			for(auto const& defect : data->defects)
+			for (auto const& defect : data.defects)
 			{
 				(*outputMessage) += defect;
-				(*outputMessage).push_back(' ');
+				outputMessage->push_back(' ');
 			}
-			// Remove last space
-			(*outputMessage).pop_back();
+			if (!data.defects.empty()) 
+			{
+				outputMessage->pop_back();
+			}
 		}
 		else
 		{
-			// Default, just pass it through
 			(*outputMessage) += token;
 		}
+
+		if (endPos == std::string::npos) 
+		{
+			break;
+		}
+		startPos = endPos;
 	}
+
 	toLowercase(*outputMessage);
 	return outputMessage;
 }

@@ -175,7 +175,7 @@ const char* DetectorStateMachine::getStateName(DetectorState state) const
 
 void DetectorStateMachine::enqueueMessage(std::string* message)
 {
-	parserObj.msg = transformMessage(message, cfg, data, trackNum);
+	parserObj.msg = transformMessage(*message, *cfg, *data, trackNum, true);
 	parserObj.deleteWhenDone = true;
 	Serial.print("--> ");
 	Serial.println(parserObj.msg->c_str());
@@ -336,7 +336,7 @@ void DetectorStateMachine::update()
 				if(dice < msgs->defects[i].probability)
 				{
 					// Defect
-					std::string* transformedDetail = transformMessage(&msgs->defects[i].detailMsg, cfg, data, trackNum);
+					std::string* transformedDetail = transformMessage(msgs->defects[i].detailMsg, *cfg, *data, trackNum, true);
 					data->defects.push_back(*transformedDetail);
 					delete transformedDetail;
 					// FIXME: send summaryMsg to display
