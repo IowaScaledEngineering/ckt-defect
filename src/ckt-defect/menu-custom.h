@@ -1,5 +1,6 @@
 #include "src/menu/menu.h"
 #include "configuration.h"
+#include "data.h"
 #include <Arduino.h>
 
 class MenuHome : public Menu
@@ -9,8 +10,10 @@ class MenuHome : public Menu
 		bool delayBacklightOff = false;
 		unsigned long menuEnterTime;
 		const DetectorConfiguration &cfg;
+		DataBundle* data;
 	public:
-		MenuHome(const std::string &n, const DetectorConfiguration &c) : Menu(n), cfg(c) {}
+		MenuHome(const std::string &n, const DetectorConfiguration &c, DataBundle* d) 
+			: Menu(n), cfg(c), data(d) {}
 		void onEnter() override;
 		MenuEvent update() override;
 };

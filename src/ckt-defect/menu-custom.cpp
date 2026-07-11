@@ -38,21 +38,38 @@ MenuEvent MenuHome::update()
 		if(!delayBacklightOff || (millis() - menuEnterTime > 3000))
 		{
 			disp->backlightOff();
+			backlightState = false;
+			delayBacklightOff = false;
 		}
 	}
 	disp->gotoxy(2, 0);
 	disp->print("Milepost ");
 	disp->print(intToString(cfg.milepost, 4, 1).c_str());
-	disp->gotoxy(6, 1);
-	disp->print("STANDBY");
-	disp->gotoxy(7, 2);
-	TemperatureManager* tempMgr = TemperatureManager::getInstance();
-	disp->print(intToString(tempMgr->getTemperature()+0.5, 3, 0).c_str());
-	disp->print(0xDF);  // degrees
-	disp->print(cfg.temperatureUnitsF ? 'F' : 'C');
+
+	if(!data[0].active && !data[1].active)
+	{
+		disp->gotoxy(0, 1);
+		disp->print("      STANDBY       ");
+		disp->gotoxy(7, 2);
+		TemperatureManager* tempMgr = TemperatureManager::getInstance();
+		disp->print(intToString(tempMgr->getTemperature()+0.5, 3, 0).c_str());
+		disp->print(0xDF);  // degrees
+		disp->print(cfg.temperatureUnitsF ? 'F' : 'C');
+	}
+	else
+	{
+		disp->gotoxy(0, 1);
+		disp->print("       ACTIVE       ");
+		disp->gotoxy(7, 2);
+		TemperatureManager* tempMgr = TemperatureManager::getInstance();
+		disp->print(intToString(tempMgr->getTemperature()+0.5, 3, 0).c_str());
+		disp->print(0xDF);  // degrees
+		disp->print(cfg.temperatureUnitsF ? 'F' : 'C');
+		backlightState = true;
+	}
 
 	disp->gotoxy(0,3);
-	disp->print((char)0);
+	disp->print((char)0);  // bulb
 	if(disp->getBacklight())
 	{
 		disp->print("OFF");

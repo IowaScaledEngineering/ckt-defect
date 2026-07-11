@@ -42,4 +42,6 @@ struct DataBundle {
 	bool irInput = false;
 	bool axleInput1 = false;
 	bool axleInput2 = false;
+
+	bool active = false;
 };

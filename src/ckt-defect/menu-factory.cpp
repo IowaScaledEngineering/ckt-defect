@@ -96,10 +96,10 @@ void updateAllMenuVisibility(const DetectorConfiguration &cfg, const ManagedMenu
 	}
 }
 
-std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd)
+std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd, DataBundle* data)
 {
 	// Create the root home menu and main branch
-	auto home = std::make_shared<MenuHome>("Home", cfg);
+	auto home = std::make_shared<MenuHome>("Home", cfg, data);
 	auto mainSel = std::make_shared<MenuListSelector>("Main");
 	home->addChild(mainSel);
 

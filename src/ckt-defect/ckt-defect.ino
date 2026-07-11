@@ -401,7 +401,7 @@ void loop()
 
 
 	// Create menus
-	auto menus = createAppMenu(cfg, lcd);
+	auto menus = createAppMenu(cfg, lcd, data);
 
 	Menu::setDisplay(lcd);
 	Menu::setTimingCallback(millis); 
@@ -721,6 +721,15 @@ clrTestPoint(TP2);
 
 			//  Finally, update the main detector state machine
 			detectorStateMachines[i].update();
+
+			if(DetectorState::IDLE == detectorStateMachines[i].getCurrentState())
+			{
+				data[i].active = false;
+			}
+			else
+			{
+				data[i].active = true;
+			}
 		}
 
 		// Check for serial input
