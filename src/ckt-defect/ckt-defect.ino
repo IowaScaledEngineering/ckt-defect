@@ -482,11 +482,11 @@ void loop()
 		std::string tmpMessage;
 		if(cfg.axleEnable)
 		{
-			tmpMessage = " axle #axle";
+			tmpMessage = " Axle #axle";
 		}
-		trackMessages.defects.emplace_back("#tone hot journal" + tmpMessage, "hot journal" + tmpMessage, "Hot Journal", 500);
-		trackMessages.defects.emplace_back("#tone dragging equipment near" + tmpMessage, "dragging equipment near" + tmpMessage, "Dragging Equipment", 100);
-		trackMessages.defects.emplace_back("#tone high impact wheel detected" + tmpMessage, "high impact wheel detected" + tmpMessage, "High Impact Wheel", 200);
+		trackMessages.defects.emplace_back("#tone hot journal" + tmpMessage, "hot journal" + tmpMessage, "Hot Journal" + tmpMessage, 500);
+		trackMessages.defects.emplace_back("#tone dragging equipment near" + tmpMessage, "dragging equipment near" + tmpMessage, "Dragging Equipment" + tmpMessage, 100);
+		trackMessages.defects.emplace_back("#tone high impact wheel detected" + tmpMessage, "high impact wheel detected" + tmpMessage, "High Impact Wheel" + tmpMessage, 200);
 
 		// Create Footer
 		tmpMessage.clear();

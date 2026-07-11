@@ -27,8 +27,8 @@ LICENSE:
 #include "parser.h"
 
 struct ParserObject {
-	std::string msg;          // Pointer to the message string
-	std::string displayMsg;   // Pointer to the display string
+	std::string msg;          // Spoken message string
+	std::string displayMsg;   // Display string
 };
 
 bool parserQueueEmpty(void);

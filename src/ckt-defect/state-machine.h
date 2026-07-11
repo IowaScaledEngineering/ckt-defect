@@ -131,6 +131,8 @@ protected:
 	MessageBundle* msgs;
 	uint8_t trackNum;
 
+	void enqueueMessageInternal(const std::string& spokenMsg, const std::string* dispMsg);
 	void enqueueMessage(const std::string& message); 
+	void enqueueMessage(const std::string& spokenMsg, const std::string& dispMsg);
 };
 

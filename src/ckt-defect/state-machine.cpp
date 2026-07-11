@@ -173,13 +173,39 @@ const char* DetectorStateMachine::getStateName(DetectorState state) const
 	}
 }
 
-void DetectorStateMachine::enqueueMessage(const std::string& message)
+void DetectorStateMachine::enqueueMessageInternal(const std::string& spokenMsg, const std::string* dispMsg)
 {
 	ParserObject* obj = new ParserObject();
-	transformMessage(message, obj->msg, *cfg, *data, trackNum, true);
+	
+	// Spoken message processing
+	transformMessage(spokenMsg, obj->msg, *cfg, *data, trackNum, true);
+	toLowercase(obj->msg);  // lowercase before parsing
+
+	// Conditional display message processing
+	if (dispMsg != nullptr)
+	{
+		transformMessage(*dispMsg, obj->displayMsg, *cfg, *data, trackNum, false);
+	}
+
 	parserQueuePush(obj);
+
 	Serial.print("--> ");
 	Serial.println(obj->msg.c_str());
+	if (dispMsg != nullptr)
+	{
+		Serial.println("**> ");
+		Serial.println(obj->displayMsg.c_str());
+	}
+}
+
+void DetectorStateMachine::enqueueMessage(const std::string& spokenMsg)
+{
+	enqueueMessageInternal(spokenMsg, nullptr);
+}
+
+void DetectorStateMachine::enqueueMessage(const std::string& spokenMsg, const std::string& dispMsg)
+{
+	enqueueMessageInternal(spokenMsg, &dispMsg);
 }
 
 void DetectorStateMachine::update()
@@ -333,15 +359,16 @@ void DetectorStateMachine::update()
 				if (rollDice() < msgs->defects[i].probability)
 				{
 					std::string temporaryMsg;
-					
-					// Pass by reference explicitly modifies obj.msg on the stack
+
+					// Create and store detail message for listing later
 					transformMessage(msgs->defects[i].detailMsg, temporaryMsg, *cfg, *data, trackNum, true);
 					data->defects.push_back(temporaryMsg);
 					
-					// FIXME: send summaryMsg to display
+					// Create display message
+					transformMessage(msgs->defects[i].displayMsg, temporaryMsg, *cfg, *data, trackNum, false);
 					
-					// Play alert message
-					enqueueMessage(msgs->defects[i].alertMsg);
+					// Play alert message (and send along display message)
+					enqueueMessage(msgs->defects[i].alertMsg, temporaryMsg);
 					break;
 				}
 			}

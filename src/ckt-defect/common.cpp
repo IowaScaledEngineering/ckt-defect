@@ -106,5 +106,8 @@ uint32_t rollDice(void)
 	bootloader_random_enable();
 	uint32_t raw = esp_random();
 	bootloader_random_disable();
-	return raw % (PROBABILITY_MAX);
+	uint32_t dice = raw % (PROBABILITY_MAX);
+	Serial.print("Dice: ");
+	Serial.println(dice);
+	return dice;
 }

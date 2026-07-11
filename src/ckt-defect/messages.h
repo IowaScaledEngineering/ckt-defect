@@ -30,7 +30,7 @@ LICENSE:
 struct DefectMessage {
 	std::string alertMsg;    // Played instantly when defect detected (e.g. words, silence, or tone)
 	std::string detailMsg;   // Played in exit message after defect(s) detected 
-	std::string summaryMsg;  // Displayed on screen when defect detected (20 character summary)
+	std::string displayMsg;  // Displayed on screen when defect detected (20 chars x 3 lines max)
 	uint16_t probability;    // Probability out of every 10,000 axles
 };
 

@@ -45,7 +45,7 @@ void printMessages(MessageBundle* msgs)
 		Serial.print("Summary ");
 		Serial.print(j);
 		Serial.print(": ");
-		Serial.print(msgs->defects[j].summaryMsg.c_str());
+		Serial.print(msgs->defects[j].displayMsg.c_str());
 		Serial.print(" [");
 		Serial.print(msgs->defects[j].probability);
 		Serial.println("]");
@@ -289,6 +289,4 @@ void transformMessage(const std::string& inputMessage, std::string& outputMessag
 		if (endPos == std::string::npos) break;
 		startPos = endPos;
 	}
-
-	toLowercase(outputMessage);
 }
