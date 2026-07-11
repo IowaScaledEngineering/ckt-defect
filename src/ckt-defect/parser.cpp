@@ -35,7 +35,8 @@ QueueHandle_t parserQueue;
 typedef enum
 {
 	PARSER_IDLE,
-	PARSER_DO_SOMETHING,
+	PARSER_PARSE,
+	PARSER_WAIT,
 } ParserState;
 
 ParserState parserState;
@@ -77,18 +78,21 @@ static void parseTask(void *args)
 		switch(parserState)
 		{
 			case PARSER_IDLE:
+				displayMessage.clear();
 				if(!parserQueueEmpty() && audioQueueEmpty())
 				{
 					// Something is in the parser queue and the audio is not playing
-					parserState = PARSER_DO_SOMETHING;
+					parserState = PARSER_PARSE;
 				}
 				break;
 
-			case PARSER_DO_SOMETHING:
+			case PARSER_PARSE:
 				if(parserQueuePop(&obj) && obj != nullptr)  // Should only get here when there is something in the queue, so portMAX_DELAY is fine
 				{
 //					Serial.print("Parsing: ");
 //					Serial.println(obj->msg.c_str());
+
+					displayMessage = obj->displayMsg;
 					
 					std::string_view msg_view(obj->msg);
 					size_t start = 0;
@@ -223,7 +227,22 @@ clrTestPoint(TP1);
 					}
 					delete obj;
 				}
-				parserState = PARSER_IDLE;
+				parserState = PARSER_WAIT;
+				break;
+
+			case PARSER_WAIT:
+				if(audioQueueEmpty())
+				{
+					// Audio is done playing
+					if(!parserQueueEmpty())
+					{
+						parserState = PARSER_PARSE;
+					}
+					else
+					{
+						parserState = PARSER_IDLE;
+					}
+				}
 				break;
 		}
 
