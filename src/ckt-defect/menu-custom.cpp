@@ -68,15 +68,19 @@ MenuEvent MenuHome::update()
 		backlightState = true;
 	}
 
-	disp->gotoxy(0,3);
-	disp->print((char)0);  // bulb
-	if(disp->getBacklight())
+	// Draw buttons
+	if(!data[0].active && !data[1].active)
 	{
-		disp->print("OFF");
-	}
-	else
-	{
-		disp->print("ON ");
+		disp->gotoxy(0,3);
+		disp->print((char)0);  // bulb
+		if(disp->getBacklight())
+		{
+			disp->print("OFF");
+		}
+		else
+		{
+			disp->print("ON ");
+		}
 	}
 	disp->gotoxy(16,3);
 	disp->print("MENU");
