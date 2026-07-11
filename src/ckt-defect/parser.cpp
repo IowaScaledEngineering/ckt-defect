@@ -75,9 +75,9 @@ static void parseTask(void *args)
 		switch(parserState)
 		{
 			case PARSER_IDLE:
-				if(!parserQueueEmpty())
+				if(!parserQueueEmpty() && audioQueueEmpty())
 				{
-					// Queue not empty
+					// Something is in the parser queue and the audio is not playing
 					parserState = PARSER_DO_SOMETHING;
 				}
 				break;
@@ -239,7 +239,7 @@ clrTestPoint(TP1);
 
 void parserInit(void)
 {
-	parserQueue = xQueueCreate(1, sizeof(ParserObject));   /// FIXME?  How many queued messages do we want before the main loop blocks?
+	parserQueue = xQueueCreate(10, sizeof(ParserObject));   /// FIXME?  How many queued messages do we want before the main loop blocks?
 	xTaskCreate(parseTask, "parseTask", 8192, NULL, PARSER_TASK_PRIORITY, &parseTaskHandle);
 }
 
