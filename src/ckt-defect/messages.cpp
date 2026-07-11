@@ -141,10 +141,11 @@ static void formatStringField(std::string& dest, const std::string& src, int32_t
 	}
 }
 
-std::string* transformMessage(const std::string& inputMessage, const DetectorConfiguration& cfg, const DataBundle& data, uint8_t trackNum, bool breakDigits)
+
+void transformMessage(const std::string& inputMessage, std::string& outputMessage, const DetectorConfiguration& cfg, const DataBundle& data, uint8_t trackNum, bool breakDigits)
 {
-	std::string* outputMessage = new std::string();
-	outputMessage->reserve(inputMessage.length() * (breakDigits ? 2 : 1));
+	outputMessage.clear();
+	outputMessage.reserve(inputMessage.length() * (breakDigits ? 2 : 1));
 
 	size_t startPos = 0;
 	bool first = true;
@@ -157,11 +158,23 @@ std::string* transformMessage(const std::string& inputMessage, const DetectorCon
 		size_t endPos = inputMessage.find_first_of(" \t\r\n", startPos);
 		std::string token = (endPos == std::string::npos) ? inputMessage.substr(startPos) : inputMessage.substr(startPos, endPos - startPos);
 
-		if (!first) outputMessage->push_back(' ');
+		if (!first) outputMessage.push_back(' ');
 		first = false;
 		
 		size_t colonPos = token.find(':');
 		std::string baseToken = (colonPos == std::string::npos) ? token : token.substr(0, colonPos);
+
+		startPos = inputMessage.find_first_not_of(" \t\r\n", startPos);
+		if (startPos == std::string::npos) break;
+
+		endPos = inputMessage.find_first_of(" \t\r\n", startPos);
+		token = (endPos == std::string::npos) ? inputMessage.substr(startPos) : inputMessage.substr(startPos, endPos - startPos);
+
+		if (!first) outputMessage.push_back(' ');
+		first = false;
+		
+		colonPos = token.find(':');
+		baseToken = (colonPos == std::string::npos) ? token : token.substr(0, colonPos);
 
 		if ("#milepost" == baseToken)
 		{
@@ -182,7 +195,7 @@ std::string* transformMessage(const std::string& inputMessage, const DetectorCon
 					formatted = numStr;
 				}
 				
-				(*outputMessage) += formatted;
+				outputMessage += formatted;
 
 				// Only apply trailing padding spaces if breakDigits is false
 				if (!breakDigits)
@@ -200,13 +213,13 @@ std::string* transformMessage(const std::string& inputMessage, const DetectorCon
 					// we add the difference as trailing padding spaces.
 					if (rawIntLength < absN) 
 					{
-						outputMessage->append(absN - rawIntLength, ' ');
+						outputMessage.append(absN - rawIntLength, ' ');
 					}
 				}
 			} 
 			else 
 			{
-				insertNumber(*outputMessage, cfg.milepost, n, m, breakDigits);
+				insertNumber(outputMessage, cfg.milepost, n, m, breakDigits);
 			}
 		}
 		else if ("#track" == baseToken)
@@ -216,17 +229,17 @@ std::string* transformMessage(const std::string& inputMessage, const DetectorCon
 			{
 				int32_t n = 0, m = 0;
 				parseModifier(token, colonPos, n, m, false);
-				formatStringField(*outputMessage, trackName, n);
+				formatStringField(outputMessage, trackName, n);
 			} 
 			else 
 			{
-				(*outputMessage) += trackName;
+				outputMessage += trackName;
 			}
 		}
 		else if ("#axle" == baseToken || "#axles" == baseToken || "#speed" == baseToken || "#temp" == baseToken)
 		{
 			int32_t val = 0;
-			if ("#axle" == baseToken)       val = data.defectAxle;
+			if ("#axle" == baseToken)	   val = data.defectAxle;
 			else if ("#axles" == baseToken) val = data.totalAxles;
 			else if ("#speed" == baseToken) val = data.speed;
 			else if ("#temp" == baseToken)  val = TemperatureManager::getInstance()->getTemperature() + 0.5;
@@ -252,40 +265,42 @@ std::string* transformMessage(const std::string& inputMessage, const DetectorCon
 					formatted = numStr;
 				}
 
-				(*outputMessage) += formatted;
+				outputMessage += formatted;
 				// Only apply left padding if breakDigits is false
 				if (!breakDigits)
 				{
 					size_t absN = std::abs(n);
 					if (formatted.length() < absN) 
 					{
-						outputMessage->append(absN - formatted.length(), ' ');
+						outputMessage.append(absN - formatted.length(), ' ');
 					}
 				}
 			} 
 			else 
 			{
-				insertNumber(*outputMessage, val, n, 0, breakDigits);
+				insertNumber(outputMessage, val, n, 0, breakDigits);
 			}
 		}
 		else if ("#defectlist" == baseToken)
 		{
 			for (auto const& defect : data.defects)
 			{
-				(*outputMessage) += defect;
-				outputMessage->push_back(' ');
+				outputMessage += defect;
+				outputMessage.push_back(' ');
 			}
-			if (!data.defects.empty()) outputMessage->pop_back();
+			if (!data.defects.empty())
+			{
+				outputMessage.pop_back();
+			}
 		}
 		else
 		{
-			(*outputMessage) += token;
+			outputMessage += token;
 		}
 
 		if (endPos == std::string::npos) break;
 		startPos = endPos;
 	}
 
-	toLowercase(*outputMessage);
-	return outputMessage;
+	toLowercase(outputMessage);
 }

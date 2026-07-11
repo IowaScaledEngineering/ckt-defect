@@ -130,9 +130,7 @@ public:
 protected:
 	MessageBundle* msgs;
 	uint8_t trackNum;
-	uint32_t dice;
-	ParserObject parserObj;
 
-	void enqueueMessage(std::string* message);
+	void enqueueMessage(const std::string& message); 
 };
 

@@ -90,7 +90,7 @@ static void parseTask(void *args)
 //					Serial.print("Parsing: ");
 //					Serial.println(obj.msg->c_str());
 					
-					std::string_view msg_view(*(obj.msg));
+					std::string_view msg_view(obj.msg);
 					size_t start = 0;
 					size_t end = 0;
 
@@ -218,21 +218,6 @@ clrTestPoint(TP1);
 						{
 							break;  // Escape this while loop
 						}
-					}
-					if(obj.deleteWhenDone)
-					{
-						if(obj.msg != nullptr)
-						{
-							delete obj.msg;
-							obj.msg = nullptr;
-						}
-						
-						if(obj.displayMsg != nullptr)
-						{
-							delete obj.displayMsg;
-							obj.displayMsg = nullptr;
-						}
-//						Serial.println("Deleted msg");
 					}
 				}
 				parserState = PARSER_IDLE;

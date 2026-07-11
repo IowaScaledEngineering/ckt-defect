@@ -27,9 +27,8 @@ LICENSE:
 #include "parser.h"
 
 struct ParserObject {
-	std::string* msg = nullptr;         // Pointer to the message string
-	std::string* displayMsg = nullptr;  // Pointer to the display string
-	bool deleteWhenDone = false;        // If true, messages pointed to by msg and displayMsg will be deleted when done
+	std::string msg;          // Pointer to the message string
+	std::string displayMsg;   // Pointer to the display string
 };
 
 bool parserQueueEmpty(void);

@@ -47,5 +47,5 @@ struct MessageBundle {
 
 void printMessages(MessageBundle* msgs);
 void insertNumber(std::string& str, int32_t num, uint32_t integerDigits, uint32_t fractionalDigits, bool breakDigits);
-std::string* transformMessage(const std::string& inputMessage, const DetectorConfiguration& cfg, const DataBundle& data, uint8_t trackNum, bool breakDigits);
+void transformMessage(const std::string& inputMessage, std::string& outputMessage, const DetectorConfiguration& cfg, const DataBundle& data, uint8_t trackNum, bool breakDigits);
 

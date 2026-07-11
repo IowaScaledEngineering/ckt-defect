@@ -173,13 +173,13 @@ const char* DetectorStateMachine::getStateName(DetectorState state) const
 	}
 }
 
-void DetectorStateMachine::enqueueMessage(std::string* message)
+void DetectorStateMachine::enqueueMessage(const std::string& message)
 {
-	parserObj.msg = transformMessage(*message, *cfg, *data, trackNum, true);
-	parserObj.deleteWhenDone = true;
+	ParserObject obj;
+	transformMessage(message, obj.msg, *cfg, *data, trackNum, true);
+	parserQueuePush(&obj);
 	Serial.print("--> ");
-	Serial.println(parserObj.msg->c_str());
-	parserQueuePush(&parserObj);
+	Serial.println(obj.msg.c_str());
 }
 
 void DetectorStateMachine::update()
@@ -219,8 +219,7 @@ void DetectorStateMachine::update()
 
 		case DetectorState::ENTRANCE_DEFECT:
 			// Roll the dice
-			dice = rollDice();
-			if(dice < msgs->integrityProbability)
+			if(rollDice() < msgs->integrityProbability)
 			{
 				// Integrity defect
 				transitionTo(DetectorState::INTEGRITY_DEFECT_QUEUE);
@@ -269,7 +268,7 @@ void DetectorStateMachine::update()
 			break;
 			
 		case DetectorState::ENTRANCE_QUEUE:
-			enqueueMessage(&msgs->entranceMsg);
+			enqueueMessage(msgs->entranceMsg);
 			if(!cfg->infrastructureMode)
 			{
 				// Not infrastructure mode
@@ -329,18 +328,19 @@ void DetectorStateMachine::update()
 			break;
 			
 		case DetectorState::AXLE_DEFECT:
-			// Roll the dice
-			dice = rollDice();
-			for(uint32_t i = 0; i < msgs->defects.size(); i++)
+			for (uint32_t i = 0; i < msgs->defects.size(); i++)
 			{
-				if(dice < msgs->defects[i].probability)
+				if (rollDice() < msgs->defects[i].probability)
 				{
-					// Defect
-					std::string* transformedDetail = transformMessage(msgs->defects[i].detailMsg, *cfg, *data, trackNum, true);
-					data->defects.push_back(*transformedDetail);
-					delete transformedDetail;
+					ParserObject obj;
+					
+					// Pass by reference explicitly modifies obj.msg on the stack
+					transformMessage(msgs->defects[i].detailMsg, obj.msg, *cfg, *data, trackNum, true);
+					
+					data->defects.push_back(obj.msg);
+					
 					// FIXME: send summaryMsg to display
-					enqueueMessage(&msgs->defects[i].alertMsg);
+					enqueueMessage(msgs->defects[i].alertMsg);
 					break;
 				}
 			}
@@ -362,11 +362,11 @@ void DetectorStateMachine::update()
 			if(data->defects.size() > 0)
 			{
 				// We have defects
-				enqueueMessage(&msgs->exitDefectMsg);
+				enqueueMessage(msgs->exitDefectMsg);
 			}
 			else
 			{
-				enqueueMessage(&msgs->exitCleanMsg);
+				enqueueMessage(msgs->exitCleanMsg);
 			}
 			transitionTo(DetectorState::RESET);
 			break;
@@ -379,17 +379,17 @@ void DetectorStateMachine::update()
 			break;
 			
 		case DetectorState::TOO_SLOW_QUEUE:
-			enqueueMessage(&msgs->tooSlowMsg);
+			enqueueMessage(msgs->tooSlowMsg);
 			transitionTo(DetectorState::WAIT_NO_EXIT);
 			break;
 			
 		case DetectorState::INTEGRITY_DEFECT_QUEUE:
-			enqueueMessage(&msgs->integrityMsg);
+			enqueueMessage(msgs->integrityMsg);
 			transitionTo(DetectorState::WAIT_NO_EXIT);
 			break;
 			
 		case DetectorState::BLOCKED_DEFECT_QUEUE:
-			enqueueMessage(&msgs->detectorBlockedMsg);
+			enqueueMessage(msgs->detectorBlockedMsg);
 			transitionTo(DetectorState::WAIT_NO_EXIT);
 			break;
 			
