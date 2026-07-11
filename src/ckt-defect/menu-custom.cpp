@@ -1,5 +1,6 @@
 #include "menu-custom.h"
 #include "common.h"
+#include "temperature.h"
 #include <format>
 
 void MenuHome::onEnter()
@@ -44,9 +45,11 @@ MenuEvent MenuHome::update()
 	disp->print(intToString(cfg.milepost, 4, 1).c_str());
 	disp->gotoxy(6, 1);
 	disp->print("STANDBY");
-	disp->gotoxy(5, 2);
-	disp->print("TEMP:");
-	// FIXME: print temperature
+	disp->gotoxy(7, 2);
+	TemperatureManager* tempMgr = TemperatureManager::getInstance();
+	disp->print(intToString(tempMgr->getTemperature()+0.5, 3, 0).c_str());
+	disp->print(0xDF);  // degrees
+	disp->print(cfg.temperatureUnitsF ? 'F' : 'C');
 
 	disp->gotoxy(0,3);
 	disp->print((char)0);

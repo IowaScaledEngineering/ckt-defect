@@ -53,10 +53,16 @@ void toLowercase(std::string& str)
 	);
 }
 
-std::string intToString(uint32_t intVal, uint32_t integerDigits, uint32_t fractionalDigits)
+std::string intToString(int32_t intVal, uint32_t integerDigits, uint32_t fractionalDigits)
 {
-	// Convert the raw integer to its base string representation
-	std::string numStr = std::to_string(intVal);
+	// Track if the original value was negative
+	bool isNegative = (intVal < 0);
+	
+	// Convert to absolute value for string processing
+	uint32_t absVal = isNegative ? static_cast<uint32_t>(-intVal) : static_cast<uint32_t>(intVal);
+
+	// Convert the raw absolute integer to its base string representation
+	std::string numStr = std::to_string(absVal);
 	std::string formatted;
 
 	// Handle leading zero if fractionalDigits is greater than or equal to the total digits
@@ -75,7 +81,12 @@ std::string intToString(uint32_t intVal, uint32_t integerDigits, uint32_t fracti
 		}
 	}
 
-	// Calculate the length of the integer portion currently in the string
+	// Prepend the negative sign if applicable before evaluating integer width
+	if (isNegative) {
+		formatted.insert(0, 1, '-');
+	}
+
+	// Calculate the length of the integer portion currently in the string (including the sign)
 	size_t currentIntLength = formatted.find('.');
 	if (currentIntLength == std::string::npos) {
 		currentIntLength = formatted.length();
@@ -88,6 +99,7 @@ std::string intToString(uint32_t intVal, uint32_t integerDigits, uint32_t fracti
 
 	return formatted;
 }
+
 
 uint32_t rollDice(void)
 {

@@ -99,6 +99,11 @@ static void parseTask(void *args)
 							// Handle '.' as 'point'
 							token = "point";
 						}
+						else if("-" == token)
+						{
+							// Handle '-' as 'minus'
+							token = "minus";
+						}
 
 setTestPoint(TP1);
 						while(!audioQueueEmpty())

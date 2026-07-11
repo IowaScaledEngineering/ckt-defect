@@ -60,8 +60,8 @@ struct DetectorConfiguration {
 	bool temperatureEnable;
 	bool temperatureReal;
 	bool temperatureUnitsF;
-	int16_t minTemperature;
-	int16_t maxTemperature;
+	float minTemperatureC;   // Float so conversion to/from F works cleanly
+	float maxTemperatureC;
 
 	// Operation Mode
 	bool infrastructureMode;
@@ -77,3 +77,8 @@ void updateTrackNames(DetectorConfiguration* cfg, std::string trackA, std::strin
 
 void updateDirectionNames(DetectorConfiguration* cfg);
 void updateDirectionNames(DetectorConfiguration* cfg, std::string dir1, std::string dir2);
+
+int16_t getMinTemperature(DetectorConfiguration* cfg);
+int16_t getMaxTemperature(DetectorConfiguration* cfg);
+void setMinTemperature(DetectorConfiguration* cfg, int16_t temperature);
+void setMaxTemperature(DetectorConfiguration* cfg, int16_t temperature);

@@ -25,6 +25,7 @@ LICENSE:
 
 #include "common.h"
 #include "messages.h"
+#include "temperature.h"
 
 void printMessages(MessageBundle* msgs)
 {
@@ -65,7 +66,7 @@ void printMessages(MessageBundle* msgs)
 	Serial.println(msgs->detectorBlockedMsg.c_str());
 }
 
-void insertNumber(std::string& str, uint32_t num, uint32_t fractionalDigits)
+void insertNumber(std::string& str, int32_t num, uint32_t fractionalDigits)
 {
 	std::string formatted = intToString(num, 1, fractionalDigits);
 
@@ -123,8 +124,8 @@ std::string* transformMessage(std::string* inputMessage, DetectorConfiguration *
 		}
 		else if("#temp" == token)
 		{
-			// FIXME: call accessor function for temperature calculator
-//			insertNumber(*outputMessage, data->temperature, 0);
+			TemperatureManager* tempMgr = TemperatureManager::getInstance();
+			insertNumber(*outputMessage, tempMgr->getTemperature()+0.5, 0);
 		}
 		else if("#defectlist" == token)
 		{

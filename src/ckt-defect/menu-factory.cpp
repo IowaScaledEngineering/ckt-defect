@@ -286,18 +286,20 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd)
 	std::string degC("\xDF" "C", 2);
 	auto menuMinTemperature = std::make_shared<MenuNumberDial>(
 		"Minimum Temp",
-		&cfg.minTemperature,
+		[&cfg]() { return getMinTemperature(&cfg); },
+		[&cfg](int16_t val) { setMinTemperature(&cfg, val); },
 		false,
-		-100,   // min
+		-99,   // min
 		150,  // max
 		cfg.temperatureUnitsF ? degF : degC,
 		[&cfg]() { saveConfiguration(&cfg); }
 	);
 	auto menuMaxTemperature = std::make_shared<MenuNumberDial>(
 		"Maximum Temp",
-		&cfg.maxTemperature,
+		[&cfg]() { return getMaxTemperature(&cfg); },
+		[&cfg](int16_t val) { setMaxTemperature(&cfg, val); },
 		false,
-		-100,   // min
+		-99,   // min
 		150,  // max
 		cfg.temperatureUnitsF ? degF : degC,
 		[&cfg]() { saveConfiguration(&cfg); }

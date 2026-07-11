@@ -88,8 +88,8 @@ void loadConfiguration(DetectorConfiguration* cfg)
 	cfg->temperatureEnable = preferences.getBool("tmpEn", TEMPERATURE_EN_DEFAULT);
 	cfg->temperatureReal = preferences.getBool("tmpReal", TEMPERATURE_REAL_DEFAULT);
 	cfg->temperatureUnitsF = preferences.getBool("tmpUnitF", TEMPERATURE_UNITS_F_DEFAULT);
-	cfg->minTemperature = preferences.getShort("tmpMin", MIN_TEMPERATURE_DEFAULT);
-	cfg->maxTemperature = preferences.getShort("tmpMax", MAX_TEMPERATURE_DEFAULT);
+	cfg->minTemperatureC = preferences.getFloat("tmpMin", MIN_TEMPERATURE_DEFAULT);
+	cfg->maxTemperatureC = preferences.getFloat("tmpMax", MAX_TEMPERATURE_DEFAULT);
 
 	cfg->directionEnable = preferences.getBool("dirEn", DIRECTION_EN_DEFAULT);
 	
@@ -179,11 +179,11 @@ void saveConfiguration(DetectorConfiguration* cfg)
 	if(cfg->temperatureUnitsF != preferences.getBool("tmpUnitF", TEMPERATURE_UNITS_F_DEFAULT))
 		preferences.putBool("tmpUnitF", cfg->temperatureUnitsF);
 
-	if(cfg->minTemperature != preferences.getShort("tmpMin", MIN_TEMPERATURE_DEFAULT))
-		preferences.putShort("tmpMin", cfg->minTemperature);
+	if(cfg->minTemperatureC != preferences.getFloat("tmpMin", MIN_TEMPERATURE_DEFAULT))
+		preferences.putFloat("tmpMin", cfg->minTemperatureC);
 
-	if(cfg->maxTemperature != preferences.getShort("tmpMax", MAX_TEMPERATURE_DEFAULT))
-		preferences.putShort("tmpMax", cfg->maxTemperature);
+	if(cfg->maxTemperatureC != preferences.getFloat("tmpMax", MAX_TEMPERATURE_DEFAULT))
+		preferences.putFloat("tmpMax", cfg->maxTemperatureC);
 
 	if(cfg->directionEnable != preferences.getBool("dirEn", DIRECTION_EN_DEFAULT))
 		preferences.putBool("dirEn", cfg->directionEnable);
@@ -285,10 +285,10 @@ void printConfiguration(DetectorConfiguration* cfg)
 		Serial.println("Celsius (C)");
 
 	Serial.print("Min Temperature Limit: ");
-	Serial.println(cfg->minTemperature);
+	Serial.println(cfg->minTemperatureC);
 
 	Serial.print("Max Temperature Limit: ");
-	Serial.println(cfg->maxTemperature);
+	Serial.println(cfg->maxTemperatureC);
 
 	Serial.print("Direction Enable: ");
 	Serial.println(cfg->directionEnable);
@@ -363,3 +363,44 @@ void updateDirectionNames(DetectorConfiguration* cfg, std::string dir1, std::str
 	cfg->direction2Name = dir2;
 }
 
+int16_t getMinTemperature(DetectorConfiguration* cfg)
+{
+	if (cfg->temperatureUnitsF)
+	{
+		return static_cast<int16_t>(std::round((cfg->minTemperatureC * 1.8f) + 32.0f));
+	}
+	return static_cast<int16_t>(std::round(cfg->minTemperatureC));
+}
+
+int16_t getMaxTemperature(DetectorConfiguration* cfg)
+{
+	if (cfg->temperatureUnitsF)
+	{
+		return static_cast<int16_t>(std::round((cfg->maxTemperatureC * 1.8f) + 32.0f));
+	}
+	return static_cast<int16_t>(std::round(cfg->maxTemperatureC));
+}
+
+void setMinTemperature(DetectorConfiguration* cfg, int16_t temperature)
+{
+	if (cfg->temperatureUnitsF)
+	{
+		cfg->minTemperatureC = (static_cast<float>(temperature) - 32.0f) / 1.8f;
+	}
+	else
+	{
+		cfg->minTemperatureC = static_cast<float>(temperature);
+	}
+}
+
+void setMaxTemperature(DetectorConfiguration* cfg, int16_t temperature)
+{
+	if (cfg->temperatureUnitsF)
+	{
+		cfg->maxTemperatureC = (static_cast<float>(temperature) - 32.0f) / 1.8f;
+	}
+	else
+	{
+		cfg->maxTemperatureC = static_cast<float>(temperature);
+	}
+}

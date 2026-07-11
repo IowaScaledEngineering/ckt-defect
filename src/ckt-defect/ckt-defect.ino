@@ -49,6 +49,7 @@ LICENSE:
 #include "src/menu/menu-mgr.h"
 #include "menu-factory.h"
 #include "state-machine.h"
+#include "temperature.h"
 
 
 // 3 sec watchdog 
@@ -323,6 +324,9 @@ void loop()
 	bool configFilePresent = false;
 	bool externalVocabPresent = false;
 
+	TemperatureManager temperatureMgr(&cfg);
+	unsigned long temperatureUpdateTime = millis();
+	
 /*
 	uint8_t state = 255;  // Start in default
 	uint8_t returnState = 0;
@@ -352,9 +356,9 @@ void loop()
 	};
 
 	uint32_t centisecs = 0;
-	bool decisecsTick = false;
+	bool decisecsTick = true; // Trigger initially
 	uint32_t decisecs = 0;
-	bool secondsTick = false;
+	bool secondsTick = true;  // Trigger initially
 
 	esp_task_wdt_reset();
 
@@ -408,29 +412,6 @@ void loop()
 
 	MenuManager menuManager(menus);
 
-
-	// Wait for splash screen timeout
-	while(millis() < 3000)
-	{
-		esp_task_wdt_reset();
-	}
-
-	menuManager.begin();
-	menuManager.process();  // Call once here to get things going
-
-
-	Serial.println("ISE Defect Detector");
-	Serial.print("Version: ");
-	Serial.println(VERSION_STRING);
-	Serial.print("Git Rev: ");
-	Serial.println(GIT_REV);
-
-	printMemoryUsage();
-	printNVSStats();
-
-	Serial.print("Random Number: ");
-	Serial.println(rollDice());
-	Serial.print('\n');
 
 	// Set up audio
 	audioSetPttEnableCallback(enableAuxRelay);
@@ -561,6 +542,39 @@ void loop()
 		return a.probability < b.probability; // returns true if 'a' should come before 'b'
 		});
 
+
+
+	//  Initialize temperature after config is loaded, but before menu starts running
+	temperatureMgr.begin();
+
+
+
+	// Wait for splash screen timeout
+	while(millis() < 3000)
+	{
+		esp_task_wdt_reset();
+	}
+
+	menuManager.begin();
+	menuManager.process();  // Call once here to get things going
+
+
+	Serial.println("ISE Defect Detector");
+	Serial.print("Version: ");
+	Serial.println(VERSION_STRING);
+	Serial.print("Git Rev: ");
+	Serial.println(GIT_REV);
+
+	printMemoryUsage();
+	printNVSStats();
+
+	Serial.print("Random Number: ");
+	Serial.println(rollDice());
+	Serial.print('\n');
+
+
+
+
 	// Print configuration values
 	Serial.print('\n');
 	printMessages(&trackMessages);
@@ -649,6 +663,14 @@ clrTestPoint(TP2);
 		{
 			secondsTick = false;
 //			printMemoryUsage();
+		}
+
+		// Update temperature every 10 sec
+		if( (millis()-temperatureUpdateTime) >= 10000 )
+		{
+			temperatureUpdateTime = millis();
+			temperatureMgr.update();
+//			Serial.println(temperatureMgr.getTemperature());
 		}
 		
 		// Update the axle counts

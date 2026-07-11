@@ -38,5 +38,5 @@ extern const std::vector<std::string> trackNames;
 extern const std::vector<std::string> directionNames;
 
 void toLowercase(std::string& str);
-std::string intToString(uint32_t intVal, uint32_t integerDigits, uint32_t fractionalDigits);
+std::string intToString(int32_t intVal, uint32_t integerDigits, uint32_t fractionalDigits);
 uint32_t rollDice(void);
