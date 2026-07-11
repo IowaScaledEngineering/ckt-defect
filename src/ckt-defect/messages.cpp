@@ -227,7 +227,7 @@ void transformMessage(const std::string& inputMessage, std::string& outputMessag
 		else if ("#axle" == baseToken || "#axles" == baseToken || "#speed" == baseToken || "#temp" == baseToken)
 		{
 			int32_t val = 0;
-			if ("#axle" == baseToken)	   val = data.defectAxle;
+			if ("#axle" == baseToken)       val = data.axleCount;
 			else if ("#axles" == baseToken) val = data.totalAxles;
 			else if ("#speed" == baseToken) val = data.speed;
 			else if ("#temp" == baseToken)  val = TemperatureManager::getInstance()->getTemperature() + 0.5;

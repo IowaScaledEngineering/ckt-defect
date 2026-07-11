@@ -336,10 +336,11 @@ void DetectorStateMachine::update()
 					
 					// Pass by reference explicitly modifies obj.msg on the stack
 					transformMessage(msgs->defects[i].detailMsg, temporaryMsg, *cfg, *data, trackNum, true);
-					
 					data->defects.push_back(temporaryMsg);
 					
 					// FIXME: send summaryMsg to display
+					
+					// Play alert message
 					enqueueMessage(msgs->defects[i].alertMsg);
 					break;
 				}
