@@ -44,6 +44,8 @@ volatile bool killParser = false;
 
 TaskHandle_t parseTaskHandle = NULL;
 
+std::string displayMessage;
+
 bool parserQueueEmpty(void)
 {
 	if(0 == uxQueueMessagesWaiting(parserQueue))
@@ -219,8 +221,18 @@ clrTestPoint(TP1);
 					}
 					if(obj.deleteWhenDone)
 					{
+						if(obj.msg != nullptr)
+						{
+							delete obj.msg;
+							obj.msg = nullptr;
+						}
+						
+						if(obj.displayMsg != nullptr)
+						{
+							delete obj.displayMsg;
+							obj.displayMsg = nullptr;
+						}
 //						Serial.println("Deleted msg");
-						delete obj.msg;
 					}
 				}
 				parserState = PARSER_IDLE;
@@ -258,4 +270,9 @@ void parserTerminate(void)
 	}
 	xQueueReset(parserQueue);  // Empty the queue
 	vQueueDelete(parserQueue);  // Delete the queue
+}
+
+std::string getDisplayMessage(void)
+{
+	return displayMessage;
 }
