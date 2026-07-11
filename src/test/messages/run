@@ -1,0 +1,4 @@
+#!/bin/bash
+
+g++ -O2 -std=c++17 -I. test_messages.cpp messages.cpp -o test_messages
+./test_messages

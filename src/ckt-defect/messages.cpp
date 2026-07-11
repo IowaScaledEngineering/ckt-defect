@@ -66,25 +66,32 @@ void printMessages(MessageBundle* msgs)
 	Serial.println(msgs->detectorBlockedMsg.c_str());
 }
 
+
 void insertNumber(std::string& str, int32_t num, uint32_t integerDigits, uint32_t fractionalDigits, bool breakDigits)
 {
-	std::string formatted = intToString(num, integerDigits, fractionalDigits);
-
+	// If breakDigits is true, ignore any specified integer padding width constraints
 	if (breakDigits)
 	{
-		for (char c : formatted)
+		integerDigits = 0;
+	}
+
+	std::string rawStr = intToString(num, integerDigits, fractionalDigits);
+	
+	if (breakDigits)
+	{
+		for (char c : rawStr)
 		{
 			str.push_back(c);
 			str.push_back(' ');
 		}
-		if (!formatted.empty())
+		if (!rawStr.empty())
 		{
-			str.pop_back();
+			str.pop_back(); // Remove trailing space
 		}
 	}
 	else
 	{
-		str += formatted;
+		str += rawStr;
 	}
 }
 
@@ -144,23 +151,13 @@ std::string* transformMessage(const std::string& inputMessage, const DetectorCon
 
 	while (startPos < inputMessage.length())
 	{
-		// Skip leading spaces to handle multiple spaces safely
 		startPos = inputMessage.find_first_not_of(" \t\r\n", startPos);
-		if (startPos == std::string::npos) 
-		{
-			break;
-		}
+		if (startPos == std::string::npos) break;
 
-		// Find the end of the current token
 		size_t endPos = inputMessage.find_first_of(" \t\r\n", startPos);
-		std::string token = (endPos == std::string::npos) ? 
-		                    inputMessage.substr(startPos) : 
-		                    inputMessage.substr(startPos, endPos - startPos);
+		std::string token = (endPos == std::string::npos) ? inputMessage.substr(startPos) : inputMessage.substr(startPos, endPos - startPos);
 
-		if (!first)
-		{
-			outputMessage->push_back(' ');
-		}
+		if (!first) outputMessage->push_back(' ');
 		first = false;
 		
 		size_t colonPos = token.find(':');
@@ -169,19 +166,42 @@ std::string* transformMessage(const std::string& inputMessage, const DetectorCon
 		if ("#milepost" == baseToken)
 		{
 			int32_t n = 1, m = 1;
-			if (colonPos != std::string::npos) 
-			{
-				parseModifier(token, colonPos, n, m, true);
-			}
+			if (colonPos != std::string::npos) parseModifier(token, colonPos, n, m, true);
 			
 			if (n < 0) 
 			{
 				std::string numStr = intToString(cfg.milepost, 0, m);
-				size_t absN = std::abs(n);
-				(*outputMessage) += numStr;
-				if (numStr.length() < absN) 
+				std::string formatted;
+				if (breakDigits)
 				{
-					outputMessage->append(absN - numStr.length(), ' ');
+					for (char c : numStr) { formatted.push_back(c); formatted.push_back(' '); }
+					if (!formatted.empty()) formatted.pop_back();
+				}
+				else
+				{
+					formatted = numStr;
+				}
+				
+				(*outputMessage) += formatted;
+
+				// Only apply trailing padding spaces if breakDigits is false
+				if (!breakDigits)
+				{
+					size_t absN = std::abs(n);
+					
+					// Find where the integer portion ends
+					size_t rawIntLength = numStr.find('.');
+					if (rawIntLength == std::string::npos)
+					{
+						rawIntLength = numStr.length();
+					}
+
+					// If the actual integer portion is smaller than the requested width absN,
+					// we add the difference as trailing padding spaces.
+					if (rawIntLength < absN) 
+					{
+						outputMessage->append(absN - rawIntLength, ' ');
+					}
 				}
 			} 
 			else 
@@ -209,10 +229,7 @@ std::string* transformMessage(const std::string& inputMessage, const DetectorCon
 			if ("#axle" == baseToken)       val = data.defectAxle;
 			else if ("#axles" == baseToken) val = data.totalAxles;
 			else if ("#speed" == baseToken) val = data.speed;
-			else if ("#temp" == baseToken)  {
-				TemperatureManager* tempMgr = TemperatureManager::getInstance();
-				val = tempMgr->getTemperature() + 0.5;
-			}
+			else if ("#temp" == baseToken)  val = TemperatureManager::getInstance()->getTemperature() + 0.5;
 
 			int32_t n = 1;
 			if (colonPos != std::string::npos) 
@@ -224,11 +241,26 @@ std::string* transformMessage(const std::string& inputMessage, const DetectorCon
 			if (n < 0) 
 			{
 				std::string numStr = intToString(val, 0, 0);
-				size_t absN = std::abs(n);
-				(*outputMessage) += numStr;
-				if (numStr.length() < absN) 
+				std::string formatted;
+				if (breakDigits)
 				{
-					outputMessage->append(absN - numStr.length(), ' ');
+					for (char c : numStr) { formatted.push_back(c); formatted.push_back(' '); }
+					if (!formatted.empty()) formatted.pop_back();
+				}
+				else
+				{
+					formatted = numStr;
+				}
+
+				(*outputMessage) += formatted;
+				// Only apply left padding if breakDigits is false
+				if (!breakDigits)
+				{
+					size_t absN = std::abs(n);
+					if (formatted.length() < absN) 
+					{
+						outputMessage->append(absN - formatted.length(), ' ');
+					}
 				}
 			} 
 			else 
@@ -243,20 +275,14 @@ std::string* transformMessage(const std::string& inputMessage, const DetectorCon
 				(*outputMessage) += defect;
 				outputMessage->push_back(' ');
 			}
-			if (!data.defects.empty()) 
-			{
-				outputMessage->pop_back();
-			}
+			if (!data.defects.empty()) outputMessage->pop_back();
 		}
 		else
 		{
 			(*outputMessage) += token;
 		}
 
-		if (endPos == std::string::npos) 
-		{
-			break;
-		}
+		if (endPos == std::string::npos) break;
 		startPos = endPos;
 	}
 

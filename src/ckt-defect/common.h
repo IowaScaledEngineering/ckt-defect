@@ -33,6 +33,7 @@ LICENSE:
 
 #include <vector>
 #include <string>
+#include <cstdint>
 
 extern const std::vector<std::string> trackNames;
 extern const std::vector<std::string> directionNames;
