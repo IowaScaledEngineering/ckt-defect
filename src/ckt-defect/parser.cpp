@@ -87,8 +87,8 @@ static void parseTask(void *args)
 			case PARSER_DO_SOMETHING:
 				if(parserQueuePop(&obj) && obj != nullptr)  // Should only get here when there is something in the queue, so portMAX_DELAY is fine
 				{
-					Serial.print("Parsing: ");
-					Serial.println(obj->msg.c_str());
+//					Serial.print("Parsing: ");
+//					Serial.println(obj->msg.c_str());
 					
 					std::string_view msg_view(obj->msg);
 					size_t start = 0;
@@ -98,9 +98,9 @@ static void parseTask(void *args)
 					{
 						end = msg_view.find_first_of(" \t\r\n", start);
 						std::string_view token = msg_view.substr(start, end - start);
-						Serial.print('[');
-						Serial.print(std::string(token).c_str());
-						Serial.println(']');
+//						Serial.print('[');
+//						Serial.print(std::string(token).c_str());
+//						Serial.println(']');
 
 						// Transform special case tokens
 						std::string_view lookup_token = token;
