@@ -14,3 +14,4 @@ fp-info-cache
 kicad/*/*-backups
 
 src/menu-test/test
+src/test/messages/test_messages
