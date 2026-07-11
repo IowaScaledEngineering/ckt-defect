@@ -164,18 +164,6 @@ void transformMessage(const std::string& inputMessage, std::string& outputMessag
 		size_t colonPos = token.find(':');
 		std::string baseToken = (colonPos == std::string::npos) ? token : token.substr(0, colonPos);
 
-		startPos = inputMessage.find_first_not_of(" \t\r\n", startPos);
-		if (startPos == std::string::npos) break;
-
-		endPos = inputMessage.find_first_of(" \t\r\n", startPos);
-		token = (endPos == std::string::npos) ? inputMessage.substr(startPos) : inputMessage.substr(startPos, endPos - startPos);
-
-		if (!first) outputMessage.push_back(' ');
-		first = false;
-		
-		colonPos = token.find(':');
-		baseToken = (colonPos == std::string::npos) ? token : token.substr(0, colonPos);
-
 		if ("#milepost" == baseToken)
 		{
 			int32_t n = 1, m = 1;
