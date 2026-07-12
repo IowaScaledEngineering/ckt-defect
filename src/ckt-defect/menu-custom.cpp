@@ -2,6 +2,7 @@
 #include "common.h"
 #include "temperature.h"
 #include "parser.h"
+#include "audio.h"
 #include <format>
 
 void MenuHome::onEnter()
@@ -70,7 +71,8 @@ void MenuHome::renderHomeUI(const std::string& statusText, bool showLightButton)
 MenuEvent MenuHome::update()
 {
 	std::string tmpString;
-	
+	bool active = data[0].active || data[1].active;
+
 	if(backlightState)
 	{
 		disp->backlightOn();
@@ -90,7 +92,7 @@ MenuEvent MenuHome::update()
 		case MenuHomeState::STANDBY:
 			renderHomeUI("STANDBY", true);
 
-			if(data[0].active || data[1].active)
+			if(active)
 			{
 				state = MenuHomeState::ACTIVE;
 			}
@@ -106,12 +108,13 @@ MenuEvent MenuHome::update()
 			{
 				state = MenuHomeState::MESSAGE;
 			}
-			else if(!data[0].active && !data[1].active)
+			else if(!active)
 			{
-				backlightState = false;
-				backlightDelayStartTime = millis();
-				delayBacklightOff = true;
-				state = MenuHomeState::STANDBY;
+				if (parserQueueEmpty() && audioQueueEmpty())
+				{
+					waitStartTime = millis();
+					state = MenuHomeState::WAIT;
+				}
 			}
 
 			break;
@@ -161,11 +164,13 @@ MenuEvent MenuHome::update()
 			}
 			else
 			{
-				if(!data[0].active && !data[1].active)
+				if(!active)
 				{
-					waitStartTime = millis();
-					Serial.println("*** Going to Wait ***");
-					state = MenuHomeState::WAIT;
+					if (parserQueueEmpty() && audioQueueEmpty())
+					{
+						waitStartTime = millis();
+						state = MenuHomeState::WAIT;
+					}
 				}
 			}
 			dispString = getDisplayMessage();  // Fetch for next time around

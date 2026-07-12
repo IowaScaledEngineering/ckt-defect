@@ -495,7 +495,7 @@ void loop()
 			tmpMessage += " total axles #axles";
 		}
 
-		if(cfg.speedEnable)
+		if(cfg.speedEnable && cfg.axleEnable)
 		{
 			tmpMessage += " train speed #speed";
 		}
@@ -505,26 +505,28 @@ void loop()
 			tmpMessage += " temperature #temp degrees";
 		}
 
+		// FIXME: special case display messages below to selectively remove axles and speed
+
 		// Clean Exit Message
 		trackMessages.exitCleanMsg = trackMessages.entranceMsg + " no defects repeat no defects" + tmpMessage;
-		trackMessages.exitCleanDisplayMsg = "#track\\NO DEFECTS\\AXLES: #axles SPEED: #speed";
+		trackMessages.exitCleanDisplayMsg = "#track\\NO DEFECTS\\AXLES:#axles:3  SPEED:#speed:3";
 
 		// Defect Exit Message
 		trackMessages.exitDefectMsg = trackMessages.entranceMsg + " you have a defect #defectlist" + tmpMessage + " detector out";
-		trackMessages.exitDefectDisplayMsg = "#track\\DEFECT DETECTED!\\AXLES: #axles SPEED: #speed";
+		trackMessages.exitDefectDisplayMsg = "#track\\DEFECT DETECTED!\\AXLES:#axles:3  SPEED:#speed:3";
 
 		// Detector Integrity Message
 		trackMessages.integrityMsg = trackMessages.entranceMsg + " integrity failure" + tmpMessage ;
-		trackMessages.integrityDisplayMsg = "#track\\INTEGRITY FAILURE";
+		trackMessages.integrityDisplayMsg = "#track\\INTEGRITY FAILURE\\AXLES:#axles:3  SPEED:#speed:3";
 		trackMessages.integrityProbability = 50;
 		
 		// Too Slow Message
 		trackMessages.tooSlowMsg = trackMessages.entranceMsg + " train 2 slow";
-		trackMessages.tooSlowDisplayMsg = "#track\\TRAIN TOO SLOW";
+		trackMessages.tooSlowDisplayMsg = "#track\\TRAIN TOO SLOW\\AXLES:#axles:3  SPEED:#speed:3";
 		
 		// Detector Blocked Message
 		trackMessages.detectorBlockedMsg = trackMessages.entranceMsg + " detector blocked";
-		trackMessages.detectorBlockedDisplayMsg = "#track\\DETECTOR BLOCKED";
+		trackMessages.detectorBlockedDisplayMsg = "#track\\DETECTOR BLOCKED\\AXLES:#axles:3  SPEED:#speed:3";
 	}
 
 
