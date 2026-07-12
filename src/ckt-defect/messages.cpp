@@ -150,11 +150,21 @@ void transformMessage(const std::string& inputMessage, std::string& outputMessag
 	size_t i = 0;
 	while (i < inputMessage.length())
 	{
-		// 1. Handle escape character (backslash to newline)
+		// 1. Handle escape characters
 		if (inputMessage[i] == '\\')
 		{
-			outputMessage.push_back('\n');
-			i++;
+			// Check if it's a double backslash "\\" representing an escaped literal backslash
+			if (i + 1 < inputMessage.length() && inputMessage[i + 1] == '\\')
+			{
+				outputMessage.push_back('\\');
+				i += 2; // Advance past both backslashes
+			}
+			else
+			{
+				// Single backslash converts to a newline
+				outputMessage.push_back('\n');
+				i++;
+			}
 			continue;
 		}
 
