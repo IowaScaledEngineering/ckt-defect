@@ -39,13 +39,13 @@ const std::vector<TestCase> testCases = {
 	{ "#axle", "4", false, 0 },
 	{ "#axle:3", "  4", false, 0 },
 	{ "#axles:-3", "1 2 4", true, 0 },
-	{ "#track", "main 1", false, 0 },
-	{ "#track:4", "main", false, 0 },
-	{ "#track:8", "  main 1", false, 0 },
-	{ "#track:-8", "main 1  ", false, 0 },
+	{ "#track", "Main 1", false, 0 },
+	{ "#track:4", "Main", false, 0 },
+	{ "#track:8", "  Main 1", false, 0 },
+	{ "#track:-8", "Main 1  ", false, 0 },
 	{ "#speed", "4 5", true, 0 },
 	{ "#temp", "72", false, 0 },
-	{ "#defectlist", "hot_box drag_eq", false, 0 },
+	{ "#defectlist", "HOT_BOX DRAG_EQ", false, 0 },
 	{ "milepost #milepost speed #speed:3 mph", "milepost 346.9 speed  45 mph", false, 0 }
 };
 
@@ -56,7 +56,7 @@ int main() {
 	cfg.trackName[1] = "Track 2";
 
 	DataBundle data;
-	data.defectAxle = 4;
+	data.axleCount = 4;
 	data.totalAxles = 124;
 	data.speed = 45;
 	data.defects = {"HOT_BOX", "DRAG_EQ"};
