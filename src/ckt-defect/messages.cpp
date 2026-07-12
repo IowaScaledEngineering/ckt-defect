@@ -147,146 +147,173 @@ void transformMessage(const std::string& inputMessage, std::string& outputMessag
 	outputMessage.clear();
 	outputMessage.reserve(inputMessage.length() * (breakDigits ? 2 : 1));
 
-	size_t startPos = 0;
-	bool first = true;
-
-	while (startPos < inputMessage.length())
+	size_t i = 0;
+	while (i < inputMessage.length())
 	{
-		startPos = inputMessage.find_first_not_of(" \t\r\n", startPos);
-		if (startPos == std::string::npos) break;
-
-		size_t endPos = inputMessage.find_first_of(" \t\r\n", startPos);
-		std::string token = (endPos == std::string::npos) ? inputMessage.substr(startPos) : inputMessage.substr(startPos, endPos - startPos);
-
-		if (!first) outputMessage.push_back(' ');
-		first = false;
-		
-		size_t colonPos = token.find(':');
-		std::string baseToken = (colonPos == std::string::npos) ? token : token.substr(0, colonPos);
-
-		if ("#milepost" == baseToken)
+		// 1. Handle escape character (backslash to newline)
+		if (inputMessage[i] == '\\')
 		{
-			int32_t n = 1, m = 1;
-			if (colonPos != std::string::npos) parseModifier(token, colonPos, n, m, true);
-			
-			if (n < 0) 
+			outputMessage.push_back('\n');
+			i++;
+			continue;
+		}
+
+		// 2. Process # tokens
+		if (inputMessage[i] == '#')
+		{
+			// Find the bounds of this token (alphanumeric characters following '#')
+			size_t tokenStart = i;
+			size_t tokenEnd = i + 1;
+			while (tokenEnd < inputMessage.length() && std::isalnum(static_cast<unsigned char>(inputMessage[tokenEnd])))
 			{
-				std::string numStr = intToString(cfg.milepost, 0, m);
-				std::string formatted;
-				if (breakDigits)
+				tokenEnd++;
+			}
+
+			std::string baseToken = inputMessage.substr(tokenStart, tokenEnd - tokenStart);
+			std::string fullToken = baseToken;
+
+			// Check for optional modifiers (e.g., :3, :-4.1)
+			size_t colonPos = std::string::npos;
+			if (tokenEnd < inputMessage.length() && inputMessage[tokenEnd] == ':')
+			{
+				colonPos = tokenEnd - tokenStart;
+				tokenEnd++; // Step past ':'
+
+				// Allow an optional negative sign for padding direction
+				if (tokenEnd < inputMessage.length() && inputMessage[tokenEnd] == '-')
 				{
-					for (char c : numStr) { formatted.push_back(c); formatted.push_back(' '); }
-					if (!formatted.empty()) formatted.pop_back();
+					tokenEnd++;
 				}
-				else
+				// Gather remaining format digits/dots
+				while (tokenEnd < inputMessage.length() && 
+				       (std::isdigit(static_cast<unsigned char>(inputMessage[tokenEnd])) || inputMessage[tokenEnd] == '.'))
 				{
-					formatted = numStr;
+					tokenEnd++;
 				}
+				fullToken = inputMessage.substr(tokenStart, tokenEnd - tokenStart);
+			}
+
+			// Process matching base tokens
+			if ("#milepost" == baseToken)
+			{
+				int32_t n = 1, m = 1;
+				if (colonPos != std::string::npos) parseModifier(fullToken, colonPos, n, m, true);
 				
-				outputMessage += formatted;
-
-				// Only apply trailing padding spaces if breakDigits is false
-				if (!breakDigits)
+				if (n < 0) 
 				{
-					size_t absN = std::abs(n);
+					std::string numStr = intToString(cfg.milepost, 0, m);
+					std::string formatted;
+					if (breakDigits)
+					{
+						for (char c : numStr) { formatted.push_back(c); formatted.push_back(' '); }
+						if (!formatted.empty()) formatted.pop_back();
+					}
+					else
+					{
+						formatted = numStr;
+					}
 					
-					// Find where the integer portion ends
-					size_t rawIntLength = numStr.find('.');
-					if (rawIntLength == std::string::npos)
+					outputMessage += formatted;
+
+					if (!breakDigits)
 					{
-						rawIntLength = numStr.length();
+						size_t absN = std::abs(n);
+						size_t rawIntLength = numStr.find('.');
+						if (rawIntLength == std::string::npos) rawIntLength = numStr.length();
+
+						if (rawIntLength < absN) 
+						{
+							outputMessage.append(absN - rawIntLength, ' ');
+						}
+					}
+				} 
+				else 
+				{
+					insertNumber(outputMessage, cfg.milepost, n, m, breakDigits);
+				}
+				i = tokenEnd;
+				continue;
+			}
+			else if ("#track" == baseToken)
+			{
+				std::string trackName = cfg.trackName[trackNum];
+				if (colonPos != std::string::npos) 
+				{
+					int32_t n = 0, m = 0;
+					parseModifier(fullToken, colonPos, n, m, false);
+					formatStringField(outputMessage, trackName, n);
+				} 
+				else 
+				{
+					outputMessage += trackName;
+				}
+				i = tokenEnd;
+				continue;
+			}
+			else if ("#axle" == baseToken || "#axles" == baseToken || "#speed" == baseToken || "#temp" == baseToken)
+			{
+				int32_t val = 0;
+				if ("#axle" == baseToken)       val = data.axleCount;
+				else if ("#axles" == baseToken) val = data.totalAxles;
+				else if ("#speed" == baseToken) val = data.speed;
+				else if ("#temp" == baseToken)  val = TemperatureManager::getInstance()->getTemperature() + 0.5;
+
+				int32_t n = 1;
+				if (colonPos != std::string::npos) 
+				{
+					int32_t m = 0;
+					parseModifier(fullToken, colonPos, n, m, false);
+				}
+
+				if (n < 0) 
+				{
+					std::string numStr = intToString(val, 0, 0);
+					std::string formatted;
+					if (breakDigits)
+					{
+						for (char c : numStr) { formatted.push_back(c); formatted.push_back(' '); }
+						if (!formatted.empty()) formatted.pop_back();
+					}
+					else
+					{
+						formatted = numStr;
 					}
 
-					// If the actual integer portion is smaller than the requested width absN,
-					// we add the difference as trailing padding spaces.
-					if (rawIntLength < absN) 
+					outputMessage += formatted;
+					if (!breakDigits)
 					{
-						outputMessage.append(absN - rawIntLength, ' ');
+						size_t absN = std::abs(n);
+						if (formatted.length() < absN) 
+						{
+							outputMessage.append(absN - formatted.length(), ' ');
+						}
 					}
-				}
-			} 
-			else 
-			{
-				insertNumber(outputMessage, cfg.milepost, n, m, breakDigits);
-			}
-		}
-		else if ("#track" == baseToken)
-		{
-			std::string trackName = cfg.trackName[trackNum];
-			if (colonPos != std::string::npos) 
-			{
-				int32_t n = 0, m = 0;
-				parseModifier(token, colonPos, n, m, false);
-				formatStringField(outputMessage, trackName, n);
-			} 
-			else 
-			{
-				outputMessage += trackName;
-			}
-		}
-		else if ("#axle" == baseToken || "#axles" == baseToken || "#speed" == baseToken || "#temp" == baseToken)
-		{
-			int32_t val = 0;
-			if ("#axle" == baseToken)       val = data.axleCount;
-			else if ("#axles" == baseToken) val = data.totalAxles;
-			else if ("#speed" == baseToken) val = data.speed;
-			else if ("#temp" == baseToken)  val = TemperatureManager::getInstance()->getTemperature() + 0.5;
-
-			int32_t n = 1;
-			if (colonPos != std::string::npos) 
-			{
-				int32_t m = 0;
-				parseModifier(token, colonPos, n, m, false);
-			}
-
-			if (n < 0) 
-			{
-				std::string numStr = intToString(val, 0, 0);
-				std::string formatted;
-				if (breakDigits)
+				} 
+				else 
 				{
-					for (char c : numStr) { formatted.push_back(c); formatted.push_back(' '); }
-					if (!formatted.empty()) formatted.pop_back();
+					insertNumber(outputMessage, val, n, 0, breakDigits);
 				}
-				else
+				i = tokenEnd;
+				continue;
+			}
+			else if ("#defectlist" == baseToken)
+			{
+				for (auto const& defect : data.defects)
 				{
-					formatted = numStr;
+					outputMessage += defect;
+					outputMessage.push_back(' ');
 				}
-
-				outputMessage += formatted;
-				// Only apply left padding if breakDigits is false
-				if (!breakDigits)
+				if (!data.defects.empty())
 				{
-					size_t absN = std::abs(n);
-					if (formatted.length() < absN) 
-					{
-						outputMessage.append(absN - formatted.length(), ' ');
-					}
+					outputMessage.pop_back();
 				}
-			} 
-			else 
-			{
-				insertNumber(outputMessage, val, n, 0, breakDigits);
+				i = tokenEnd;
+				continue;
 			}
-		}
-		else if ("#defectlist" == baseToken)
-		{
-			for (auto const& defect : data.defects)
-			{
-				outputMessage += defect;
-				outputMessage.push_back(' ');
-			}
-			if (!data.defects.empty())
-			{
-				outputMessage.pop_back();
-			}
-		}
-		else
-		{
-			outputMessage += token;
 		}
 
-		if (endPos == std::string::npos) break;
-		startPos = endPos;
+		// 3. Fallback: Print normal characters verbatim
+		outputMessage.push_back(inputMessage[i]);
+		i++;
 	}
 }

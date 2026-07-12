@@ -46,7 +46,9 @@ const std::vector<TestCase> testCases = {
 	{ "#speed", "4 5", true, 0 },
 	{ "#temp", "72", false, 0 },
 	{ "#defectlist", "HOT_BOX DRAG_EQ", false, 0 },
-	{ "milepost #milepost speed #speed:3 mph", "milepost 346.9 speed  45 mph", false, 0 }
+	{ "milepost #milepost speed #speed:3 mph", "milepost 346.9 speed  45 mph", false, 0 },
+	{ "Axles:#axles", "Axles:124", false, 0},
+	{ "Axles:#axles\\Speed:#speed", "Axles:124\nSpeed:45", false, 0 }
 };
 
 int main() {
