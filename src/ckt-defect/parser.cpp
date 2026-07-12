@@ -45,6 +45,7 @@ volatile bool killParser = false;
 
 TaskHandle_t parseTaskHandle = NULL;
 
+SemaphoreHandle_t displayMutex = NULL;
 std::string displayMessage;
 
 bool parserQueueEmpty(void)
@@ -78,7 +79,11 @@ static void parseTask(void *args)
 		switch(parserState)
 		{
 			case PARSER_IDLE:
-				displayMessage.clear();
+				if (xSemaphoreTake(displayMutex, portMAX_DELAY) == pdTRUE)
+				{
+					displayMessage.clear();
+					xSemaphoreGive(displayMutex);
+				}
 				if(!parserQueueEmpty() && audioQueueEmpty())
 				{
 					// Something is in the parser queue and the audio is not playing
@@ -92,7 +97,11 @@ static void parseTask(void *args)
 //					Serial.print("Parsing: ");
 //					Serial.println(obj->msg.c_str());
 
-					displayMessage = obj->displayMsg;
+					if (xSemaphoreTake(displayMutex, portMAX_DELAY) == pdTRUE)
+					{
+						displayMessage = obj->displayMsg;
+						xSemaphoreGive(displayMutex);
+					}
 					
 					std::string_view msg_view(obj->msg);
 					size_t start = 0;
@@ -264,6 +273,7 @@ clrTestPoint(TP1);
 
 void parserInit(void)
 {
+	displayMutex = xSemaphoreCreateMutex();
 	parserQueue = xQueueCreate(10, sizeof(ParserObject*));   /// FIXME?  How many queued messages do we want before the main loop blocks?
 	xTaskCreate(parseTask, "parseTask", 8192, NULL, PARSER_TASK_PRIORITY, &parseTaskHandle);
 }
@@ -281,5 +291,12 @@ void parserTerminate(void)
 
 std::string getDisplayMessage(void)
 {
-	return displayMessage;
+	std::string safeCopy;
+
+	if (displayMutex != NULL && xSemaphoreTake(displayMutex, portMAX_DELAY) == pdTRUE)
+	{
+		safeCopy = displayMessage;
+		xSemaphoreGive(displayMutex);
+	}
+	return safeCopy;
 }
