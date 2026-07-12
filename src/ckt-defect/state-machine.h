@@ -130,7 +130,7 @@ public:
 protected:
 	MessageBundle* msgs;
 	uint8_t trackNum;
-	uint8_t ordinalNum = 1;
+	uint32_t defectCount = 0;
 
 	void enqueueMessageInternal(const std::string& spokenMsg, const std::string* dispMsg);
 	void enqueueMessage(const std::string& message); 

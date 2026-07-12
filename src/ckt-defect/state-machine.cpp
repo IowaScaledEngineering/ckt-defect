@@ -216,7 +216,7 @@ void DetectorStateMachine::update()
 		case DetectorState::RESET:
 			// Cleanup
 			data->defects.clear();
-			ordinalNum = 1;
+			defectCount = 0;
 			transitionTo(DetectorState::IDLE);
 			break;
 
@@ -361,15 +361,22 @@ void DetectorStateMachine::update()
 				{
 					std::string temporaryMsg;
 
-					// Create and store detail message for listing later
-					transformMessage(msgs->defects[i].detailMsg, temporaryMsg, *cfg, *data, trackNum, true);
-					if(cfg->ordinalDefectList)
+					defectCount++;  // Yes, this can in theory roll over but we're not going to worry about 4 billion defects...
+					if(defectCount <= cfg->maxDefects)
 					{
-						temporaryMsg.insert(0, getOrdinalWord(ordinalNum) + " ");
-						if(ordinalNum < 11)
-							ordinalNum++;  // Clamp at 11 so we get blanks here on out
+						// Create and store detail message for listing later
+						transformMessage(msgs->defects[i].detailMsg, temporaryMsg, *cfg, *data, trackNum, true);
+						if(cfg->ordinalDefectList)
+						{
+							temporaryMsg.insert(0, getOrdinalWord(defectCount) + " ");
+						}
+						data->defects.push_back(temporaryMsg);
 					}
-					data->defects.push_back(temporaryMsg);
+					else if(defectCount == cfg->maxDefects + 1)
+					{
+						// On the next defect after max, insert excessive alarms message
+						data->defects.push_back(msgs->excessAlarmsMsg);
+					}
 					
 					// Create display message
 					transformMessage(msgs->defects[i].displayMsg, temporaryMsg, *cfg, *data, trackNum, false);

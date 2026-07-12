@@ -77,6 +77,7 @@ Sound* vocabGetWord(const std::string& word)
 #include "vocab/include/eighth.h"
 #include "vocab/include/ninth.h"
 #include "vocab/include/tenth.h"
+#include "vocab/include/alarms.h"
 #include "vocab/include/axle.h"
 #include "vocab/include/axles.h"
 #include "vocab/include/blocked.h"
@@ -88,6 +89,7 @@ Sound* vocabGetWord(const std::string& word)
 #include "vocab/include/dragging.h"
 #include "vocab/include/east.h"
 #include "vocab/include/equipment.h"
+#include "vocab/include/excessive.h"
 #include "vocab/include/failure.h"
 #include "vocab/include/h.h"
 #include "vocab/include/have.h"
@@ -141,6 +143,7 @@ void loadInternalVocab(void)
 	vocab.push_back(new MemSound("eighth", vocab_eighth, vocab_eighth_len, 16000));
 	vocab.push_back(new MemSound("ninth", vocab_ninth, vocab_ninth_len, 16000));
 	vocab.push_back(new MemSound("tenth", vocab_tenth, vocab_tenth_len, 16000));
+	vocab.push_back(new MemSound("alarms", vocab_alarms, vocab_alarms_len, 16000));
 	vocab.push_back(new MemSound("axle", vocab_axle, vocab_axle_len, 16000));
 	vocab.push_back(new MemSound("axles", vocab_axles, vocab_axles_len, 16000));
 	vocab.push_back(new MemSound("blocked", vocab_blocked, vocab_blocked_len, 16000));
@@ -152,6 +155,7 @@ void loadInternalVocab(void)
 	vocab.push_back(new MemSound("dragging", vocab_dragging, vocab_dragging_len, 16000));
 	vocab.push_back(new MemSound("east", vocab_east, vocab_east_len, 16000));
 	vocab.push_back(new MemSound("equipment", vocab_equipment, vocab_equipment_len, 16000));
+	vocab.push_back(new MemSound("excessive", vocab_excessive, vocab_excessive_len, 16000));
 	vocab.push_back(new MemSound("failure", vocab_failure, vocab_failure_len, 16000));
 	vocab.push_back(new MemSound("h", vocab_h, vocab_h_len, 16000));
 	vocab.push_back(new MemSound("have", vocab_have, vocab_have_len, 16000));

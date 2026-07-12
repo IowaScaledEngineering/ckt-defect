@@ -527,6 +527,9 @@ void loop()
 		// Detector Blocked Message
 		trackMessages.detectorBlockedMsg = trackMessages.entranceMsg + " detector blocked";
 		trackMessages.detectorBlockedDisplayMsg = "#track\\DETECTOR BLOCKED\\AXLES:#axles:3  SPEED:#speed:3";
+
+		// Excessive Alarms Message
+		trackMessages.excessAlarmsMsg = "excessive alarms";
 	}
 
 

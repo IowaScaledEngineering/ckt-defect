@@ -48,6 +48,7 @@ struct MessageBundle {
 	std::string tooSlowDisplayMsg;                 // 
 	std::string detectorBlockedMsg;                // If axle stops in front of detector for longer than timeout
 	std::string detectorBlockedDisplayMsg;         // 
+	std::string excessAlarmsMsg;
 };
 
 void printMessages(MessageBundle* msgs);

@@ -53,10 +53,13 @@ struct DetectorConfiguration {
 	bool speedTypeEnter;       // True = entrance speed, False = exit speed
 	uint8_t minSpeed;
 
+	// Defects
+	bool ordinalDefectList;
+	uint8_t maxDefects;
+
 	// Other
 	uint8_t detectorTimeout;      // Units = seconds
 	uint8_t exitDisplayTimeout;   // Units = seconds
-	bool ordinalDefectList;
 
 	// Temperature
 	bool temperatureEnable;

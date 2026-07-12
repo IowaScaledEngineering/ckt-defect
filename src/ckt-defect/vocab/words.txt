@@ -19,6 +19,7 @@ seventh
 eighth
 ninth
 tenth
+alarms
 axle
 axles
 blocked
@@ -30,6 +31,7 @@ detector
 dragging
 east
 equipment
+excessive
 failure
 h
 have

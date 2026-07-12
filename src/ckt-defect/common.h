@@ -30,6 +30,7 @@ LICENSE:
 #define PARSER_TASK_PRIORITY  4
 
 #define PROBABILITY_MAX       10000
+#define MAX_DEFECTS_MAX       10
 
 #include <vector>
 #include <string>
