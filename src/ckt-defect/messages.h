@@ -31,18 +31,23 @@ struct DefectMessage {
 	std::string alertMsg;    // Played instantly when defect detected (e.g. words, silence, or tone)
 	std::string detailMsg;   // Played in exit message after defect(s) detected 
 	std::string displayMsg;  // Displayed on screen when defect detected (20 chars x 3 lines max)
-	uint16_t probability;    // Probability out of every 10,000 axles
+	uint16_t probability;    // Probability per axle
 };
 
 struct MessageBundle {
 	std::string entranceMsg;                       // Triggered when train first detected
 	std::vector<DefectMessage> defects;
 	std::string exitCleanMsg;                      // Plays after train passes and no defect detected
+	std::string exitCleanDisplayMsg;               // 
 	std::string exitDefectMsg;                     // Plays after train passes and defect(s) detected
+	std::string exitDefectDisplayMsg;              // 
 	std::string integrityMsg;                      // Simulates a detector failure
-	uint16_t integrityProbability;                 // Probability out of every 10,000 trains
+	std::string integrityDisplayMsg;               // 
+	uint16_t integrityProbability;                 // Probability per train
 	std::string tooSlowMsg;                        // If speed enabled, plays when speed is below programmed threshold
-	std::string detectorBlockedMsg;                // if axle stops in front of detector for longer than timeout
+	std::string tooSlowDisplayMsg;                 // 
+	std::string detectorBlockedMsg;                // If axle stops in front of detector for longer than timeout
+	std::string detectorBlockedDisplayMsg;         // 
 };
 
 void printMessages(MessageBundle* msgs);

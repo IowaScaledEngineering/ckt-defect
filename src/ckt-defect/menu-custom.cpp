@@ -1,12 +1,13 @@
 #include "menu-custom.h"
 #include "common.h"
 #include "temperature.h"
+#include "parser.h"
 #include <format>
 
 void MenuHome::onEnter()
 {
 	Menu::onEnter(); // Call the base implementation to clear display, clear button repeat states, etc.
-	menuEnterTime = millis();
+	backlightDelayStartTime = millis();
 	if(disp->getBacklight())
 	{
 		// Backlight already on
@@ -27,61 +28,128 @@ void MenuHome::onEnter()
 	disp->createCustomChar(0, bulb);
 }
 
+void MenuHome::renderHomeUI(const std::string& statusText, bool showLightButton)
+{
+	TemperatureManager* tempMgr = TemperatureManager::getInstance();
+	std::string tmpString1;
+	std::string tmpString2;
+
+	// 1. Milepost
+	disp->gotoxy(0, 0);
+	tmpString1 = "Milepost ";
+	tmpString1 += intToString(cfg.milepost, 4, 1);
+	tmpString2 = centerString(tmpString1, 20);
+	disp->print(tmpString2.c_str());
+
+	// 2. Status Text
+	disp->gotoxy(0, 1);
+	tmpString2 = centerString(statusText, 20);
+	disp->print(tmpString2.c_str());
+
+	// 3. Temperature
+	disp->gotoxy(0, 2);
+	tmpString1 = intToString(tempMgr->getTemperature() + 0.5, 3, 0);
+	tmpString1 += 0xDF;
+	tmpString1 += cfg.temperatureUnitsF ? 'F' : 'C';
+	tmpString2 = centerString(tmpString1, 20);
+	disp->print(tmpString2.c_str());
+
+	// 4. Light button
+	disp->gotoxy(0, 3);
+	if (showLightButton)
+	{
+		disp->print((char)0);  // bulb icon
+		disp->print(disp->getBacklight() ? "OFF" : "ON ");
+	}
+	else
+	{
+		disp->print("    "); // Clear out the lower-left corner if needed
+	}
+}
+
 MenuEvent MenuHome::update()
 {
+	std::string tmpString;
+	
 	if(backlightState)
 	{
 		disp->backlightOn();
 	}
 	else
 	{
-		if(!delayBacklightOff || (millis() - menuEnterTime > 3000))
+		if(!delayBacklightOff || (millis() - backlightDelayStartTime > 3000))
 		{
 			disp->backlightOff();
 			backlightState = false;
 			delayBacklightOff = false;
 		}
 	}
-	disp->gotoxy(2, 0);
-	disp->print("Milepost ");
-	disp->print(intToString(cfg.milepost, 4, 1).c_str());
 
-	if(!data[0].active && !data[1].active)
+	switch(state)
 	{
-		disp->gotoxy(0, 1);
-		disp->print("      STANDBY       ");
-		disp->gotoxy(7, 2);
-		TemperatureManager* tempMgr = TemperatureManager::getInstance();
-		disp->print(intToString(tempMgr->getTemperature()+0.5, 3, 0).c_str());
-		disp->print(0xDF);  // degrees
-		disp->print(cfg.temperatureUnitsF ? 'F' : 'C');
-	}
-	else
-	{
-		disp->gotoxy(0, 1);
-		disp->print("       ACTIVE       ");
-		disp->gotoxy(7, 2);
-		TemperatureManager* tempMgr = TemperatureManager::getInstance();
-		disp->print(intToString(tempMgr->getTemperature()+0.5, 3, 0).c_str());
-		disp->print(0xDF);  // degrees
-		disp->print(cfg.temperatureUnitsF ? 'F' : 'C');
-		backlightState = true;
+		case MenuHomeState::STANDBY:
+			renderHomeUI("STANDBY", true);
+
+			if(data[0].active || data[1].active)
+			{
+				state = MenuHomeState::ACTIVE;
+			}
+
+			break;
+
+		case MenuHomeState::ACTIVE:
+			backlightState = true;
+			renderHomeUI("ACTIVE", false);
+
+			dispString = getDisplayMessage();
+			if(!dispString.empty())
+			{
+				state = MenuHomeState::MESSAGE;
+			}
+			else if(!data[0].active && !data[1].active)
+			{
+				backlightState = false;
+				backlightDelayStartTime = millis();
+				delayBacklightOff = true;
+				state = MenuHomeState::STANDBY;
+			}
+
+			break;
+
+		case MenuHomeState::MESSAGE:
+			if(!dispString.empty())
+			{
+				disp->gotoxy(0,0);
+				tmpString = centerString(dispString, 20);
+				tmpString.resize(20);  // Truncate to 20 chars
+				disp->print(tmpString.c_str());
+			}
+			else
+			{
+				if(!data[0].active && !data[1].active)
+				{
+					waitStartTime = millis();
+					state = MenuHomeState::WAIT;
+				}
+			}
+			dispString = getDisplayMessage();  // Fetch for next time around
+
+			break;
+
+		case MenuHomeState::WAIT:
+			if(millis() - waitStartTime >= 5000)  // FIXME: make timeout programmable
+			{
+				backlightState = false;
+				backlightDelayStartTime = millis();
+				delayBacklightOff = true;
+				state = MenuHomeState::STANDBY;
+			}
+
+			break;
 	}
 
-	// Draw buttons
-	if(!data[0].active && !data[1].active)
-	{
-		disp->gotoxy(0,3);
-		disp->print((char)0);  // bulb
-		if(disp->getBacklight())
-		{
-			disp->print("OFF");
-		}
-		else
-		{
-			disp->print("ON ");
-		}
-	}
+
+	// Draw menu button
 	disp->gotoxy(16,3);
 	disp->print("MENU");
 
@@ -93,11 +161,14 @@ MenuEvent MenuHome::update()
 			switch(ev.keyNum)
 			{
 				case 1: // Toggle Backlight
-					if(delayBacklightOff)
-						backlightState = false;
-					else
-						backlightState = !backlightState;
-					delayBacklightOff = false;  // Force immediate change
+					if(MenuHomeState::STANDBY == state)
+					{
+						if(delayBacklightOff)
+							backlightState = false;
+						else
+							backlightState = !backlightState;
+						delayBacklightOff = false;  // Force immediate change
+					}
 					break;
 
 				case 4: // Menu

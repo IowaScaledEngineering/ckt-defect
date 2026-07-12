@@ -3,14 +3,25 @@
 #include "data.h"
 #include <Arduino.h>
 
+enum class MenuHomeState {
+        STANDBY,
+        ACTIVE,
+        MESSAGE,
+        WAIT,
+};
+
 class MenuHome : public Menu
 {
 	private:
 		bool backlightState = false;
 		bool delayBacklightOff = false;
-		unsigned long menuEnterTime;
+		unsigned long backlightDelayStartTime;
+		unsigned long waitStartTime;
 		const DetectorConfiguration &cfg;
 		DataBundle* data;
+		MenuHomeState state;
+		void renderHomeUI(const std::string& statusText, bool showLightButton);
+		std::string dispString;
 	public:
 		MenuHome(const std::string &n, const DetectorConfiguration &c, DataBundle* d) 
 			: Menu(n), cfg(c), data(d) {}

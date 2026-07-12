@@ -53,6 +53,21 @@ void toLowercase(std::string& str)
 	);
 }
 
+std::string centerString(const std::string& text, int width)
+{
+	if (text.length() >= width)
+	{
+		return text; // Return original text if it's already wider than the frame
+	}
+
+	size_t total_padding = width - text.length();
+	size_t left_padding = total_padding / 2;
+	size_t right_padding = total_padding - left_padding;
+
+	// Construct the centered string: [left spaces] + [text] + [right spaces]
+	return std::string(left_padding, ' ') + text + std::string(right_padding, ' ');
+}
+
 std::string intToString(int32_t intVal, uint32_t integerDigits, uint32_t fractionalDigits)
 {
 	// Track if the original value was negative
