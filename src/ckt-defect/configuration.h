@@ -54,7 +54,9 @@ struct DetectorConfiguration {
 	uint8_t minSpeed;
 
 	// Other
-	uint8_t detectorTimeout;   // Units = seconds
+	uint8_t detectorTimeout;      // Units = seconds
+	uint8_t exitDisplayTimeout;   // Units = seconds
+	bool ordinalDefectList;
 
 	// Temperature
 	bool temperatureEnable;

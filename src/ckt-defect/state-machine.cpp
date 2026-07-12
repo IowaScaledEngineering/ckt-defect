@@ -216,6 +216,7 @@ void DetectorStateMachine::update()
 		case DetectorState::RESET:
 			// Cleanup
 			data->defects.clear();
+			ordinalNum = 1;
 			transitionTo(DetectorState::IDLE);
 			break;
 
@@ -362,6 +363,12 @@ void DetectorStateMachine::update()
 
 					// Create and store detail message for listing later
 					transformMessage(msgs->defects[i].detailMsg, temporaryMsg, *cfg, *data, trackNum, true);
+					if(cfg->ordinalDefectList)
+					{
+						temporaryMsg.insert(0, getOrdinalWord(ordinalNum) + " ");
+						if(ordinalNum < 11)
+							ordinalNum++;  // Clamp at 11 so we get blanks here on out
+					}
 					data->defects.push_back(temporaryMsg);
 					
 					// Create display message

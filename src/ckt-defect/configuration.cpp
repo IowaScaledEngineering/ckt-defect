@@ -26,35 +26,37 @@ LICENSE:
 #include "common.h"
 #include "configuration.h"
 
-#define LCD_BRIGHT_DEFAULT          128
+#define LCD_BRIGHT_DEFAULT                128
 
-#define MILEPOST_EN_DEFAULT         true
-#define MILEPOST_DEFAULT            3469
+#define MILEPOST_EN_DEFAULT               true
+#define MILEPOST_DEFAULT                  3469
 
-#define TRACK_NAME_EN_DEFAULT       true
+#define TRACK_NAME_EN_DEFAULT             true
 
-#define AXLE_EN_DEFAULT             true
-#define ENTRANCE_AXLES_DEFAULT      4
-#define MIN_AXLES_DEFAULT           8
+#define AXLE_EN_DEFAULT                   true
+#define ENTRANCE_AXLES_DEFAULT            4
+#define MIN_AXLES_DEFAULT                 8
 
-#define SPEED_EN_DEFAULT            true
-#define SPEED_UNITS_MPH_DEFAULT     true
-#define SPEED_TYPE_ENTER_DEFAULT    true
-#define MIN_SPEED_DEFAULT           10
+#define SPEED_EN_DEFAULT                  true
+#define SPEED_UNITS_MPH_DEFAULT           true
+#define SPEED_TYPE_ENTER_DEFAULT          true
+#define MIN_SPEED_DEFAULT                 10
 
-#define DETECTOR_TIMEOUT_DEFAULT    5
+#define DETECTOR_TIMEOUT_DEFAULT          5
+#define EXIT_DISPLAY_TIMEOUT_DEFAULT      7
+#define ORDINAL_DEFECT_LIST_DEFAULT       true
 
-#define TEMPERATURE_EN_DEFAULT       true
-#define TEMPERATURE_REAL_DEFAULT     true
-#define TEMPERATURE_UNITS_F_DEFAULT  true
-#define MIN_TEMPERATURE_DEFAULT      -20
-#define MAX_TEMPERATURE_DEFAULT      100
+#define TEMPERATURE_EN_DEFAULT            true
+#define TEMPERATURE_REAL_DEFAULT          true
+#define TEMPERATURE_UNITS_F_DEFAULT       true
+#define MIN_TEMPERATURE_DEFAULT           50
+#define MAX_TEMPERATURE_DEFAULT           70
 
-#define DIRECTION_EN_DEFAULT         true
-#define TRIGGER_DIR1_ONLY_DEFAULT    false
-#define TRIGGER_DIR2_ONLY_DEFAULT    false
+#define DIRECTION_EN_DEFAULT              true
+#define TRIGGER_DIR1_ONLY_DEFAULT         false
+#define TRIGGER_DIR2_ONLY_DEFAULT         false
 
-#define INFRASTRUCTURE_MODE_DEFAULT  false
+#define INFRASTRUCTURE_MODE_DEFAULT       false
 
 #define PREF_NAMESPACE   "defectdetector"
 
@@ -83,7 +85,9 @@ void loadConfiguration(DetectorConfiguration* cfg)
 	cfg->speedTypeEnter = preferences.getBool("spdTyp", SPEED_TYPE_ENTER_DEFAULT);
 	cfg->minSpeed = preferences.getUChar("minSpd", MIN_SPEED_DEFAULT);
 
-	cfg->detectorTimeout = preferences.getUChar("to", DETECTOR_TIMEOUT_DEFAULT);
+	cfg->detectorTimeout = preferences.getUChar("detTo", DETECTOR_TIMEOUT_DEFAULT);
+	cfg->exitDisplayTimeout = preferences.getUChar("exitTo", EXIT_DISPLAY_TIMEOUT_DEFAULT);
+	cfg->ordinalDefectList = preferences.getBool("ordList", ORDINAL_DEFECT_LIST_DEFAULT);
 
 	cfg->temperatureEnable = preferences.getBool("tmpEn", TEMPERATURE_EN_DEFAULT);
 	cfg->temperatureReal = preferences.getBool("tmpReal", TEMPERATURE_REAL_DEFAULT);
@@ -167,8 +171,14 @@ void saveConfiguration(DetectorConfiguration* cfg)
 	if(cfg->minSpeed != preferences.getUChar("minSpd", MIN_SPEED_DEFAULT))
 		preferences.putUChar("minSpd", cfg->minSpeed);
 
-	if(cfg->detectorTimeout != preferences.getUChar("to", DETECTOR_TIMEOUT_DEFAULT))
-		preferences.putUChar("to", cfg->detectorTimeout);
+	if(cfg->detectorTimeout != preferences.getUChar("detTo", DETECTOR_TIMEOUT_DEFAULT))
+		preferences.putUChar("detTo", cfg->detectorTimeout);
+
+	if(cfg->exitDisplayTimeout != preferences.getUChar("exitTo", EXIT_DISPLAY_TIMEOUT_DEFAULT))
+		preferences.putUChar("exitTo", cfg->exitDisplayTimeout);
+
+	if(cfg->ordinalDefectList != preferences.getBool("ordList", ORDINAL_DEFECT_LIST_DEFAULT))
+		preferences.putBool("ordList", cfg->ordinalDefectList);
 
 	if(cfg->temperatureEnable != preferences.getBool("tmpEn", TEMPERATURE_EN_DEFAULT))
 		preferences.putBool("tmpEn", cfg->temperatureEnable);
@@ -268,6 +278,12 @@ void printConfiguration(DetectorConfiguration* cfg)
 
 	Serial.print("Detector Timeout: ");
 	Serial.println(cfg->detectorTimeout);
+
+	Serial.print("Exit Display Timeout: ");
+	Serial.println(cfg->exitDisplayTimeout);
+
+	Serial.print("Ordinal Defect List: ");
+	Serial.println(cfg->ordinalDefectList ? "True" : "False");
 
 	Serial.print("Temperature Enable: ");
 	Serial.println(cfg->temperatureEnable);

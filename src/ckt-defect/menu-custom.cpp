@@ -178,7 +178,7 @@ MenuEvent MenuHome::update()
 			break;
 
 		case MenuHomeState::WAIT:
-			if(millis() - waitStartTime >= 5000)  // FIXME: make timeout programmable
+			if( (millis() - waitStartTime) >= (cfg.exitDisplayTimeout * 1000) )
 			{
 				backlightState = false;
 				backlightDelayStartTime = millis();

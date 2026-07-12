@@ -116,6 +116,22 @@ std::string intToString(int32_t intVal, uint32_t integerDigits, uint32_t fractio
 }
 
 
+std::string getOrdinalWord(const uint8_t& num)
+{
+	if (1 == num) return "first";
+	if (2 == num) return "second";
+	if (3 == num) return "third";
+	if (4 == num) return "fourth";
+	if (5 == num) return "fifth";
+	if (6 == num) return "sixth";
+	if (7 == num) return "seventh";
+	if (8 == num) return "eighth";
+	if (9 == num) return "ninth";
+	if (10 == num) return "tenth";
+	else return "";
+}
+
+
 uint32_t rollDice(void)
 {
 	bootloader_random_enable();

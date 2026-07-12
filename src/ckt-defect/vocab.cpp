@@ -67,6 +67,16 @@ Sound* vocabGetWord(const std::string& word)
 #include "vocab/include/8.h"
 #include "vocab/include/9.h"
 #include "vocab/include/a.h"
+#include "vocab/include/first.h"
+#include "vocab/include/second.h"
+#include "vocab/include/third.h"
+#include "vocab/include/fourth.h"
+#include "vocab/include/fifth.h"
+#include "vocab/include/sixth.h"
+#include "vocab/include/seventh.h"
+#include "vocab/include/eighth.h"
+#include "vocab/include/ninth.h"
+#include "vocab/include/tenth.h"
 #include "vocab/include/axle.h"
 #include "vocab/include/axles.h"
 #include "vocab/include/blocked.h"
@@ -121,6 +131,16 @@ void loadInternalVocab(void)
 	vocab.push_back(new MemSound("8", vocab_8, vocab_8_len, 16000));
 	vocab.push_back(new MemSound("9", vocab_9, vocab_9_len, 16000));
 	vocab.push_back(new MemSound("a", vocab_a, vocab_a_len, 16000));
+	vocab.push_back(new MemSound("first", vocab_first, vocab_first_len, 16000));
+	vocab.push_back(new MemSound("second", vocab_second, vocab_second_len, 16000));
+	vocab.push_back(new MemSound("third", vocab_third, vocab_third_len, 16000));
+	vocab.push_back(new MemSound("fourth", vocab_fourth, vocab_fourth_len, 16000));
+	vocab.push_back(new MemSound("fifth", vocab_fifth, vocab_fifth_len, 16000));
+	vocab.push_back(new MemSound("sixth", vocab_sixth, vocab_sixth_len, 16000));
+	vocab.push_back(new MemSound("seventh", vocab_seventh, vocab_seventh_len, 16000));
+	vocab.push_back(new MemSound("eighth", vocab_eighth, vocab_eighth_len, 16000));
+	vocab.push_back(new MemSound("ninth", vocab_ninth, vocab_ninth_len, 16000));
+	vocab.push_back(new MemSound("tenth", vocab_tenth, vocab_tenth_len, 16000));
 	vocab.push_back(new MemSound("axle", vocab_axle, vocab_axle_len, 16000));
 	vocab.push_back(new MemSound("axles", vocab_axles, vocab_axles_len, 16000));
 	vocab.push_back(new MemSound("blocked", vocab_blocked, vocab_blocked_len, 16000));
