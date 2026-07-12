@@ -164,6 +164,7 @@ MenuEvent MenuHome::update()
 				if(!data[0].active && !data[1].active)
 				{
 					waitStartTime = millis();
+					Serial.println("*** Going to Wait ***");
 					state = MenuHomeState::WAIT;
 				}
 			}
