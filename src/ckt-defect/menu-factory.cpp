@@ -152,9 +152,9 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	);
 	
 	// Axle
-	auto menuAxleConfig = std::make_shared<MenuListSelector>("Axle Sensor");
+	auto menuAxleConfig = std::make_shared<MenuListSelector>("Axle Count");
 	auto menuAxleEn = std::make_shared<MenuBoolSelector>(
-		"Axle Sensor Enable",
+		"Axle Count Enable",
 		&cfg.axleEnable, 
 		false, 
 		"On", "ON", 
