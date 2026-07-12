@@ -390,11 +390,11 @@ void DetectorStateMachine::update()
 			if(data->defects.size() > 0)
 			{
 				// We have defects
-				enqueueMessage(msgs->exitDefectMsg);
+				enqueueMessage(msgs->exitDefectMsg, msgs->exitDefectDisplayMsg);
 			}
 			else
 			{
-				enqueueMessage(msgs->exitCleanMsg);
+				enqueueMessage(msgs->exitCleanMsg, msgs->exitCleanDisplayMsg);
 			}
 			transitionTo(DetectorState::RESET);
 			break;
@@ -407,17 +407,17 @@ void DetectorStateMachine::update()
 			break;
 			
 		case DetectorState::TOO_SLOW_QUEUE:
-			enqueueMessage(msgs->tooSlowMsg);
+			enqueueMessage(msgs->tooSlowMsg, msgs->tooSlowDisplayMsg);
 			transitionTo(DetectorState::WAIT_NO_EXIT);
 			break;
 			
 		case DetectorState::INTEGRITY_DEFECT_QUEUE:
-			enqueueMessage(msgs->integrityMsg);
+			enqueueMessage(msgs->integrityMsg, msgs->integrityDisplayMsg);
 			transitionTo(DetectorState::WAIT_NO_EXIT);
 			break;
 			
 		case DetectorState::BLOCKED_DEFECT_QUEUE:
-			enqueueMessage(msgs->detectorBlockedMsg);
+			enqueueMessage(msgs->detectorBlockedMsg, msgs->detectorBlockedDisplayMsg);
 			transitionTo(DetectorState::WAIT_NO_EXIT);
 			break;
 			
