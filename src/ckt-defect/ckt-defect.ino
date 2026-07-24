@@ -484,9 +484,9 @@ void loop()
 		{
 			tmpMessage = "Axle #axle";
 		}
-		trackMessages.defects.emplace_back("#tone #track hot journal " + tmpMessage, "hot journal " + tmpMessage, "#track\\Hot Journal\\" + tmpMessage, 500);
-		trackMessages.defects.emplace_back("#tone #track dragging equipment near " + tmpMessage, "dragging equipment near " + tmpMessage, "#track\\Dragging Equipment\\" + tmpMessage, 100);
-		trackMessages.defects.emplace_back("#tone #track high impact wheel detected " + tmpMessage, "high impact wheel detected " + tmpMessage, "#track\\High Impact Wheel\\" + tmpMessage, 200);
+		trackMessages.defects.emplace_back("#tone #track hot journal " + tmpMessage, "hot journal " + tmpMessage, "#track\\Hot Journal\\" + tmpMessage, 125);
+		trackMessages.defects.emplace_back("#tone #track dragging equipment near " + tmpMessage, "dragging equipment near " + tmpMessage, "#track\\Dragging Equipment\\" + tmpMessage, 250);
+		trackMessages.defects.emplace_back("#tone #track high impact wheel detected " + tmpMessage, "high impact wheel detected " + tmpMessage, "#track\\High Impact Wheel\\" + tmpMessage, 150);
 
 		// Create Footer
 		tmpMessage.clear();
@@ -518,7 +518,7 @@ void loop()
 		// Detector Integrity Message
 		trackMessages.integrityMsg = trackMessages.entranceMsg + " integrity failure" + tmpMessage ;
 		trackMessages.integrityDisplayMsg = "#track\\INTEGRITY FAILURE\\AXLES:#axles:3  SPEED:#speed:3";
-		trackMessages.integrityProbability = 50;
+		trackMessages.integrityTrainRate = 100;
 		
 		// Too Slow Message
 		trackMessages.tooSlowMsg = trackMessages.entranceMsg + " train 2 slow";
@@ -547,9 +547,9 @@ void loop()
 	}
 
 
-	// Sort defect messages by probability
+	// Sort defect messages by rate
 	sort(trackMessages.defects.begin(), trackMessages.defects.end(), [](DefectMessage a, DefectMessage b) {
-		return a.probability < b.probability; // returns true if 'a' should come before 'b'
+		return a.axleRate > b.axleRate; // returns true if 'a' should come before 'b'
 		});
 
 

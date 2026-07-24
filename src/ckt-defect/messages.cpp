@@ -46,9 +46,9 @@ void printMessages(MessageBundle* msgs)
 		Serial.print(j);
 		Serial.print(": ");
 		Serial.print(msgs->defects[j].displayMsg.c_str());
-		Serial.print(" [");
-		Serial.print(msgs->defects[j].probability);
-		Serial.println("]");
+		Serial.print(" [1 in ");
+		Serial.print(msgs->defects[j].axleRate);
+		Serial.println(" axles]");
 	}
 
 	Serial.print("Exit Clean: ");
@@ -57,9 +57,9 @@ void printMessages(MessageBundle* msgs)
 	Serial.println(msgs->exitDefectMsg.c_str());
 	Serial.print("Integrity: ");
 	Serial.print(msgs->integrityMsg.c_str());
-	Serial.print(" [");
-	Serial.print(msgs->integrityProbability);
-	Serial.println("]");
+	Serial.print(" [1 in ");
+	Serial.print(msgs->integrityTrainRate);
+	Serial.println(" trains]");
 	Serial.print("Too Slow: ");
 	Serial.println(msgs->tooSlowMsg.c_str());
 	Serial.print("Blocked: ");

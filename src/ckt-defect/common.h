@@ -29,7 +29,7 @@ LICENSE:
 #define AUDIO_TASK_PRIORITY   5
 #define PARSER_TASK_PRIORITY  4
 
-#define PROBABILITY_MAX       10000
+#define PROBABILITY_MAX       1'000'000
 #define MAX_DEFECTS_MAX       10
 
 #include <vector>
