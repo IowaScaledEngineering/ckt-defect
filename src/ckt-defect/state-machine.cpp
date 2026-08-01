@@ -246,7 +246,7 @@ void DetectorStateMachine::update()
 
 		case DetectorState::ENTRANCE_DEFECT:
 			// Roll the dice
-			if(rollDice() < msgs->integrityProbability)
+			if(rollDice() < (PROBABILITY_MAX / msgs->integrityTrainRate))
 			{
 				// Integrity defect
 				transitionTo(DetectorState::INTEGRITY_DEFECT_QUEUE);
@@ -332,6 +332,8 @@ void DetectorStateMachine::update()
 		case DetectorState::AXLE_COUNT:
 			if( data->newAxle )
 			{
+				Serial.print("Axle Count: ");
+				Serial.println(data->axleCount);
 				transitionTo(DetectorState::AXLE_DEFECT);
 			}
 			else if(!data->axleDetect && !data->irDetect)
@@ -357,7 +359,7 @@ void DetectorStateMachine::update()
 		case DetectorState::AXLE_DEFECT:
 			for (uint32_t i = 0; i < msgs->defects.size(); i++)
 			{
-				if (rollDice() < msgs->defects[i].probability)
+				if (rollDice() < (PROBABILITY_MAX / msgs->defects[i].axleRate))
 				{
 					std::string temporaryMsg;
 

@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Railroad Defect Detector Analytical Calculator</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f7f9fa;
+        }
+        h1 {
+            color: #1a202c;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 10px;
+        }
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 20px;
+        }
+        @media (max-width: 768px) {
+            .container { grid-template-columns: 1fr; }
+        }
+        .panel {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border: 1px solid #e2e8f0;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #4a5568;
+        }
+        input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #cbd5e0;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+        .defect-row {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 10px;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+        .defect-label {
+            font-size: 14px;
+            color: #4a5568;
+        }
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        .results-table th, .results-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .results-table th {
+            background-color: #f8fafc;
+            color: #4a5568;
+            font-weight: 600;
+        }
+        .highlight {
+            font-weight: bold;
+            color: #2b6cb0;
+        }
+        .total-row {
+            background-color: #edf2f7;
+            font-weight: bold;
+        }
+        .note {
+            font-size: 12px;
+            color: #718096;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Defect Detector Statistical Analyzer</h1>
+    <p>This tool analytically evaluates the probability distribution of defects over entire trains using sequential probability masking and the Binomial Distribution.</p>
+
+    <div class="container">
+        <div class="panel">
+            <h2>Configuration</h2>
+            <div class="form-group">
+                <label for="axles">Average Axles Per Train</label>
+                <input type="number" id="axles" value="100" min="1" max="1000" oninput="calculate()">
+            </div>
+            
+            <h3>Defects (1 in every N axles)</h3>
+            <p class="note">Leave blank or set to 0 to disable a specific defect type.</p>
+            <div id="defects-container">
+                </div>
+        </div>
+
+        <div class="panel">
+            <h2>Analytical Predictions</h2>
+            <div class="form-group">
+                <label>Calculated Single Axle Risk (<span style="font-family: monospace;">P_axle</span>)</label>
+                <div id="p-axle-display" class="highlight" style="font-size: 20px; margin-top: 5px;">0.00%</div>
+            </div>
+
+            <table class="results-table">
+                <thead>
+                    <tr>
+                        <th>Train Category</th>
+                        <th>Theoretical Probability</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Trains with <strong>NO</strong> defects</td>
+                        <td id="res-clean">0.00%</td>
+                    </tr>
+                    <tr>
+                        <td>Trains with <strong>Exactly 1</strong> defect</td>
+                        <td id="res-1">0.00%</td>
+                    </tr>
+                    <tr>
+                        <td>Trains with <strong>Exactly 2</strong> defects</td>
+                        <td id="res-2">0.00%</td>
+                    </tr>
+                    <tr>
+                        <td>Trains with <strong>3 or More</strong> defects</td>
+                        <td id="res-3plus">0.00%</td>
+                    </tr>
+                    <tr class="total-row">
+                        <td>Total Trains WITH Defects</td>
+                        <td id="res-any">0.00%</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const MAX_DICE = 100000;
+        const DEFECT_COUNT = 10;
+
+        // Render the 10 defect input fields
+        const container = document.getElementById('defects-container');
+        // Preset values matching your test criteria for the first few
+        const defaults = [2000, 400, 200, 200, 0, 0, 0, 0, 0, 0]; 
+
+        for (let i = 1; i <= DEFECT_COUNT; i++) {
+            const row = document.createElement('div');
+            row.className = 'defect-row';
+            row.innerHTML = `
+                <div class="defect-label">Defect ${i}:</div>
+                <input type="number" id="rate-${i}" value="${defaults[i-1] || ''}" min="0" placeholder="e.g. 200" oninput="calculate()">
+            `;
+            container.appendChild(row);
+        }
+
+        // Combinatorics Helper: Factorial
+        function factorial(n) {
+            if (n === 0 || n === 1) return 1;
+            let res = 1;
+            for (let i = 2; i <= n; i++) res *= i;
+            return res;
+        }
+
+        // Combinatorics Helper: nCr (Combinations)
+        function comb(n, r) {
+            if (r < 0 || r > n) return 0;
+            // Short optimization to prevent huge float blowouts
+            if (r > n / 2) r = n - r; 
+            let res = 1;
+            for (let i = 1; i <= r; i++) {
+                res = res * (n - r + i) / i;
+            }
+            return res;
+        }
+
+        // Core Math Processing Logic
+        function calculate() {
+            const n = parseInt(document.getElementById('axles').value) || 0;
+            if (n <= 0) return;
+
+            // Extract rates from DOM inputs
+            let rates = [];
+            for (let i = 1; i <= DEFECT_COUNT; i++) {
+                const val = parseInt(document.getElementById(`rate-${i}`).value) || 0;
+                if (val > 0) {
+                    rates.push(val);
+                }
+            }
+
+            // 1. Sort Descending (Highest Axle Rate First, e.g., 2000 comes before 200)
+            rates.sort((a, b) => b - a);
+
+            // 2. Sequential probability calculations to mock early-break condition
+            let p_axle = 0.0;
+            let current_clean_prob = 1.0;
+
+            for (let rate of rates) {
+                // Mimicking C-style integer math: PROBABILITY_MAX // rate
+                let threshold = Math.floor(MAX_DICE / rate);
+                let p_defect = threshold / MAX_DICE;
+
+                p_axle += current_clean_prob * p_defect;
+                current_clean_prob *= (1.0 - p_defect);
+            }
+
+            let p_clean = 1.0 - p_axle;
+
+            // 3. Compute Binomial Distributions for the Train
+            // P(X=k) = comb(n, k) * (p_axle^k) * (p_clean^(n-k))
+            let prob_0 = comb(n, 0) * Math.pow(p_axle, 0) * Math.pow(p_clean, n);
+            let prob_1 = comb(n, 1) * Math.pow(p_axle, 1) * Math.pow(p_clean, n - 1);
+            let prob_2 = comb(n, 2) * Math.pow(p_axle, 2) * Math.pow(p_clean, n - 2);
+            
+            let prob_3_plus = 1.0 - (prob_0 + prob_1 + prob_2);
+            let prob_any = 1.0 - prob_0;
+
+            // 4. Update the User Interface Elements
+            document.getElementById('p-axle-display').innerText = `${(p_axle * 100).toFixed(4)}%`;
+            document.getElementById('res-clean').innerText = `${(prob_0 * 100).toFixed(2)}%`;
+            document.getElementById('res-1').innerText = `${(prob_1 * 100).toFixed(2)}%`;
+            document.getElementById('res-2').innerText = `${(prob_2 * 100).toFixed(2)}%`;
+            document.getElementById('res-3plus').innerText = `${(prob_3_plus * 100).toFixed(2)}%`;
+            document.getElementById('res-any').innerText = `${(prob_any * 100).toFixed(2)}%`;
+        }
+
+        // Initialize display on initial page load
+        calculate();
+    </script>
+</body>
+</html>
