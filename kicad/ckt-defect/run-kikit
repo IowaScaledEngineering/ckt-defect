@@ -1,0 +1,3 @@
+#!/bin/bash
+
+kikit panelize -p ckt-defect-array.json ckt-defect.kicad_pcb ckt-defect-array.kicad_pcb
