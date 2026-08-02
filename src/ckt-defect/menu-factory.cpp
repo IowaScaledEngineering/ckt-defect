@@ -42,11 +42,9 @@ void updateAllMenuVisibility(const DetectorConfiguration &cfg, const ManagedMenu
 
 	// Axle Config Visibility & Child Menu Item Visibility
 	if (cfg.axleEnable) {
-		if (menus.speedConfig)   menus.speedConfig->unhide();   
 		if (menus.minAxles)      menus.minAxles->unhide();      
 		if (menus.entranceAxles) menus.entranceAxles->unhide();
 	} else {
-		if (menus.speedConfig)   menus.speedConfig->hide();
 		if (menus.minAxles)      menus.minAxles->hide();        
 		if (menus.entranceAxles) menus.entranceAxles->hide();
 	}
