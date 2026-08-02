@@ -30,6 +30,7 @@ struct DataBundle {
 	uint16_t totalAxles = 0;
 	uint16_t speed = 0;
 	float speedFloat = 0;
+	uint8_t direction;
 
 	//  Inter-state machine communication
 	bool irDetect = false;

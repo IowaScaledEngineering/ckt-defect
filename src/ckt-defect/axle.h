@@ -26,5 +26,6 @@ uint32_t axleGetCount(uint32_t track);
 unsigned long axleGetEntranceDeltaMicros(uint32_t track);
 unsigned long axleGetExitDeltaMicros(uint32_t track);
 unsigned long axleGetLatestAxleTime(uint32_t track);
+uint8_t axleGetDirection(uint32_t track);
 void axleReset(uint32_t track);
 void axleTerminate(void);

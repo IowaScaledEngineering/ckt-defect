@@ -25,11 +25,12 @@ LICENSE:
 #include "io.h"
 #include "axle.h"
 
-volatile uint32_t axleCount[NUM_TRACKS];
-volatile unsigned long firstAxleTime[NUM_TRACKS];
-volatile unsigned long currentAxleTime[NUM_TRACKS];
-volatile unsigned long entranceDeltaMicros[NUM_TRACKS];
-volatile unsigned long exitDeltaMicros[NUM_TRACKS];
+static volatile uint32_t axleCount[NUM_TRACKS];
+static volatile unsigned long firstAxleTime[NUM_TRACKS];
+static volatile unsigned long currentAxleTime[NUM_TRACKS];
+static volatile unsigned long entranceDeltaMicros[NUM_TRACKS];
+static volatile unsigned long exitDeltaMicros[NUM_TRACKS];
+static volatile uint8_t direction[NUM_TRACKS];  // 1 = 1->2, 2 = 2->1, 0 (or anything else) = unknown
 
 enum class AxleIsrState
 {
@@ -66,6 +67,7 @@ void IRAM_ATTR axle_A1_isr(void *arg)
 			axleCount[0] = axleCount[0] + 1;
 			firstAxleTime[0] = time;
 			currentAxleTime[0] = time;
+			direction[0] = 1;
 			axleIsrState[0] = AxleIsrState::SPEED_1;
 			break;
 		#pragma GCC diagnostic push
@@ -95,6 +97,7 @@ void IRAM_ATTR axle_A2_isr(void *arg)
 			axleCount[0] = axleCount[0] + 1;
 			firstAxleTime[0] = time;
 			currentAxleTime[0] = time;
+			direction[0] = 2;
 			axleIsrState[0] = AxleIsrState::SPEED_2;
 			break;
 		#pragma GCC diagnostic push
@@ -124,6 +127,7 @@ void IRAM_ATTR axle_B1_isr(void *arg)
 			axleCount[1] = axleCount[1] + 1;
 			firstAxleTime[1] = time;
 			currentAxleTime[1] = time;
+			direction[1] = 1;
 			axleIsrState[1] = AxleIsrState::SPEED_1;
 			break;
 		#pragma GCC diagnostic push
@@ -153,6 +157,7 @@ void IRAM_ATTR axle_B2_isr(void *arg)
 			axleCount[1] = axleCount[1] + 1;
 			firstAxleTime[1] = time;
 			currentAxleTime[1] = time;
+			direction[1] = 2;
 			axleIsrState[1] = AxleIsrState::SPEED_2;
 			break;
 		#pragma GCC diagnostic push
@@ -204,12 +209,18 @@ unsigned long axleGetLatestAxleTime(uint32_t track)
 	return currentAxleTime[track];
 }
 
+uint8_t axleGetDirection(uint32_t track)
+{
+	return direction[track];
+}
+
 void axleReset(uint32_t track)
 {
 	axleCount[track] = 0;
 	currentAxleTime[track] = 0;
 	entranceDeltaMicros[track] = 0;
 	exitDeltaMicros[track] = 0;
+	direction[track] = 0;
 	axleIsrState[track] = AxleIsrState::IDLE;
 }
 

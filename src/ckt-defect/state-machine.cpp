@@ -113,10 +113,11 @@ void AxleStateMachine::update()
 			data->newAxle = false;
 			if (data->axleCountLive > data->axleCount)
 			{
-				// If this is the first axle, clear the previous speed; used in main loop to detect first axle
+				// If this is the first axle, clear the previous speed/direction; used in main loop to detect first axle
 				if (0 == data->axleCount)
 				{
 					data->speed = 0;
+					data->direction = 0;
 				}
 				transitionTo(AxleState::DETECT);
 			}

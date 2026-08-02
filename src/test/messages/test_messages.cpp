@@ -26,30 +26,37 @@ struct TestCase {
 	std::string expected;
 	bool breakDigits;
 	uint8_t trackNum;
+	uint8_t direction;
 };
 
 const std::vector<TestCase> testCases = {
-	{ "#milepost", "3 4 6 . 9", true, 0 },
-	{ "#milepost", "346.9", false, 0 },
-	{ "#milepost:3.1", "3 4 6 . 9", true, 0 },
-	{ "#milepost:4.1", " 346.9", false, 0 },
-	{ "#milepost:-4.1", "346.9 ", false, 0 },
-	{ "#milepost:6.1", "   346.9", false, 0 },
-	{ "#milepost:-6.1", "346.9   ", false, 0 },
-	{ "#axle", "4", false, 0 },
-	{ "#axle:3", "  4", false, 0 },
-	{ "#axles:-3", "1 2 4", true, 0 },
-	{ "#track", "Main 1", false, 0 },
-	{ "#track:4", "Main", false, 0 },
-	{ "#track:8", "  Main 1", false, 0 },
-	{ "#track:-8", "Main 1  ", false, 0 },
-	{ "#speed", "4 5", true, 0 },
-	{ "#temp", "72", false, 0 },
-	{ "#defectlist", "HOT_BOX DRAG_EQ", false, 0 },
-	{ "milepost #milepost speed #speed:3 mph", "milepost 346.9 speed  45 mph", false, 0 },
+	{ "#milepost", "3 4 6 . 9", true, 0, 0 },
+	{ "#milepost", "346.9", false, 0, 0 },
+	{ "#milepost:3.1", "3 4 6 . 9", true, 0, 0 },
+	{ "#milepost:4.1", " 346.9", false, 0, 0 },
+	{ "#milepost:-4.1", "346.9 ", false, 0, 0 },
+	{ "#milepost:6.1", "   346.9", false, 0, 0 },
+	{ "#milepost:-6.1", "346.9   ", false, 0, 0 },
+	{ "#axle", "4", false, 0, 0 },
+	{ "#axle:3", "  4", false, 0, 0 },
+	{ "#axles:-3", "1 2 4", true, 0, 0 },
+	{ "#track", "Main 1", false, 0, 0 },
+	{ "#track:4", "Main", false, 0, 0 },
+	{ "#track:8", "  Main 1", false, 0, 0 },
+	{ "#track:-8", "Main 1  ", false, 0, 0 },
+	{ "#direction", "Northbound", false, 0, 1 },
+	{ "#direction:4", "Sout", false, 0, 2 },
+	{ "#direction:12", "  Northbound", false, 0, 1 },
+	{ "#direction:-12", "Southbound  ", false, 0, 2 },
+	{ "#direction", "", false, 0, 0 },
+	{ "#direction", "", false, 0, 12 },
+	{ "#speed", "4 5", true, 0, 0 },
+	{ "#temp", "72", false, 0, 0 },
+	{ "#defectlist", "HOT_BOX DRAG_EQ", false, 0, 0 },
+	{ "milepost #milepost speed #speed:3 mph", "milepost 346.9 speed  45 mph", false, 0, 0 },
 	{ "Axles:#axles", "Axles:124", false, 0},
-	{ "Axles:#axles\\Speed:#speed", "Axles:124\nSpeed:45", false, 0 },
-	{ "Axles:\\\\#axles", "Axles:\\124", false, 0 }
+	{ "Axles:#axles\\Speed:#speed", "Axles:124\nSpeed:45", false, 0, 0 },
+	{ "Axles:\\\\#axles", "Axles:\\124", false, 0, 0 }
 };
 
 int main() {
@@ -57,6 +64,8 @@ int main() {
 	cfg.milepost = 3469;
 	cfg.trackName[0] = "Main 1";
 	cfg.trackName[1] = "Track 2";
+	cfg.direction1Name = "Northbound";
+	cfg.direction2Name = "Southbound";
 
 	DataBundle data;
 	data.axleCount = 4;
@@ -76,6 +85,7 @@ int main() {
 		
 		// Directly invoking the production method from messages.h
 		std::string result;
+		data.direction = tc.direction;
 		transformMessage(tc.input, result, cfg, data, tc.trackNum, tc.breakDigits);
 
 		bool isPass = (result == tc.expected);

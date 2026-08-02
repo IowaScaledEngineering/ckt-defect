@@ -477,7 +477,7 @@ void loop()
 		{
 			trackMessages.entranceMsg += " milepost #milepost";
 		}
-		trackMessages.entranceMsg += " #track";
+		trackMessages.entranceMsg += " #track #direction";
 		// Defect Messages
 		std::string tmpMessage;
 		if(cfg.axleEnable)
@@ -702,6 +702,12 @@ clrTestPoint(TP2);
 				// FIXME: add scale ratio and units
 				data[i].speedFloat = 4943182.0/(axleGetExitDeltaMicros(i));
 				data[i].speed = data[i].speedFloat + 0.5;
+			}
+
+			if((axleGetDirection(i) > 0) && (0 == data[i].direction))
+			{
+				// Save direction
+				data[i].direction = axleGetDirection(i);
 			}
 
 			if((axleGetEntranceDeltaMicros(i) > 0) && cfg.speedTypeEnter && (0 == data[i].speed))

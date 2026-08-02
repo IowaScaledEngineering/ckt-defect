@@ -44,6 +44,10 @@ const std::vector<std::string> directionNames = {
 	"Westbound",
 	"Northbound",
 	"Southbound",
+	"East",
+	"West",
+	"North",
+	"South",
 };
 
 void toLowercase(std::string& str)

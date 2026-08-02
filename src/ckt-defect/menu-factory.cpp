@@ -226,14 +226,14 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		&cfg.direction1NameId,
 		false,
 		directionNames,
-		[&cfg]() { saveConfiguration(&cfg); }
+		[&cfg]() { saveConfiguration(&cfg); updateDirectionNames(&cfg); }
 	);
 	auto menuDirectionName2 = std::make_shared<MenuOptionSelector>(
 		"Direction 2 Name", 
 		&cfg.direction2NameId,
 		false,
 		directionNames,
-		[&cfg]() { saveConfiguration(&cfg); }
+		[&cfg]() { saveConfiguration(&cfg); updateDirectionNames(&cfg); }
 	);
 	auto menuTriggerDir1 = std::make_shared<MenuBoolSelector>(
 		"Trigger Dir 1 Only",
@@ -385,8 +385,6 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	menuTemperatureEn->setSaveCallback([&cfg, managed]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg, managed); });
 	menuTemperatureType->setSaveCallback([&cfg, managed]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg, managed); });
 	menuDirectionEn->setSaveCallback([&cfg, managed]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg, managed); updateDirectionNames(&cfg); });
-	menuDirectionName1->setSaveCallback([&cfg]() { saveConfiguration(&cfg); updateDirectionNames(&cfg); });
-	menuDirectionName2->setSaveCallback([&cfg]() { saveConfiguration(&cfg); updateDirectionNames(&cfg); });
 
 	// Trigger 1 and Trigger 2 mutual-exclusion callbacks
 	menuTriggerDir1->setSaveCallback([&cfg]() {
@@ -455,7 +453,6 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	menuSysConfig->addChild(menuVolume);
 
 	updateAllMenuVisibility(cfg, managed);
-	updateDirectionNames(&cfg);
 	
 	return home;
 }

@@ -260,6 +260,34 @@ void transformMessage(const std::string& inputMessage, std::string& outputMessag
 				i = tokenEnd;
 				continue;
 			}
+			else if ("#direction" == baseToken)
+			{
+				std::string directionName;
+				switch(data.direction)
+				{
+					case 1:
+						directionName = cfg.direction1Name;
+						break;
+					case 2:
+						directionName = cfg.direction2Name;
+						break;
+					default:
+						directionName = "";
+						break;
+				}
+				if (colonPos != std::string::npos) 
+				{
+					int32_t n = 0, m = 0;
+					parseModifier(fullToken, colonPos, n, m, false);
+					formatStringField(outputMessage, directionName, n);
+				} 
+				else 
+				{
+					outputMessage += directionName;
+				}
+				i = tokenEnd;
+				continue;
+			}
 			else if ("#axle" == baseToken || "#axles" == baseToken || "#speed" == baseToken || "#temp" == baseToken)
 			{
 				int32_t val = 0;
