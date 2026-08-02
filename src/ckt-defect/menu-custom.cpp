@@ -113,7 +113,10 @@ MenuEvent MenuHome::update()
 				if (parserQueueEmpty() && audioQueueEmpty())
 				{
 					waitStartTime = millis();
-					state = MenuHomeState::WAIT;
+					backlightState = false;
+					backlightDelayStartTime = millis();
+					delayBacklightOff = true;
+					state = MenuHomeState::STANDBY;
 				}
 			}
 
