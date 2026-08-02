@@ -256,7 +256,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		"Off", "OFF"
 	);
 
-	// Timeout
+	// Timing
 	auto menuTimingConfig = std::make_shared<MenuListSelector>("Timing");
 	auto menuDetectorTimeout = std::make_shared<MenuNumberDial>(
 		"Exit Timeout",
@@ -275,6 +275,25 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		60,  // max
 		"sec",
 		[&cfg]() { saveConfiguration(&cfg); }
+	);
+
+	// Defect Summary
+	auto menuDefectSummaryConfig = std::make_shared<MenuListSelector>("Defect Summary");
+	auto menuMaxDefects = std::make_shared<MenuNumberDial>(
+		"Max Defects",
+		&cfg.maxDefects,
+		false,
+		1,   // min
+		10,  // max
+		"defects",
+		[&cfg]() { saveConfiguration(&cfg); }
+	);
+	auto menuOrdinalEnable = std::make_shared<MenuBoolSelector>(
+		"Ordinal Enable",
+		&cfg.ordinalDefectList,
+		false, 
+		"On", "ON", 
+		"Off", "OFF"
 	);
 
 	// Temperature
@@ -423,6 +442,10 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	mainSel->addChild(menuTimingConfig);
 	menuTimingConfig->addChild(menuDetectorTimeout);
 	menuTimingConfig->addChild(menuExitDisplayTimeout);
+
+	mainSel->addChild(menuDefectSummaryConfig);
+	menuDefectSummaryConfig->addChild(menuMaxDefects);
+	menuDefectSummaryConfig->addChild(menuOrdinalEnable);
 
 	mainSel->addChild(menuTemperatureConfig);
 	menuTemperatureConfig->addChild(menuTemperatureEn);
