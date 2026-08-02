@@ -21,7 +21,9 @@ class MenuHome : public Menu
 		DataBundle* data;
 		MenuHomeState state;
 		void renderHomeUI(const std::string& statusText, bool showLightButton);
+		void renderMessage(const std::string& message);
 		std::string dispString;
+		std::string lastDisplayedMessage;
 	public:
 		MenuHome(const std::string &n, const DetectorConfiguration &c, DataBundle* d) 
 			: Menu(n), cfg(c), data(d) {}

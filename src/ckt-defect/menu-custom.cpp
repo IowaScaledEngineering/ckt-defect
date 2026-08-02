@@ -68,6 +68,53 @@ void MenuHome::renderHomeUI(const std::string& statusText, bool showLightButton)
 	}
 }
 
+void MenuHome::renderMessage(const std::string& message)
+{
+	if(message.empty())
+		return;
+
+	std::string tmpString;
+	size_t startPos = 0;
+	uint8_t lineCount = 0;
+
+	// We process up to 3 lines max to avoid spilling onto row 3 (which holds the "MENU" prompt)
+	while (startPos < message.length() && lineCount < 3)
+	{
+		size_t nextNewline = message.find('\n', startPos);
+		std::string currentLine;
+		
+		if (nextNewline == std::string::npos)
+		{
+			currentLine = message.substr(startPos);
+			startPos = message.length(); // Break loop next cycle
+		}
+		else
+		{
+			currentLine = message.substr(startPos, nextNewline - startPos);
+			startPos = nextNewline + 1;
+		}
+
+		// Format individual line: center and truncate to width of 20
+		tmpString = centerString(currentLine, 20);
+		tmpString.resize(20);
+
+		// Print directly to the designated cursor row
+		disp->gotoxy(0, lineCount);
+		disp->print(tmpString.c_str());
+
+		lineCount++;
+	}
+
+	// Clear out any remaining rows (up to row 2) if the message was short
+	// so that residual data from an older screen state isn't left behind
+	while (lineCount < 3)
+	{
+		disp->gotoxy(0, lineCount);
+		disp->print("                    "); // 20 spaces
+		lineCount++;
+	}
+}
+
 MenuEvent MenuHome::update()
 {
 	std::string tmpString;
@@ -125,48 +172,12 @@ MenuEvent MenuHome::update()
 		case MenuHomeState::MESSAGE:
 			if(!dispString.empty())
 			{
-				size_t startPos = 0;
-				uint8_t lineCount = 0;
-
-				// We process up to 3 lines max to avoid spilling onto row 3 (which holds the "MENU" prompt)
-				while (startPos < dispString.length() && lineCount < 3)
-				{
-					size_t nextNewline = dispString.find('\n', startPos);
-					std::string currentLine;
-					
-					if (nextNewline == std::string::npos)
-					{
-						currentLine = dispString.substr(startPos);
-						startPos = dispString.length(); // Break loop next cycle
-					}
-					else
-					{
-						currentLine = dispString.substr(startPos, nextNewline - startPos);
-						startPos = nextNewline + 1;
-					}
-
-					// Format individual line: center and truncate to width of 20
-					tmpString = centerString(currentLine, 20);
-					tmpString.resize(20);
-
-					// Print directly to the designated cursor row
-					disp->gotoxy(0, lineCount);
-					disp->print(tmpString.c_str());
-
-					lineCount++;
-				}
-
-				// Clear out any remaining rows (up to row 2) if the message was short
-				// so that residual data from an older screen state isn't left behind
-				while (lineCount < 3)
-				{
-					disp->gotoxy(0, lineCount);
-					disp->print("                    "); // 20 spaces
-					lineCount++;
-				}
+				renderMessage(dispString);
+				lastDisplayedMessage = dispString;
 			}
 			else
 			{
+				renderMessage(lastDisplayedMessage);
 				if(!active)
 				{
 					if (parserQueueEmpty() && audioQueueEmpty())
@@ -181,6 +192,8 @@ MenuEvent MenuHome::update()
 			break;
 
 		case MenuHomeState::WAIT:
+			renderMessage(lastDisplayedMessage);
+
 			if( (millis() - waitStartTime) >= (cfg.exitDisplayTimeout * 1000) )
 			{
 				backlightState = false;
