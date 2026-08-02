@@ -23,8 +23,6 @@ struct ManagedMenus {
 	std::shared_ptr<Menu> maxTemp;
 	std::shared_ptr<Menu> directionName1;
 	std::shared_ptr<Menu> directionName2;
-	std::shared_ptr<Menu> triggerDir1;
-	std::shared_ptr<Menu> triggerDir2;
 };
 
 void updateAllMenuVisibility(const DetectorConfiguration &cfg, const ManagedMenus &menus)
@@ -90,13 +88,9 @@ void updateAllMenuVisibility(const DetectorConfiguration &cfg, const ManagedMenu
 	if (cfg.directionEnable) {
 		if (menus.directionName1) menus.directionName1->unhide();
 		if (menus.directionName2) menus.directionName2->unhide();
-		if (menus.triggerDir1) menus.triggerDir1->unhide();
-		if (menus.triggerDir2) menus.triggerDir2->unhide();
 	} else {
 		if (menus.directionName1) menus.directionName1->hide();
 		if (menus.directionName2) menus.directionName2->hide();
-		if (menus.triggerDir1) menus.triggerDir1->hide();
-		if (menus.triggerDir2) menus.triggerDir2->hide();
 	}
 }
 
@@ -378,7 +372,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		menuMinAxles, menuEntranceAxles,
 		menuSpeedConfig, menuSpeedUnits, menuSpeedType, menuMinSpeed,
 		menuTemperatureUnits, menuTemperatureType, menuMinTemperature, menuMaxTemperature,
-		menuDirectionName1, menuDirectionName2, menuTriggerDir1, menuTriggerDir2
+		menuDirectionName1, menuDirectionName2
 	};
 
 	// ==========================================
