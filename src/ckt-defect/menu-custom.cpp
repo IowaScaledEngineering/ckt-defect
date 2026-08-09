@@ -3,6 +3,7 @@
 #include "temperature.h"
 #include "parser.h"
 #include "audio.h"
+#include "vocab.h"
 #include <format>
 
 void MenuHome::onEnter()
@@ -370,3 +371,90 @@ MenuEvent MenuVolume::update()
 	}
 	return MenuEvent::NOOP;
 }
+
+void MenuVocabTest::onEnter()
+{
+	Menu::onEnter(); // Clear display and reset button states
+	currentIndex = 0; // Reset vector position when entering
+}
+
+MenuEvent MenuVocabTest::update()
+{
+	disp->backlightOn();
+
+	// Line 0 (Row 0): Menu Name
+	disp->gotoxy(0, 0);
+	disp->print(menuName);
+
+	// Line 1 (Row 1): Current Sound Name
+	disp->gotoxy(0, 1);
+	if (vocabGetSize() > 0)
+	{
+		std::string name = vocabGetName(currentIndex);
+		disp->print(centerString(name, 20).c_str());
+	}
+	else
+	{
+		disp->print(centerString("< EMPTY >", 20).c_str());
+	}
+
+	// Line 3 (Row 3): Button Labels
+	disp->gotoxy(0, 3);
+	disp->print("PREV");
+	disp->gotoxy(5, 3);
+	disp->print("NEXT");
+	disp->gotoxy(11, 3);
+	disp->print("PLAY");
+	disp->gotoxy(16, 3);
+	disp->print("BACK");
+
+	DisplayEvent ev;
+	if (getMenuInputEvent(&ev))
+	{
+		if (ev.type == DisplayEventType::KEY_PRESS)
+		{
+			switch (ev.keyNum)
+			{
+				case 1: // Button 1: Previous item (wrap around)
+					handleButtonPress(1);
+					if (vocabGetSize() > 0)
+					{
+						if (currentIndex == 0)
+							currentIndex = vocabGetSize() - 1;
+						else
+							currentIndex--;
+					}
+					break;
+
+				case 2: // Button 2: Next item (wrap around)
+					handleButtonPress(2);
+					if (vocabGetSize() > 0)
+					{
+						currentIndex = (currentIndex + 1) % vocabGetSize();
+					}
+					break;
+
+				case 3: // Button 3: PLAY current sound
+					handleButtonPress(3);
+					if (vocabGetSize() > 0)
+					{
+						WavSound wavSound;
+						wavSound.wav = vocabGetWord(currentIndex);
+						wavSound.seamlessPlay = false;
+						audioQueuePush(&wavSound);
+					}
+					break;
+
+				case 4: // Button 4: BACK
+					return MenuEvent::BACK;
+			}
+		}
+		else if (ev.type == DisplayEventType::KEY_RELEASE)
+		{
+			handleButtonRelease(ev.keyNum);
+		}
+	}
+
+	return MenuEvent::NOOP;
+}
+

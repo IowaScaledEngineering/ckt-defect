@@ -366,6 +366,10 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		[lcd, &cfg]() { cfg.volumeStep = audioGetVolumeStep(); saveConfiguration(&cfg); }
 	);
 
+	// Diagnostic	
+	auto menuDiagnostics = std::make_shared<MenuListSelector>("Diagnostics");
+	auto menuVocabTest = std::make_shared<MenuVocabTest>("Vocab Test");
+
 	// Package up all managed controls into our visibility group
 	ManagedMenus managed = {
 		menuMilepost, menuTrackNameA, menuTrackNameB, 
@@ -451,6 +455,9 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	mainSel->addChild(menuSysConfig);
 	menuSysConfig->addChild(menuBacklightLevel);
 	menuSysConfig->addChild(menuVolume);
+
+	mainSel->addChild(menuDiagnostics);
+	menuDiagnostics->addChild(menuVocabTest);
 
 	updateAllMenuVisibility(cfg, managed);
 	
