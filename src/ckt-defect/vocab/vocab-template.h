@@ -25,6 +25,8 @@ LICENSE:
 
 void vocabDelete(void);
 size_t vocabGetSize(void);
+std::string vocabGetName(uint32_t index);
 Sound* vocabGetWord(const std::string& word);
+Sound* vocabGetWord(const uint32_t index);
 
 void loadInternalVocab(void);

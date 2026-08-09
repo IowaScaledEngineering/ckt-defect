@@ -37,6 +37,18 @@ size_t vocabGetSize(void)
 	return vocab.size();
 }
 
+std::string vocabGetName(uint32_t index)
+{
+	if(index < vocabGetSize())
+	{
+		return vocab[index]->getName();
+	}
+	else
+	{
+		return "";
+	}
+}
+
 Sound* vocabGetWord(const std::string& word)
 {
 	auto it = std::find_if(vocab.begin(), vocab.end(),
@@ -49,6 +61,18 @@ Sound* vocabGetWord(const std::string& word)
 	if (it != vocab.end())
 	{
 		return *it;
+	}
+	else
+	{
+		return NULL;
+	}
+}
+
+Sound* vocabGetWord(const uint32_t index)
+{
+	if(index < vocabGetSize())
+	{
+		return vocab[index];
 	}
 	else
 	{
