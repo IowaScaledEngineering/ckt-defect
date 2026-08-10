@@ -22,6 +22,7 @@ LICENSE:
 #include <Arduino.h>
 #include <SPI.h>
 #include <SD.h>
+#include <stdlib.h>
 #include "driver/i2s_std.h"
 #include "driver/gpio.h"
 
@@ -94,6 +95,50 @@ static uint16_t volumeLevels[] = {
 		20000,  // 30
 };
 
+// --- Programmable Noise Levels & Step Control ---
+static uint8_t audioNoiseStep = 0;
+static uint16_t noiseLevels[] = {
+		0,      // 0
+		10,
+		20,
+		30,
+		40,
+		50,
+		60,
+		70,
+		80,
+		90,
+		100    // 10
+};
+
+// --- 4th Order High-Pass Filter (375 Hz @ 16 kHz) ---
+struct Biquad {
+	float b0, b1, b2, a1, a2;
+	float x1 = 0.0f, x2 = 0.0f;
+	float y1 = 0.0f, y2 = 0.0f;
+
+	float process(float input) {
+		float output = b0 * input + b1 * x1 + b2 * x2 - a1 * y1 - a2 * y2;
+		x2 = x1;
+		x1 = input;
+		y2 = y1;
+		y1 = output;
+		return output;
+	}
+};
+
+struct HighPass4thOrder {
+	// Coefficients calculated for 4th-order High-Pass Butterworth (Fc=375Hz, Fs=16000Hz)
+	Biquad stage1 = { 0.832960f, -1.665920f, 0.832960f, -1.570583f, 0.761259f };
+	Biquad stage2 = { 0.895584f, -1.791168f, 0.895584f, -1.688663f, 0.893674f };
+
+	float process(float input) {
+		return stage2.process(stage1.process(input));
+	}
+};
+
+static HighPass4thOrder noiseFilter;
+
 static uint32_t audioPttDelayMillis = 0;
 void (*pttEnable)(void) = NULL;
 void (*pttDisable)(void) = NULL;
@@ -124,6 +169,21 @@ void audioSetVolumeStep(uint8_t newVolumeStep)
 uint8_t audioGetVolumeStep(void)
 {
 	return(audioVolumeStep);
+}
+
+
+void audioSetNoiseStep(uint8_t newNoiseStep)
+{
+	if(newNoiseStep <= 10)
+	{
+		audioNoiseStep = newNoiseStep;
+	}
+}
+
+
+uint8_t audioGetNoiseStep(void)
+{
+	return(audioNoiseStep);
 }
 
 
@@ -316,13 +376,27 @@ static void audioPump(void *args)
 						// Delay task for 1s to allow main loop to clean up
 						vTaskDelay(1000 / portTICK_PERIOD_MS);
 					}
-					int32_t adjustedValue = sampleValue * audioVolume / volumeLevels[VOL_STEP_NOM];
+
+					// --- Noise Generation & Pre-Volume Mix ---
+					int32_t mixedValue = sampleValue;
+					if(audioNoiseStep > 0)
+					{
+						// Generate white noise bounded to [-32768, 32767]
+						float rawNoise = (float)((rand() % 65536) - 32768);
+						float filteredNoise = noiseFilter.process(rawNoise);
+						int32_t scaledNoise = (int32_t)(filteredNoise * noiseLevels[audioNoiseStep] / 1000.0f);
+						mixedValue += scaledNoise;
+					}
+
+					// Apply main audio volume calculation on the mixed sample
+					int32_t adjustedValue = mixedValue * audioVolume / volumeLevels[VOL_STEP_NOM];
 					if(adjustedValue > 32767)
 						sampleValue = 32767;
 					else if(adjustedValue < -32768)
 						sampleValue = -32768;
 					else
-						sampleValue = adjustedValue;
+						sampleValue = (int16_t)adjustedValue;
+
 					// Combine into 32 bit word (left & right)
 					outputValue = (sampleValue<<16) | (sampleValue & 0xffff);
 setTestPoint(TP0);

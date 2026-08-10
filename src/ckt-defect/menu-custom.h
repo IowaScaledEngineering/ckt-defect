@@ -39,13 +39,25 @@ class MenuHome : public Menu
 class MenuVolume : public Menu
 {
 	private:
-		int32_t currentVal; // Internal percentage (0 to 150)
+		int32_t currentVal;   // Internal percentage (0 to maxPercent)
+		uint32_t stepSize;    // Percentage increment per step
+		bool allowOver;       // Whether values > 100% are allowed
+		uint32_t maxPercent;  // Maximum allowed percentage
 
 	public:
-		// Constructor using std::function callbacks
-		MenuVolume(const std::string &name, std::function<uint32_t()> getter,
-		                          std::function<void(uint32_t)> setter, bool realTimeUpdate, std::function<void()> onSave = nullptr)
-		    : Menu(name)
+		// Constructor using std::function callbacks with configurable range options
+		MenuVolume(const std::string &name, 
+		           uint32_t step,
+		           bool allowBoost,
+		           uint32_t maxBoostPercent,
+		           std::function<uint32_t()> getter,
+		           std::function<void(uint32_t)> setter, 
+		           bool realTimeUpdate, 
+		           std::function<void()> onSave = nullptr)
+		    : Menu(name), 
+		      stepSize(step > 0 ? step : 5), 
+		      allowOver(allowBoost), 
+		      maxPercent(allowBoost ? maxBoostPercent : 100)
 		{
 			getFunc32 = std::move(getter);
 			setFunc32 = std::move(setter);

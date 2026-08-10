@@ -246,11 +246,15 @@ void MenuVolume::onEnter()
 	Menu::onEnter(); // Call the base implementation to clear display, clear button repeat states, etc.
 	originalVal = getValue();
 
-	// Hardcoded map clamp: input 0-30 converted to percentage 0-150%
-	uint32_t rawVal = std::clamp<uint32_t>(getValue(), 0U, 30U);
+	// Calculate maximum raw units allowed based on dynamic settings
+	uint32_t effectiveMaxPercent = allowOver ? maxPercent : 100U;
+	uint32_t maxRaw = effectiveMaxPercent / stepSize;
+
+	// Clamp the raw input value to valid range
+	uint32_t rawVal = std::clamp<uint32_t>(getValue(), 0U, maxRaw);
 	
-	// Every 1 raw unit = 5% (since 20 units = 100%)
-	currentVal = (int32_t)(rawVal * 5);
+	// Convert raw units to percentage
+	currentVal = (int32_t)(rawVal * stepSize);
 
 	// Initialize custom block pieces (5x8 pixels)
 	uint8_t bar1[8] = {0b10000, 0b10000, 0b10000, 0b10000, 0b10000, 0b10000, 0b10000, 0b00000};
@@ -281,8 +285,9 @@ MenuEvent MenuVolume::update()
 	disp->gotoxy(16, 3);
 	disp->print("CNCL");
 
-	// Double check boundaries (0% to 150%)
-	uint32_t percentage = std::clamp<int32_t>(currentVal, 0, 150);
+	// Double check boundaries based on configuration
+	uint32_t limitPercent = allowOver ? maxPercent : 100U;
+	uint32_t percentage = std::clamp<int32_t>(currentVal, 0, limitPercent);
 
 	// --- Visual Bar Render Math (Line 1) ---
 	// Visual rendering caps out cleanly at 100%
@@ -333,30 +338,30 @@ MenuEvent MenuVolume::update()
 		{
 			switch(ev.keyNum)
 			{
-				case 1: // Decrement by hardcoded 5%
-					currentVal -= 5;
+				case 1: // Decrement by stepSize
+					currentVal -= stepSize;
 					if(currentVal < 0)
 						currentVal = 0;
 					handleButtonPress(1);
 					if(realTime)
 					{
-						setValue((uint32_t)(currentVal / 5));
+						setValue((uint32_t)(currentVal / stepSize));
 					}
 					break;
 
-				case 2: // Increment by hardcoded 5%
-					currentVal += 5;
-					if(currentVal > 150)
-						currentVal = 150;
+				case 2: // Increment by stepSize
+					currentVal += stepSize;
+					if(currentVal > (int32_t)limitPercent)
+						currentVal = limitPercent;
 					handleButtonPress(2);
 					if(realTime)
 					{
-						setValue((uint32_t)(currentVal / 5));
+						setValue((uint32_t)(currentVal / stepSize));
 					}
 					break;
 
 				case 3: // Save Action
-					applyChange((uint32_t)(percentage / 5));
+					applyChange((uint32_t)(percentage / stepSize));
 					return MenuEvent::BACK;
 
 				case 4: // Cancel Action
