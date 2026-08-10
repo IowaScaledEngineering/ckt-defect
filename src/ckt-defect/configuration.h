@@ -26,6 +26,7 @@ LICENSE:
 struct DetectorConfiguration {
 	uint8_t volumeStep;
 	uint8_t noiseStep;
+	uint8_t popcornStep;
 	uint8_t lcdBrightness;
 
 	bool milepostEnable;

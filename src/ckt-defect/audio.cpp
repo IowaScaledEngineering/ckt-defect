@@ -97,18 +97,19 @@ static uint16_t volumeLevels[] = {
 
 // --- Programmable Noise Levels & Step Control ---
 static uint8_t audioNoiseStep = 0;
+static uint8_t audioPopcornStep = 0;
 static uint16_t noiseLevels[] = {
 		0,      // 0
-		50,
-		100,
-		150,
-		200,
-		250,
-		300,
-		350,
-		400,
-		450,
-		500    // 10
+		40,
+		80,
+		270,
+		640,
+		1250,
+		2160,
+		3430,
+		5120,
+		7290,
+		10000    // 10
 };
 
 // --- 4th Order High-Pass Filter (375 Hz @ 16 kHz) ---
@@ -184,6 +185,21 @@ void audioSetNoiseStep(uint8_t newNoiseStep)
 uint8_t audioGetNoiseStep(void)
 {
 	return(audioNoiseStep);
+}
+
+
+void audioSetPopcornStep(uint8_t newPopcornStep)
+{
+	if(newPopcornStep <= 10)
+	{
+		audioPopcornStep = newPopcornStep;
+	}
+}
+
+
+uint8_t audioGetPopcornStep(void)
+{
+	return(audioPopcornStep);
 }
 
 
@@ -379,12 +395,13 @@ static void audioPump(void *args)
 
 					// --- Noise Generation & Pre-Volume Mix ---
 					int32_t mixedValue = sampleValue;
-					if(audioNoiseStep > 0)
+					if((audioNoiseStep > 0) || (audioPopcornStep > 0))
 					{
-						// 1. Raw white noise set to 10% of full scale (+/- 3276.8)
-						float rawNoise = ((float)((rand() % 65536) - 32768)) * 0.10f;
+						// Raw white noise scaled by audioNoiseStep level
+						float rawNoise = (float)((rand() % 65536) - 32768) * 0.2f;
+						float scaledWhiteNoise = rawNoise * (noiseLevels[audioNoiseStep] / (float)volumeLevels[VOL_STEP_NOM]);
 
-						// 2. RTS (Random Telegraph Signal) Noise Generation
+						// RTS (Random Telegraph Signal) Noise Generation scaled by audioPopcornStep level
 						static float rtsState = 1.0f;
 
 						// Target ~20 pops/transitions per second adaptive to active sample rate
@@ -396,15 +413,12 @@ static void audioPump(void *args)
 							rtsState = -rtsState; // Discrete state toggle (+1.0 / -1.0)
 						}
 
-						// RTS noise scaled to 75% of full scale (+/- 24576.0)
-						float rtsNoise = rtsState * (0.75f * 32768.0f);
+						float scaledRtsNoise = (rtsState * 32768.0f) * (noiseLevels[audioPopcornStep] / (float)volumeLevels[VOL_STEP_NOM]);
 
-						// 3. High-Pass Filter processing (filters combined White + RTS noise)
-						float filteredNoise = noiseFilter.process(rawNoise + rtsNoise);
+						// Add scaled noise sources together and pass through High-Pass Filter
+						float filteredNoise = noiseFilter.process(scaledWhiteNoise + scaledRtsNoise);
 
-						// 4. Scale noise mixture by audioNoiseStep level
-						int32_t scaledNoise = (int32_t)(filteredNoise * noiseLevels[audioNoiseStep] / 1000.0f);
-						mixedValue += scaledNoise;
+						mixedValue += (int32_t)filteredNoise;
 					}
 
 					// Apply main audio volume calculation on the mixed sample

@@ -41,6 +41,8 @@ uint8_t audioGetVolumeDownCoef(void);
 // --- Noise Control Functions ---
 void audioSetNoiseStep(uint8_t newNoiseStep);
 uint8_t audioGetNoiseStep(void);
+void audioSetPopcornStep(uint8_t newPopcornStep);
+uint8_t audioGetPopcornStep(void);
 
 void audioSetPttDelay(uint32_t milliseconds);
 void audioSetPttEnableCallback(void (*callback)(void));

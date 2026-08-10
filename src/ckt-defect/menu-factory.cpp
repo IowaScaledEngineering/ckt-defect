@@ -359,14 +359,24 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		[lcd, &cfg]() { cfg.lcdBrightness = lcd->getBrightness(); saveConfiguration(&cfg); }
 	);
 	auto menuNoise = std::make_shared<MenuVolume>(
-		"Noise Level",
-		5,
+		"White Noise",
+		10,
 		false,
 		100,
 		audioGetNoiseStep,
 		audioSetNoiseStep,
 		true,
 		[lcd, &cfg]() { cfg.noiseStep = audioGetNoiseStep(); saveConfiguration(&cfg); }
+	);
+	auto menuPopcorn = std::make_shared<MenuVolume>(
+		"Popcorn Noise",
+		10,
+		false,
+		100,
+		audioGetPopcornStep,
+		audioSetPopcornStep,
+		true,
+		[lcd, &cfg]() { cfg.popcornStep = audioGetPopcornStep(); saveConfiguration(&cfg); }
 	);
 	auto menuVolume = std::make_shared<MenuVolume>(
 		"Audio Volume",
@@ -468,6 +478,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	mainSel->addChild(menuSysConfig);
 	menuSysConfig->addChild(menuBacklightLevel);
 	menuSysConfig->addChild(menuNoise);
+	menuSysConfig->addChild(menuPopcorn);
 	menuSysConfig->addChild(menuVolume);
 
 	mainSel->addChild(menuDiagnostics);
