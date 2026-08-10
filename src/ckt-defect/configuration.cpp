@@ -26,6 +26,9 @@ LICENSE:
 #include "common.h"
 #include "configuration.h"
 
+#define NOISE_STEP_DEFAULT                0
+#define POPCORN_STEP_DEFAULT              0
+
 #define LCD_BRIGHT_DEFAULT                128
 
 #define MILEPOST_EN_DEFAULT               true
@@ -71,6 +74,8 @@ void loadConfiguration(DetectorConfiguration* cfg)
 	preferences.begin(PREF_NAMESPACE, true);  // Open in read-only mode
 
 	cfg->volumeStep = preferences.getUChar("vol", VOL_STEP_NOM);
+	cfg->noiseStep = preferences.getUChar("noise", NOISE_STEP_DEFAULT);
+	cfg->popcornStep = preferences.getUChar("popcorn", POPCORN_STEP_DEFAULT);
 	cfg->lcdBrightness = preferences.getUChar("lcd", LCD_BRIGHT_DEFAULT);
 
 	cfg->milepostEnable = preferences.getBool("mpEn", MILEPOST_EN_DEFAULT);
@@ -143,6 +148,12 @@ void saveConfiguration(DetectorConfiguration* cfg)
 
 	if(cfg->volumeStep != preferences.getUChar("vol", VOL_STEP_NOM))
 		preferences.putUChar("vol", cfg->volumeStep);
+
+	if(cfg->noiseStep != preferences.getUChar("noise", NOISE_STEP_DEFAULT))
+		preferences.putUChar("noise", cfg->noiseStep);
+
+	if(cfg->popcornStep != preferences.getUChar("popcorn", POPCORN_STEP_DEFAULT))
+		preferences.putUChar("popcorn", cfg->popcornStep);
 
 	if(cfg->lcdBrightness != preferences.getUChar("lcd", LCD_BRIGHT_DEFAULT))
 		preferences.putUChar("lcd", cfg->lcdBrightness);
@@ -247,6 +258,12 @@ void printConfiguration(DetectorConfiguration* cfg)
 {
 	Serial.print("Volume: ");
 	Serial.println(cfg->volumeStep);
+
+	Serial.print("Noise Step: ");
+	Serial.println(cfg->noiseStep);
+
+	Serial.print("Popcorn Step: ");
+	Serial.println(cfg->popcornStep);
 
 	Serial.print("Lcd Brightness: ");
 	Serial.println(cfg->lcdBrightness);

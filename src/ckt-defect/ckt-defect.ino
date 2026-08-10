@@ -369,6 +369,8 @@ void loop()
 	updateDirectionNames(&cfg);
 
 	audioSetVolumeStep(cfg.volumeStep);
+	audioSetNoiseStep(cfg.noiseStep);
+	audioSetPopcornStep(cfg.popcornStep);
 	lcd->setBrightness(cfg.lcdBrightness);
 	audioSetVolumeUpCoef(10);   // FIXME: should be leaded from NVM
 	audioSetVolumeDownCoef(8);   // FIXME: should be leaded from NVM;
