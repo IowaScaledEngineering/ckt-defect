@@ -99,16 +99,16 @@ static uint16_t volumeLevels[] = {
 static uint8_t audioNoiseStep = 0;
 static uint16_t noiseLevels[] = {
 		0,      // 0
-		10,
-		20,
-		30,
-		40,
 		50,
-		60,
-		70,
-		80,
-		90,
-		100    // 10
+		100,
+		150,
+		200,
+		250,
+		300,
+		350,
+		400,
+		450,
+		500    // 10
 };
 
 // --- 4th Order High-Pass Filter (375 Hz @ 16 kHz) ---
@@ -381,9 +381,28 @@ static void audioPump(void *args)
 					int32_t mixedValue = sampleValue;
 					if(audioNoiseStep > 0)
 					{
-						// Generate white noise bounded to [-32768, 32767]
-						float rawNoise = (float)((rand() % 65536) - 32768);
-						float filteredNoise = noiseFilter.process(rawNoise);
+						// 1. Raw white noise set to 10% of full scale (+/- 3276.8)
+						float rawNoise = ((float)((rand() % 65536) - 32768)) * 0.10f;
+
+						// 2. RTS (Random Telegraph Signal) Noise Generation
+						static float rtsState = 1.0f;
+
+						// Target ~20 pops/transitions per second adaptive to active sample rate
+						uint32_t currentFs = (wavSound.wav && wavSound.wav->getSampleRate()) ? wavSound.wav->getSampleRate() : 16000;
+						float pTransition = 20.0f / (float)currentFs;
+
+						if (((float)rand() / (float)RAND_MAX) < pTransition)
+						{
+							rtsState = -rtsState; // Discrete state toggle (+1.0 / -1.0)
+						}
+
+						// RTS noise scaled to 75% of full scale (+/- 24576.0)
+						float rtsNoise = rtsState * (0.75f * 32768.0f);
+
+						// 3. High-Pass Filter processing (filters combined White + RTS noise)
+						float filteredNoise = noiseFilter.process(rawNoise + rtsNoise);
+
+						// 4. Scale noise mixture by audioNoiseStep level
 						int32_t scaledNoise = (int32_t)(filteredNoise * noiseLevels[audioNoiseStep] / 1000.0f);
 						mixedValue += scaledNoise;
 					}
