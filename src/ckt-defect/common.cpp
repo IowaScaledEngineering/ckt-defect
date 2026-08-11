@@ -50,6 +50,12 @@ const std::vector<std::string> directionNames = {
 	"South",
 };
 
+const std::vector<std::string> railNames = {
+	"Left/Right",
+	"East/West",
+	"North/South",
+};
+
 void toLowercase(std::string& str)
 {
 	std::transform(str.begin(), str.end(), str.begin(),

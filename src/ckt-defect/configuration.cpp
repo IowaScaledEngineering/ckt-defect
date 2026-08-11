@@ -36,6 +36,7 @@ LICENSE:
 #define MILEPOST_DEFAULT                  3469
 
 #define TRACK_NAME_EN_DEFAULT             true
+#define RAIL_NAME_EN_DEFAULT              true
 
 #define AXLE_EN_DEFAULT                   true
 #define ENTRANCE_AXLES_DEFAULT            4
@@ -115,6 +116,11 @@ void loadConfiguration(DetectorConfiguration* cfg)
 	
 	uint8_t loadedDir2Id = preferences.getUChar("dir2Id", 1); // fallback default to 1 if available
 	cfg->direction2NameId = (loadedDir2Id >= directionNames.size()) ? 0 : loadedDir2Id;
+
+	cfg->railNameEnable = preferences.getBool("railNameEn", RAIL_NAME_EN_DEFAULT);
+
+	uint8_t loadedRailId = preferences.getUChar("railId", 0);
+	cfg->railNameId = (loadedRailId >= railNames.size()) ? 0 : loadedRailId;
 
 	cfg->triggerDirection1Only = preferences.getBool("trigDir1", TRIGGER_DIR1_ONLY_DEFAULT);
 	cfg->triggerDirection2Only = preferences.getBool("trigDir2", TRIGGER_DIR2_ONLY_DEFAULT);
@@ -232,6 +238,13 @@ void saveConfiguration(DetectorConfiguration* cfg)
 	if (cfg->direction2NameId >= directionNames.size()) cfg->direction2NameId = 0;
 	if(cfg->direction2NameId != preferences.getUChar("dir2Id", 1))
 		preferences.putUChar("dir2Id", cfg->direction2NameId);
+
+	if(cfg->railNameEnable != preferences.getBool("railNameEn", RAIL_NAME_EN_DEFAULT))
+		preferences.putBool("railNameEn", cfg->railNameEnable);
+
+	if (cfg->railNameId >= railNames.size()) cfg->railNameId = 0;
+	if(cfg->railNameId != preferences.getUChar("railId", 0))
+		preferences.putUChar("railId", cfg->railNameId);
 
 	if(cfg->triggerDirection1Only != preferences.getBool("trigDir1", TRIGGER_DIR1_ONLY_DEFAULT))
 		preferences.putBool("trigDir1", cfg->triggerDirection1Only);
@@ -357,6 +370,14 @@ void printConfiguration(DetectorConfiguration* cfg)
 	Serial.println(cfg->direction2NameId);
 	Serial.print("   Direction 2 Name: ");
 	Serial.println(cfg->direction2Name.c_str());
+
+	Serial.print("Rail Name Enable: ");
+	Serial.println(cfg->railNameEnable);
+	Serial.print("   Rail Name ID: ");
+	Serial.println(cfg->railNameId);
+	Serial.print("   Rail Name: ");
+	Serial.println(cfg->railName.c_str());
+
 	Serial.print("   Trigger Direction 1 Only: ");
 	Serial.println(cfg->triggerDirection1Only);
 	Serial.print("   Trigger Direction 2 Only: ");
@@ -418,6 +439,16 @@ void updateDirectionNames(DetectorConfiguration* cfg, std::string dir1, std::str
 {
 	cfg->direction1Name = dir1;
 	cfg->direction2Name = dir2;
+}
+
+void updateRailNames(DetectorConfiguration* cfg)
+{
+	cfg->railName = cfg->railNameEnable ? railNames[cfg->railNameId] : "";
+}
+
+void updateRailNames(DetectorConfiguration* cfg, std::string rail)
+{
+	cfg->railName = rail;
 }
 
 int16_t getMinTemperature(DetectorConfiguration* cfg)

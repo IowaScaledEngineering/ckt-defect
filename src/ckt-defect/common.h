@@ -38,6 +38,7 @@ LICENSE:
 
 extern const std::vector<std::string> trackNames;
 extern const std::vector<std::string> directionNames;
+extern const std::vector<std::string> railNames;
 
 void toLowercase(std::string& str);
 std::string centerString(const std::string& text, int width = 20);

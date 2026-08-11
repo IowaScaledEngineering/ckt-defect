@@ -23,6 +23,7 @@ struct ManagedMenus {
 	std::shared_ptr<Menu> maxTemp;
 	std::shared_ptr<Menu> directionName1;
 	std::shared_ptr<Menu> directionName2;
+	std::shared_ptr<Menu> railName;
 };
 
 void updateAllMenuVisibility(const DetectorConfiguration &cfg, const ManagedMenus &menus)
@@ -91,6 +92,13 @@ void updateAllMenuVisibility(const DetectorConfiguration &cfg, const ManagedMenu
 	} else {
 		if (menus.directionName1) menus.directionName1->hide();
 		if (menus.directionName2) menus.directionName2->hide();
+	}
+
+	// Rail Name Visibility
+	if (cfg.railNameEnable) {
+		if (menus.railName) menus.railName->unhide();
+	} else {
+		if (menus.railName) menus.railName->hide();
 	}
 }
 
@@ -251,6 +259,23 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		false,
 		"On", "ON",
 		"Off", "OFF"
+	);
+
+	// Rail Name
+	auto menuRailConfig = std::make_shared<MenuListSelector>("Rail Name");
+	auto menuRailNameEn = std::make_shared<MenuBoolSelector>(
+		"Rail Name Enable",
+		&cfg.railNameEnable, 
+		false, 
+		"On", "ON", 
+		"Off", "OFF"
+	);
+	auto menuRailName = std::make_shared<MenuOptionSelector>(
+		"Rail Name", 
+		&cfg.railNameId,
+		false,
+		railNames,
+		[&cfg]() { saveConfiguration(&cfg); updateRailNames(&cfg); }
 	);
 
 	// Timing
@@ -418,7 +443,8 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		menuMinAxles, menuEntranceAxles,
 		menuSpeedConfig, menuSpeedUnits, menuSpeedType, menuMinSpeed,
 		menuTemperatureUnits, menuTemperatureType, menuMinTemperature, menuMaxTemperature,
-		menuDirectionName1, menuDirectionName2
+		menuDirectionName1, menuDirectionName2,
+		menuRailName
 	};
 
 	// ==========================================
@@ -431,6 +457,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	menuTemperatureEn->setSaveCallback([&cfg, managed]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg, managed); });
 	menuTemperatureType->setSaveCallback([&cfg, managed]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg, managed); });
 	menuDirectionEn->setSaveCallback([&cfg, managed]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg, managed); updateDirectionNames(&cfg); });
+	menuRailNameEn->setSaveCallback([&cfg, managed]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg, managed); updateRailNames(&cfg); });
 
 	// Trigger 1 and Trigger 2 mutual-exclusion callbacks
 	menuTriggerDir1->setSaveCallback([&cfg]() {
@@ -476,6 +503,10 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	menuDirectionConfig->addChild(menuDirectionName2);
 	menuDirectionConfig->addChild(menuTriggerDir1);
 	menuDirectionConfig->addChild(menuTriggerDir2);
+
+	mainSel->addChild(menuRailConfig);
+	menuRailConfig->addChild(menuRailNameEn);
+	menuRailConfig->addChild(menuRailName);
 
 	mainSel->addChild(menuTimingConfig);
 	menuTimingConfig->addChild(menuDetectorTimeout);

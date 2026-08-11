@@ -46,6 +46,10 @@ struct DetectorConfiguration {
 	bool triggerDirection1Only;
 	bool triggerDirection2Only;
 
+	bool railNameEnable;
+	uint8_t railNameId;
+	std::string railName;  // Volatile value, not stored in NVM
+
 	// Axles	
 	bool axleEnable;
 	uint16_t entranceAxles;
@@ -86,6 +90,9 @@ void updateTrackNames(DetectorConfiguration* cfg, std::string trackA, std::strin
 
 void updateDirectionNames(DetectorConfiguration* cfg);
 void updateDirectionNames(DetectorConfiguration* cfg, std::string dir1, std::string dir2);
+
+void updateRailNames(DetectorConfiguration* cfg);
+void updateRailNames(DetectorConfiguration* cfg, std::string rail);
 
 int16_t getMinTemperature(DetectorConfiguration* cfg);
 int16_t getMaxTemperature(DetectorConfiguration* cfg);
