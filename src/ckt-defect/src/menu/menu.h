@@ -144,6 +144,7 @@ class MenuNumberDial : public Menu
 		int32_t currentVal;
 		int32_t minVal;
 		int32_t maxVal;
+		int32_t stepVal = 1;
 		int fieldWidth = 0;
 		int maxDigits = 0;
 		std::string units = "";
@@ -151,8 +152,8 @@ class MenuNumberDial : public Menu
 	public:
 		// Constructor for direct pointers
 		template <typename T>
-		MenuNumberDial(const std::string &name, T *p, bool realTimeUpdate, int32_t min, int32_t max, std::string units, std::function<void()> onSave = nullptr)
-		    : Menu(name), minVal(min), maxVal(max), units(units)
+		MenuNumberDial(const std::string &name, T *p, bool realTimeUpdate, int32_t min, int32_t max, int32_t step = 1, std::string units = "", std::function<void()> onSave = nullptr)
+		    : Menu(name), minVal(min), maxVal(max), stepVal(step), units(units)
 		{
 			static_assert(std::is_integral<T>::value, "MenuNumberDial requires an integral type pointer.");
 			getFunc32 = [p]() -> uint32_t { return static_cast<uint32_t>(static_cast<int32_t>(*p)); };
@@ -166,8 +167,8 @@ class MenuNumberDial : public Menu
 
 		// Constructor using std::function callbacks
 		MenuNumberDial(const std::string &name, std::function<uint32_t()> getter,
-			       std::function<void(uint32_t)> setter, bool realTimeUpdate, int32_t min, int32_t max, std::string units, std::function<void()> onSave = nullptr)
-		    : Menu(name), minVal(min), maxVal(max), units(units)
+			       std::function<void(uint32_t)> setter, bool realTimeUpdate, int32_t min, int32_t max, int32_t step = 1, std::string units = "", std::function<void()> onSave = nullptr)
+		    : Menu(name), minVal(min), maxVal(max), stepVal(step), units(units)
 		{
 			getFunc32 = std::move(getter);
 			setFunc32 = std::move(setter);

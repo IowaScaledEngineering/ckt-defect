@@ -374,8 +374,7 @@ MenuEvent MenuNumberDial::update()
 			switch(ev.keyNum)
 			{
 				case 1:
-					if(currentVal > minVal)
-						currentVal--;
+					currentVal = std::max(minVal, currentVal - stepVal);
 					handleButtonPress(1);
 					if(realTime)
 					{
@@ -383,8 +382,7 @@ MenuEvent MenuNumberDial::update()
 					}
 					break;
 				case 2:
-					if(currentVal < maxVal)
-						currentVal++;
+					currentVal = std::min(maxVal, currentVal + stepVal);
 					handleButtonPress(2);
 					if(realTime)
 					{
