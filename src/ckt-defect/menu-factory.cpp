@@ -164,6 +164,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		false,
 		0,   // min
 		10,  // max
+		1,   //step
 		"",
 		[&cfg]() { saveConfiguration(&cfg); }
 	);
@@ -173,6 +174,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		false,
 		0,   // min
 		100,  // max
+		1,   //step
 		"",
 		[&cfg]() { saveConfiguration(&cfg); }
 	);
@@ -200,6 +202,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		false,
 		0,   // min
 		50,  // max
+		1,   //step
 		cfg.speedUnitsMph ? "mph" : "kph",
 		[&cfg]() { saveConfiguration(&cfg); }
 	);
@@ -258,6 +261,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		false,
 		2,   // min
 		30,  // max
+		1,   //step
 		"sec",
 		[&cfg]() { saveConfiguration(&cfg); }
 	);
@@ -267,6 +271,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		false,
 		2,   // min
 		60,  // max
+		1,   //step
 		"sec",
 		[&cfg]() { saveConfiguration(&cfg); }
 	);
@@ -279,6 +284,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		false,
 		1,   // min
 		10,  // max
+		1,   //step
 		"defects",
 		[&cfg]() { saveConfiguration(&cfg); }
 	);
@@ -315,6 +321,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		false,
 		-99,   // min
 		150,  // max
+		1,   //step
 		cfg.temperatureUnitsF ? degF : degC,
 		[&cfg]() { saveConfiguration(&cfg); }
 	);
@@ -325,6 +332,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		false,
 		-99,   // min
 		150,  // max
+		1,   //step
 		cfg.temperatureUnitsF ? degF : degC,
 		[&cfg]() { saveConfiguration(&cfg); }
 	);
@@ -387,6 +395,17 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		audioSetVolumeStep,
 		true,
 		[lcd, &cfg]() { cfg.volumeStep = audioGetVolumeStep(); saveConfiguration(&cfg); }
+	);
+	auto menuPttDelay = std::make_shared<MenuNumberDial>(
+		"PTT Delay",
+		audioGetPttDelay,
+		audioSetPttDelay,
+		false,
+		0,     // min
+		3000,  // max
+		100,   // step
+		"ms",
+		[&cfg]() { cfg.pttDelay = audioGetPttDelay()/100; saveConfiguration(&cfg); }
 	);
 
 	// Diagnostic	
@@ -477,9 +496,10 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 
 	mainSel->addChild(menuSysConfig);
 	menuSysConfig->addChild(menuBacklightLevel);
+	menuSysConfig->addChild(menuVolume);
 	menuSysConfig->addChild(menuNoise);
 	menuSysConfig->addChild(menuPopcorn);
-	menuSysConfig->addChild(menuVolume);
+	menuSysConfig->addChild(menuPttDelay);
 
 	mainSel->addChild(menuDiagnostics);
 	menuDiagnostics->addChild(menuVocabTest);

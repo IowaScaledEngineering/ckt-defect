@@ -45,6 +45,7 @@ void audioSetPopcornStep(uint8_t newPopcornStep);
 uint8_t audioGetPopcornStep(void);
 
 void audioSetPttDelay(uint32_t milliseconds);
+uint32_t audioGetPttDelay(void);
 void audioSetPttEnableCallback(void (*callback)(void));
 void audioSetPttDisableCallback(void (*callback)(void));
 

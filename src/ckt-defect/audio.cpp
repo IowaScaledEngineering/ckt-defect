@@ -247,6 +247,11 @@ void audioSetPttDelay(uint32_t milliseconds)
 	audioPttDelayMillis = milliseconds;
 }
 
+uint32_t audioGetPttDelay(void)
+{
+	return audioPttDelayMillis;
+}
+
 void audioSetPttEnableCallback(void (*callback)(void))
 {
 	pttEnable = callback;

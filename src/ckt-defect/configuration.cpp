@@ -28,6 +28,7 @@ LICENSE:
 
 #define NOISE_STEP_DEFAULT                0
 #define POPCORN_STEP_DEFAULT              0
+#define PTT_DELAY_DEFAULT                 700
 
 #define LCD_BRIGHT_DEFAULT                128
 
@@ -75,6 +76,7 @@ void loadConfiguration(DetectorConfiguration* cfg)
 
 	cfg->volumeStep = preferences.getUChar("vol", VOL_STEP_NOM);
 	cfg->noiseStep = preferences.getUChar("noise", NOISE_STEP_DEFAULT);
+	cfg->pttDelay = preferences.getUChar("pttDelay", PTT_DELAY_DEFAULT);
 	cfg->popcornStep = preferences.getUChar("popcorn", POPCORN_STEP_DEFAULT);
 	cfg->lcdBrightness = preferences.getUChar("lcd", LCD_BRIGHT_DEFAULT);
 
@@ -151,6 +153,9 @@ void saveConfiguration(DetectorConfiguration* cfg)
 
 	if(cfg->noiseStep != preferences.getUChar("noise", NOISE_STEP_DEFAULT))
 		preferences.putUChar("noise", cfg->noiseStep);
+
+	if(cfg->pttDelay != preferences.getUChar("pttDelay", PTT_DELAY_DEFAULT))
+		preferences.putUChar("pttDelay", cfg->pttDelay);
 
 	if(cfg->popcornStep != preferences.getUChar("popcorn", POPCORN_STEP_DEFAULT))
 		preferences.putUChar("popcorn", cfg->popcornStep);
@@ -261,6 +266,9 @@ void printConfiguration(DetectorConfiguration* cfg)
 
 	Serial.print("Noise Step: ");
 	Serial.println(cfg->noiseStep);
+
+	Serial.print("PTT Delay: ");
+	Serial.println(cfg->pttDelay);
 
 	Serial.print("Popcorn Step: ");
 	Serial.println(cfg->popcornStep);

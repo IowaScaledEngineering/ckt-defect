@@ -372,9 +372,9 @@ void loop()
 	audioSetNoiseStep(cfg.noiseStep);
 	audioSetPopcornStep(cfg.popcornStep);
 	lcd->setBrightness(cfg.lcdBrightness);
-	audioSetVolumeUpCoef(10);   // FIXME: should be leaded from NVM
-	audioSetVolumeDownCoef(8);   // FIXME: should be leaded from NVM;
-	audioSetPttDelay(750);   // FIXME: should be leaded from NVM
+	audioSetVolumeUpCoef(10);
+	audioSetVolumeDownCoef(8);
+	audioSetPttDelay(100 * cfg.pttDelay);
 
 
 	// Show splash screen
