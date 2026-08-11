@@ -163,7 +163,10 @@ bool audioIsPlaying(void)
 
 void audioSetVolumeStep(uint8_t newVolumeStep)
 {
-	audioVolumeStep = newVolumeStep;
+	if (newVolumeStep < (sizeof(volumeLevels) / sizeof(volumeLevels[0])))
+	{
+		audioVolumeStep = newVolumeStep;
+	}
 }
 
 
@@ -175,7 +178,7 @@ uint8_t audioGetVolumeStep(void)
 
 void audioSetNoiseStep(uint8_t newNoiseStep)
 {
-	if(newNoiseStep <= 10)
+	if (newNoiseStep < (sizeof(noiseLevels) / sizeof(noiseLevels[0])))
 	{
 		audioNoiseStep = newNoiseStep;
 	}
