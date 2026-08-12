@@ -288,6 +288,40 @@ void transformMessage(const std::string& inputMessage, std::string& outputMessag
 				i = tokenEnd;
 				continue;
 			}
+			else if ("#rail" == baseToken)
+			{
+				std::string selectedRail;
+				size_t slashPos = cfg.railName.find('/');
+
+				if (slashPos != std::string::npos)
+				{
+					if (data.rail % 2)
+					{
+						selectedRail = cfg.railName.substr(0, slashPos);
+					}
+					else
+					{
+						selectedRail = cfg.railName.substr(slashPos + 1);
+					}
+				}
+				else
+				{
+					selectedRail = cfg.railName;
+				}
+
+				if (colonPos != std::string::npos) 
+				{
+					int32_t n = 0, m = 0;
+					parseModifier(fullToken, colonPos, n, m, false);
+					formatStringField(outputMessage, selectedRail, n);
+				} 
+				else 
+				{
+					outputMessage += selectedRail;
+				}
+				i = tokenEnd;
+				continue;
+			}
 			else if ("#axle" == baseToken || "#axles" == baseToken || "#speed" == baseToken || "#temp" == baseToken)
 			{
 				int32_t val = 0;

@@ -367,6 +367,7 @@ void loop()
 	// Preload the track name based on loaded configuration.  Might be overwritten below by SD card.
 	updateTrackNames(&cfg);
 	updateDirectionNames(&cfg);
+	updateRailNames(&cfg);
 
 	audioSetVolumeStep(cfg.volumeStep);
 	audioSetNoiseStep(cfg.noiseStep);
@@ -486,9 +487,13 @@ void loop()
 		{
 			tmpMessage = "Axle #axle";
 		}
-		trackMessages.defects.emplace_back("#tone #track hot journal " + tmpMessage, "hot journal " + tmpMessage, "#track\\Hot Journal\\" + tmpMessage, 125);
-		trackMessages.defects.emplace_back("#tone #track dragging equipment near " + tmpMessage, "dragging equipment near " + tmpMessage, "#track\\Dragging Equipment\\" + tmpMessage, 250);
-		trackMessages.defects.emplace_back("#tone #track high impact wheel detected " + tmpMessage, "high impact wheel detected " + tmpMessage, "#track\\High Impact Wheel\\" + tmpMessage, 150);
+		if(cfg.railNameEnable)
+		{
+			tmpMessage += " #rail Rail";
+		}
+		trackMessages.defects.emplace_back("#tone #track hot journal " + tmpMessage, "hot journal " + tmpMessage, "#track \\Hot Journal\\" + tmpMessage, 125);
+		trackMessages.defects.emplace_back("#tone #track dragging equipment near " + tmpMessage, "dragging equipment near " + tmpMessage, "#track \\Dragging Equipment\\" + tmpMessage, 250);
+		trackMessages.defects.emplace_back("#tone #track high impact wheel detected " + tmpMessage, "high impact wheel detected " + tmpMessage, "#track \\High Impact Wheel\\" + tmpMessage, 150);
 
 		// Create Footer
 		tmpMessage.clear();

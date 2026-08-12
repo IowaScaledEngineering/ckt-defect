@@ -26,6 +26,7 @@ LICENSE:
 
 struct DataBundle {
 	std::vector<std::string> defects;
+	uint8_t rail;
 	uint16_t axleCount = 0;
 	uint16_t totalAxles = 0;
 	uint16_t speed = 0;

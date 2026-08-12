@@ -362,7 +362,10 @@ void DetectorStateMachine::update()
 			{
 				if (rollDice() < (PROBABILITY_MAX / msgs->defects[i].axleRate))
 				{
+					// We have a defect
 					std::string temporaryMsg;
+					
+					data->rail = rollDice() % 2;  // Randomly pick a rail for the defect
 
 					defectCount++;  // Yes, this can in theory roll over but we're not going to worry about 4 billion defects...
 					if(defectCount <= cfg->maxDefects)
