@@ -91,16 +91,6 @@ Sound* vocabGetWord(const uint32_t index)
 #include "vocab/include/8.h"
 #include "vocab/include/9.h"
 #include "vocab/include/a.h"
-#include "vocab/include/first.h"
-#include "vocab/include/second.h"
-#include "vocab/include/third.h"
-#include "vocab/include/fourth.h"
-#include "vocab/include/fifth.h"
-#include "vocab/include/sixth.h"
-#include "vocab/include/seventh.h"
-#include "vocab/include/eighth.h"
-#include "vocab/include/ninth.h"
-#include "vocab/include/tenth.h"
 #include "vocab/include/alarms.h"
 #include "vocab/include/axle.h"
 #include "vocab/include/axles.h"
@@ -113,9 +103,13 @@ Sound* vocabGetWord(const uint32_t index)
 #include "vocab/include/dragging.h"
 #include "vocab/include/east.h"
 #include "vocab/include/eastbound.h"
+#include "vocab/include/eighth.h"
 #include "vocab/include/equipment.h"
 #include "vocab/include/excessive.h"
 #include "vocab/include/failure.h"
+#include "vocab/include/fifth.h"
+#include "vocab/include/first.h"
+#include "vocab/include/fourth.h"
 #include "vocab/include/h.h"
 #include "vocab/include/have.h"
 #include "vocab/include/high.h"
@@ -123,23 +117,32 @@ Sound* vocabGetWord(const uint32_t index)
 #include "vocab/include/impact.h"
 #include "vocab/include/integrity.h"
 #include "vocab/include/journal.h"
+#include "vocab/include/left.h"
 #include "vocab/include/m.h"
 #include "vocab/include/main.h"
 #include "vocab/include/milepost.h"
 #include "vocab/include/minus.h"
 #include "vocab/include/near.h"
+#include "vocab/include/ninth.h"
 #include "vocab/include/no.h"
 #include "vocab/include/north.h"
 #include "vocab/include/northbound.h"
 #include "vocab/include/out.h"
 #include "vocab/include/p.h"
 #include "vocab/include/point.h"
+#include "vocab/include/rail.h"
 #include "vocab/include/repeat.h"
+#include "vocab/include/right.h"
+#include "vocab/include/second.h"
+#include "vocab/include/seventh.h"
+#include "vocab/include/sixth.h"
 #include "vocab/include/slow.h"
 #include "vocab/include/south.h"
 #include "vocab/include/southbound.h"
 #include "vocab/include/speed.h"
 #include "vocab/include/temperature.h"
+#include "vocab/include/tenth.h"
+#include "vocab/include/third.h"
 #include "vocab/include/total.h"
 #include "vocab/include/track.h"
 #include "vocab/include/train.h"
@@ -161,16 +164,6 @@ void loadInternalVocab(void)
 	vocab.push_back(new MemSound("8", vocab_8, vocab_8_len, 16000));
 	vocab.push_back(new MemSound("9", vocab_9, vocab_9_len, 16000));
 	vocab.push_back(new MemSound("a", vocab_a, vocab_a_len, 16000));
-	vocab.push_back(new MemSound("first", vocab_first, vocab_first_len, 16000));
-	vocab.push_back(new MemSound("second", vocab_second, vocab_second_len, 16000));
-	vocab.push_back(new MemSound("third", vocab_third, vocab_third_len, 16000));
-	vocab.push_back(new MemSound("fourth", vocab_fourth, vocab_fourth_len, 16000));
-	vocab.push_back(new MemSound("fifth", vocab_fifth, vocab_fifth_len, 16000));
-	vocab.push_back(new MemSound("sixth", vocab_sixth, vocab_sixth_len, 16000));
-	vocab.push_back(new MemSound("seventh", vocab_seventh, vocab_seventh_len, 16000));
-	vocab.push_back(new MemSound("eighth", vocab_eighth, vocab_eighth_len, 16000));
-	vocab.push_back(new MemSound("ninth", vocab_ninth, vocab_ninth_len, 16000));
-	vocab.push_back(new MemSound("tenth", vocab_tenth, vocab_tenth_len, 16000));
 	vocab.push_back(new MemSound("alarms", vocab_alarms, vocab_alarms_len, 16000));
 	vocab.push_back(new MemSound("axle", vocab_axle, vocab_axle_len, 16000));
 	vocab.push_back(new MemSound("axles", vocab_axles, vocab_axles_len, 16000));
@@ -183,9 +176,13 @@ void loadInternalVocab(void)
 	vocab.push_back(new MemSound("dragging", vocab_dragging, vocab_dragging_len, 16000));
 	vocab.push_back(new MemSound("east", vocab_east, vocab_east_len, 16000));
 	vocab.push_back(new MemSound("eastbound", vocab_eastbound, vocab_eastbound_len, 16000));
+	vocab.push_back(new MemSound("eighth", vocab_eighth, vocab_eighth_len, 16000));
 	vocab.push_back(new MemSound("equipment", vocab_equipment, vocab_equipment_len, 16000));
 	vocab.push_back(new MemSound("excessive", vocab_excessive, vocab_excessive_len, 16000));
 	vocab.push_back(new MemSound("failure", vocab_failure, vocab_failure_len, 16000));
+	vocab.push_back(new MemSound("fifth", vocab_fifth, vocab_fifth_len, 16000));
+	vocab.push_back(new MemSound("first", vocab_first, vocab_first_len, 16000));
+	vocab.push_back(new MemSound("fourth", vocab_fourth, vocab_fourth_len, 16000));
 	vocab.push_back(new MemSound("h", vocab_h, vocab_h_len, 16000));
 	vocab.push_back(new MemSound("have", vocab_have, vocab_have_len, 16000));
 	vocab.push_back(new MemSound("high", vocab_high, vocab_high_len, 16000));
@@ -193,23 +190,32 @@ void loadInternalVocab(void)
 	vocab.push_back(new MemSound("impact", vocab_impact, vocab_impact_len, 16000));
 	vocab.push_back(new MemSound("integrity", vocab_integrity, vocab_integrity_len, 16000));
 	vocab.push_back(new MemSound("journal", vocab_journal, vocab_journal_len, 16000));
+	vocab.push_back(new MemSound("left", vocab_left, vocab_left_len, 16000));
 	vocab.push_back(new MemSound("m", vocab_m, vocab_m_len, 16000));
 	vocab.push_back(new MemSound("main", vocab_main, vocab_main_len, 16000));
 	vocab.push_back(new MemSound("milepost", vocab_milepost, vocab_milepost_len, 16000));
 	vocab.push_back(new MemSound("minus", vocab_minus, vocab_minus_len, 16000));
 	vocab.push_back(new MemSound("near", vocab_near, vocab_near_len, 16000));
+	vocab.push_back(new MemSound("ninth", vocab_ninth, vocab_ninth_len, 16000));
 	vocab.push_back(new MemSound("no", vocab_no, vocab_no_len, 16000));
 	vocab.push_back(new MemSound("north", vocab_north, vocab_north_len, 16000));
 	vocab.push_back(new MemSound("northbound", vocab_northbound, vocab_northbound_len, 16000));
 	vocab.push_back(new MemSound("out", vocab_out, vocab_out_len, 16000));
 	vocab.push_back(new MemSound("p", vocab_p, vocab_p_len, 16000));
 	vocab.push_back(new MemSound("point", vocab_point, vocab_point_len, 16000));
+	vocab.push_back(new MemSound("rail", vocab_rail, vocab_rail_len, 16000));
 	vocab.push_back(new MemSound("repeat", vocab_repeat, vocab_repeat_len, 16000));
+	vocab.push_back(new MemSound("right", vocab_right, vocab_right_len, 16000));
+	vocab.push_back(new MemSound("second", vocab_second, vocab_second_len, 16000));
+	vocab.push_back(new MemSound("seventh", vocab_seventh, vocab_seventh_len, 16000));
+	vocab.push_back(new MemSound("sixth", vocab_sixth, vocab_sixth_len, 16000));
 	vocab.push_back(new MemSound("slow", vocab_slow, vocab_slow_len, 16000));
 	vocab.push_back(new MemSound("south", vocab_south, vocab_south_len, 16000));
 	vocab.push_back(new MemSound("southbound", vocab_southbound, vocab_southbound_len, 16000));
 	vocab.push_back(new MemSound("speed", vocab_speed, vocab_speed_len, 16000));
 	vocab.push_back(new MemSound("temperature", vocab_temperature, vocab_temperature_len, 16000));
+	vocab.push_back(new MemSound("tenth", vocab_tenth, vocab_tenth_len, 16000));
+	vocab.push_back(new MemSound("third", vocab_third, vocab_third_len, 16000));
 	vocab.push_back(new MemSound("total", vocab_total, vocab_total_len, 16000));
 	vocab.push_back(new MemSound("track", vocab_track, vocab_track_len, 16000));
 	vocab.push_back(new MemSound("train", vocab_train, vocab_train_len, 16000));
