@@ -391,6 +391,15 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		10,
 		[lcd, &cfg]() { cfg.lcdBrightness = lcd->getBrightness(); saveConfiguration(&cfg); }
 	);
+	auto menuVolume = std::make_shared<MenuVolume>(
+		"Audio Volume",
+		5,
+		true,
+		150,
+		audioGetVolumeStep,
+		audioSetVolumeStep,
+		[lcd, &cfg]() { cfg.volumeStep = audioGetVolumeStep(); saveConfiguration(&cfg); }
+	);
 	auto menuNoise = std::make_shared<MenuVolume>(
 		"White Noise",
 		10,
@@ -398,7 +407,6 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		100,
 		audioGetNoiseStep,
 		audioSetNoiseStep,
-		true,
 		[lcd, &cfg]() { cfg.noiseStep = audioGetNoiseStep(); saveConfiguration(&cfg); }
 	);
 	auto menuPopcorn = std::make_shared<MenuVolume>(
@@ -408,18 +416,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		100,
 		audioGetPopcornStep,
 		audioSetPopcornStep,
-		true,
 		[lcd, &cfg]() { cfg.popcornStep = audioGetPopcornStep(); saveConfiguration(&cfg); }
-	);
-	auto menuVolume = std::make_shared<MenuVolume>(
-		"Audio Volume",
-		5,
-		true,
-		150,
-		audioGetVolumeStep,
-		audioSetVolumeStep,
-		true,
-		[lcd, &cfg]() { cfg.volumeStep = audioGetVolumeStep(); saveConfiguration(&cfg); }
 	);
 	auto menuPttDelay = std::make_shared<MenuNumberDial>(
 		"PTT Delay",

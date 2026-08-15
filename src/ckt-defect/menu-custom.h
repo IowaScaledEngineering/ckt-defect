@@ -52,7 +52,6 @@ class MenuVolume : public Menu
 		           uint32_t maxBoostPercent,
 		           std::function<uint32_t()> getter,
 		           std::function<void(uint32_t)> setter, 
-		           bool realTimeUpdate, 
 		           std::function<void()> onSave = nullptr)
 		    : Menu(name), 
 		      stepSize(step > 0 ? step : 5), 
@@ -61,7 +60,6 @@ class MenuVolume : public Menu
 		{
 			getFunc32 = std::move(getter);
 			setFunc32 = std::move(setter);
-			realTime = realTimeUpdate;
 			saveCallback = std::move(onSave);
 		}
 		

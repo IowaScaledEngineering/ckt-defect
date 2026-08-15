@@ -280,10 +280,8 @@ MenuEvent MenuVolume::update()
 	disp->print("--");
 	disp->gotoxy(6, 3);
 	disp->print("++");
-	disp->gotoxy(11, 3);
-	disp->print("SAVE");
 	disp->gotoxy(16, 3);
-	disp->print("CNCL");
+	disp->print("BACK");
 
 	// Double check boundaries based on configuration
 	uint32_t limitPercent = allowOver ? maxPercent : 100U;
@@ -343,10 +341,7 @@ MenuEvent MenuVolume::update()
 					if(currentVal < 0)
 						currentVal = 0;
 					handleButtonPress(1);
-					if(realTime)
-					{
-						setValue((uint32_t)(currentVal / stepSize));
-					}
+					setValue((uint32_t)(currentVal / stepSize));
 					break;
 
 				case 2: // Increment by stepSize
@@ -354,18 +349,11 @@ MenuEvent MenuVolume::update()
 					if(currentVal > (int32_t)limitPercent)
 						currentVal = limitPercent;
 					handleButtonPress(2);
-					if(realTime)
-					{
-						setValue((uint32_t)(currentVal / stepSize));
-					}
+					setValue((uint32_t)(currentVal / stepSize));
 					break;
 
-				case 3: // Save Action
+				case 4: // Back Action (Applies save changes & triggers callback)
 					applyChange((uint32_t)(percentage / stepSize));
-					return MenuEvent::BACK;
-
-				case 4: // Cancel Action
-					cancel();
 					return MenuEvent::BACK;
 			}
 		}
