@@ -29,7 +29,7 @@ LICENSE:
 #define VOL_STEP_DEFAULT                  15
 #define NOISE_STEP_DEFAULT                0
 #define POPCORN_STEP_DEFAULT              0
-#define PTT_DELAY_DEFAULT                 7
+#define PTT_DELAY_DEFAULT                 2
 
 #define LCD_BRIGHT_DEFAULT                128
 
