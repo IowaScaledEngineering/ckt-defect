@@ -26,6 +26,7 @@ LICENSE:
 #include "common.h"
 #include "configuration.h"
 
+#define VOL_STEP_DEFAULT                  15
 #define NOISE_STEP_DEFAULT                0
 #define POPCORN_STEP_DEFAULT              0
 #define PTT_DELAY_DEFAULT                 7
@@ -75,7 +76,7 @@ void loadConfiguration(DetectorConfiguration* cfg)
 
 	preferences.begin(PREF_NAMESPACE, true);  // Open in read-only mode
 
-	cfg->volumeStep = preferences.getUChar("vol", VOL_STEP_NOM);
+	cfg->volumeStep = preferences.getUChar("vol", VOL_STEP_DEFAULT);
 	cfg->noiseStep = preferences.getUChar("noise", NOISE_STEP_DEFAULT);
 	cfg->pttDelay = preferences.getUChar("pttDelay", PTT_DELAY_DEFAULT);
 	cfg->popcornStep = preferences.getUChar("popcorn", POPCORN_STEP_DEFAULT);
@@ -154,7 +155,7 @@ void saveConfiguration(DetectorConfiguration* cfg)
 
 	preferences.begin(PREF_NAMESPACE, false);  // Open in read-write mode
 
-	if(cfg->volumeStep != preferences.getUChar("vol", VOL_STEP_NOM))
+	if(cfg->volumeStep != preferences.getUChar("vol", VOL_STEP_DEFAULT))
 		preferences.putUChar("vol", cfg->volumeStep);
 
 	if(cfg->noiseStep != preferences.getUChar("noise", NOISE_STEP_DEFAULT))
