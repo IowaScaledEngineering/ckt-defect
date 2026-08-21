@@ -388,18 +388,9 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		"Defect Detect", "DFCT",
 		[&cfg]() { saveConfiguration(&cfg); }
 	);
-	
-	// System	
-	auto menuSysConfig = std::make_shared<MenuListSelector>("System");
-	auto menuBacklightLevel = std::make_shared<MenuPercentageBar>(
-		"Backlight Level", 
-		[lcd]() { return lcd->getBrightness(); },
-		[lcd](uint32_t val) { lcd->setBrightness(val); },
-		true,
-		255, 
-		10,
-		[lcd, &cfg]() { cfg.lcdBrightness = lcd->getBrightness(); saveConfiguration(&cfg); }
-	);
+
+	// Audio
+	auto menuAudio = std::make_shared<MenuListSelector>("Audio");
 	auto menuVolume = std::make_shared<MenuVolume>(
 		"Audio Volume",
 		5,
@@ -426,6 +417,18 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		audioGetPopcornStep,
 		audioSetPopcornStep,
 		[lcd, &cfg]() { cfg.popcornStep = audioGetPopcornStep(); saveConfiguration(&cfg); }
+	);
+	
+	// System	
+	auto menuSysConfig = std::make_shared<MenuListSelector>("System");
+	auto menuBacklightLevel = std::make_shared<MenuPercentageBar>(
+		"Backlight Level", 
+		[lcd]() { return lcd->getBrightness(); },
+		[lcd](uint32_t val) { lcd->setBrightness(val); },
+		true,
+		255, 
+		10,
+		[lcd, &cfg]() { cfg.lcdBrightness = lcd->getBrightness(); saveConfiguration(&cfg); }
 	);
 	auto menuPttDelay = std::make_shared<MenuNumberDial>(
 		"PTT Delay",
@@ -532,11 +535,13 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	menuTimingConfig->addChild(menuDetectorTimeout);
 	menuTimingConfig->addChild(menuExitDisplayTimeout);
 
+	mainSel->addChild(menuAudio);
+	menuAudio->addChild(menuVolume);
+	menuAudio->addChild(menuNoise);
+	menuAudio->addChild(menuPopcorn);
+
 	mainSel->addChild(menuSysConfig);
 	menuSysConfig->addChild(menuBacklightLevel);
-	menuSysConfig->addChild(menuVolume);
-	menuSysConfig->addChild(menuNoise);
-	menuSysConfig->addChild(menuPopcorn);
 	menuSysConfig->addChild(menuPttDelay);
 
 	mainSel->addChild(menuDiagnostics);
