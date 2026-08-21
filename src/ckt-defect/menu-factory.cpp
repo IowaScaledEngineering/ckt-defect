@@ -505,10 +505,6 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	menuRailConfig->addChild(menuRailNameEn);
 	menuRailConfig->addChild(menuRailName);
 
-	mainSel->addChild(menuTimingConfig);
-	menuTimingConfig->addChild(menuDetectorTimeout);
-	menuTimingConfig->addChild(menuExitDisplayTimeout);
-
 	mainSel->addChild(menuDefectSummaryConfig);
 	menuDefectSummaryConfig->addChild(menuMaxDefects);
 	menuDefectSummaryConfig->addChild(menuOrdinalEnable);
@@ -521,6 +517,10 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	menuTemperatureConfig->addChild(menuMaxTemperature);
 
 	mainSel->addChild(menuOperationMode);
+
+	mainSel->addChild(menuTimingConfig);
+	menuTimingConfig->addChild(menuDetectorTimeout);
+	menuTimingConfig->addChild(menuExitDisplayTimeout);
 
 	mainSel->addChild(menuSysConfig);
 	menuSysConfig->addChild(menuBacklightLevel);
