@@ -222,6 +222,15 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		"Kilometers/Hour", "KPH", 
 		[&cfg, menuMinSpeed]() { saveConfiguration(&cfg); menuMinSpeed->setUnits(cfg.speedUnitsMph ? "mph" : "kph"); }
 	);
+	auto menuSpeedScale = std::make_shared<MenuDigitThumbwheel>(
+		"Speed Scale",
+		&cfg.speedScale,
+		false,
+		3,
+		1,
+		true,
+		[&cfg]() { saveConfiguration(&cfg); }
+	);
 
 	// Direction
 	auto menuDirectionConfig = std::make_shared<MenuListSelector>("Direction");
@@ -491,6 +500,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	mainSel->addChild(menuSpeedConfig);
 	menuSpeedConfig->addChild(menuSpeedEn);
 	menuSpeedConfig->addChild(menuSpeedUnits);
+	menuSpeedConfig->addChild(menuSpeedScale);
 	menuSpeedConfig->addChild(menuSpeedType);
 	menuSpeedConfig->addChild(menuMinSpeed);
 

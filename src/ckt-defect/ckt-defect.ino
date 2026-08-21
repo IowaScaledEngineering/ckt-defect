@@ -642,8 +642,7 @@ clrTestPoint(TP2);
 			else if(AxleState::TIMEOUT == axleStateMachines[i].getCurrentState() && !cfg.speedTypeEnter)
 			{
 				// Calculate exit speed
-				// FIXME: add scale ratio and units
-				data[i].speedFloat = 4943182.0/(axleGetExitDeltaMicros(i));
+				data[i].speedFloat = (cfg.speedScale / 10.0) * SPEED_COEF / (axleGetExitDeltaMicros(i));
 				data[i].speed = data[i].speedFloat + 0.5;
 			}
 
@@ -656,11 +655,7 @@ clrTestPoint(TP2);
 			if((axleGetEntranceDeltaMicros(i) > 0) && cfg.speedTypeEnter && (0 == data[i].speed))
 			{
 				// Calculate entrance speed
-				// FIXME: Add scale ratio and units
-				// 87 * 1000000 us/s * 3600 s/hr               us * mile
-				// ----------------------------- = 4,943,182 * ---------
-				// 12 in/ft * 5280ft/mile                       in * hr
-				data[i].speedFloat = 4943182.0/(axleGetEntranceDeltaMicros(i));
+				data[i].speedFloat = (cfg.speedScale / 10.0) * SPEED_COEF / (axleGetEntranceDeltaMicros(i));
 				data[i].speed = data[i].speedFloat + 0.5;
 			}
 			

@@ -32,7 +32,7 @@ struct DetectorConfiguration {
 	uint8_t lcdBrightness;
 
 	bool milepostEnable;
-	uint16_t milepost;
+	uint16_t milepost;     // Units = decimiles
 
 	bool trackNameEnable;
 	uint8_t trackNameId[NUM_TRACKS];
@@ -60,6 +60,7 @@ struct DetectorConfiguration {
 	bool speedUnitsMph;        // True = mph, False = kph
 	bool speedTypeEnter;       // True = entrance speed, False = exit speed
 	uint8_t minSpeed;
+	uint16_t speedScale;       // Units = deciscale
 
 	// Defects
 	bool ordinalDefectList;

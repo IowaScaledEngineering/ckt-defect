@@ -47,6 +47,7 @@ LICENSE:
 #define SPEED_UNITS_MPH_DEFAULT           true
 #define SPEED_TYPE_ENTER_DEFAULT          true
 #define MIN_SPEED_DEFAULT                 10
+#define SPEED_SCALE_DEFAULT               871
 
 #define MAX_DEFECTS_DEFAULT               3
 #define ORDINAL_DEFECT_LIST_DEFAULT       true
@@ -95,6 +96,7 @@ void loadConfiguration(DetectorConfiguration* cfg)
 	cfg->speedUnitsMph = preferences.getBool("spdUnit", SPEED_UNITS_MPH_DEFAULT);
 	cfg->speedTypeEnter = preferences.getBool("spdTyp", SPEED_TYPE_ENTER_DEFAULT);
 	cfg->minSpeed = preferences.getUChar("minSpd", MIN_SPEED_DEFAULT);
+	cfg->speedScale = preferences.getUShort("spdScale", SPEED_SCALE_DEFAULT);
 
 	// Defects
 	cfg->ordinalDefectList = preferences.getBool("ordList", ORDINAL_DEFECT_LIST_DEFAULT);
@@ -200,6 +202,9 @@ void saveConfiguration(DetectorConfiguration* cfg)
 	if(cfg->minSpeed != preferences.getUChar("minSpd", MIN_SPEED_DEFAULT))
 		preferences.putUChar("minSpd", cfg->minSpeed);
 
+	if(cfg->speedScale != preferences.getUShort("spdScale", SPEED_SCALE_DEFAULT))
+		preferences.putUShort("spdScale", cfg->speedScale);
+
 	// Defects
 	if(cfg->ordinalDefectList != preferences.getBool("ordList", ORDINAL_DEFECT_LIST_DEFAULT))
 		preferences.putBool("ordList", cfg->ordinalDefectList);
@@ -294,7 +299,7 @@ void printConfiguration(DetectorConfiguration* cfg)
 	Serial.println(cfg->milepostEnable);
 
 	Serial.print("Milepost: ");
-	Serial.println(cfg->milepost);
+	Serial.println(cfg->milepost / 10.0);
 
 	Serial.print("Track Name Enable: ");
 	Serial.println(cfg->trackNameEnable);
@@ -325,6 +330,9 @@ void printConfiguration(DetectorConfiguration* cfg)
 
 	Serial.print("Min Speed: ");
 	Serial.println(cfg->minSpeed);
+
+	Serial.print("Speed Scale: ");
+	Serial.println(cfg->speedScale / 10.0);
 
 	// Defects
 	Serial.print("Ordinal Defect List: ");

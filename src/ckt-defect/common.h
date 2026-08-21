@@ -32,6 +32,17 @@ LICENSE:
 #define PROBABILITY_MAX       1'000'000
 #define MAX_DEFECTS_MAX       10
 
+// Speed Calculation
+//
+// speedScale   1000000 us/s * 3600 s/hr        us * (mile or km)
+// ---------- * ----------------------------- = -----------------
+//     10       12 in/ft * (speed units coef)    in * hr
+//
+// Speed Units Coef:
+// 5280 ft/mile
+// 3280.84 ft/km
+#define SPEED_COEF (1'000'000.0 * 3600.0) / (12.0 * (cfg.speedUnitsMph ? 5280.0 : 3280.84))
+
 #include <vector>
 #include <string>
 #include <cstdint>
