@@ -1916,6 +1916,107 @@
 			)
 		)
 	)
+	(footprint "Fiducial:Fiducial_0.5mm_Mask1mm"
+		(layer "F.Cu")
+		(uuid "1d0a3798-db3a-4923-9719-e6fbaf9155cf")
+		(at 142.494 102.87)
+		(descr "Fiducial, circular marking, 0.5mm bare copper, 1mm soldermask opening (Level C)")
+		(tags "fiducial")
+		(property "Reference" "FID3"
+			(at 0 -1.45 0)
+			(layer "F.SilkS")
+			(hide yes)
+			(uuid "2136221d-17bd-4f3e-ab11-7818529c18ac")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Value" "Fiducial"
+			(at 0 1.45 0)
+			(layer "F.Fab")
+			(uuid "670ba537-67bc-48f0-9df4-c64bf8b1087f")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "28437ff5-b0e7-4262-8236-db310733a57f")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Description" "Fiducial Marker"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "a4ec5e0f-6eaa-4813-ac51-da1382f0e45f")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property ki_fp_filters "Fiducial*")
+		(path "/f4096051-247b-48be-b088-9f541ac59757")
+		(sheetname "/")
+		(sheetfile "ckt-defect.kicad_sch")
+		(attr smd exclude_from_bom)
+		(fp_circle
+			(center 0 0)
+			(end 0.75 0)
+			(stroke
+				(width 0.05)
+				(type solid)
+			)
+			(fill no)
+			(layer "F.CrtYd")
+			(uuid "f1b61a2b-616c-4e9d-b894-5952888dd9e9")
+		)
+		(fp_circle
+			(center 0 0)
+			(end 0.5 0)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(fill no)
+			(layer "F.Fab")
+			(uuid "3ba2dbc0-3546-4c90-9da2-6228cdf0249f")
+		)
+		(fp_text user "${REFERENCE}"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(uuid "81c18ced-836e-4efd-ba6a-f599bc3ef435")
+			(effects
+				(font
+					(size 0.25 0.25)
+					(thickness 0.04)
+				)
+			)
+		)
+		(pad "" smd circle
+			(at 0 0)
+			(size 0.5 0.5)
+			(layers "F.Cu" "F.Mask")
+			(solder_mask_margin 0.25)
+			(clearance 0.35)
+			(uuid "38924450-c99d-436c-bdd3-b66e3e3081de")
+		)
+		(embedded_fonts no)
+	)
 	(footprint "Capacitor_SMD:C_0805_2012Metric"
 		(layer "F.Cu")
 		(uuid "1dad9960-fd41-4b3a-8f07-cc4f9fca77f5")
@@ -2180,7 +2281,7 @@
 			)
 		)
 		(property ki_fp_filters "DIP*W7.62mm*")
-		(path "/c820978a-5592-46c4-a304-027ee75911b9")
+		(path "/d227ed35-f6ff-4315-b335-6670bb0d94d9")
 		(sheetname "/")
 		(sheetfile "ckt-defect.kicad_sch")
 		(attr smd)
@@ -17350,6 +17451,107 @@
 			)
 		)
 	)
+	(footprint "Fiducial:Fiducial_0.5mm_Mask1mm"
+		(layer "F.Cu")
+		(uuid "9559ece7-fc53-4b9e-85de-7f390efd7f38")
+		(at 140.462 52.578)
+		(descr "Fiducial, circular marking, 0.5mm bare copper, 1mm soldermask opening (Level C)")
+		(tags "fiducial")
+		(property "Reference" "FID1"
+			(at 0 -1.45 0)
+			(layer "F.SilkS")
+			(hide yes)
+			(uuid "4a34246c-e9f6-43eb-9500-f9b661535cf3")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Value" "Fiducial"
+			(at 0 1.45 0)
+			(layer "F.Fab")
+			(uuid "dc04c194-41e1-4871-a803-7600647513e2")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "bda629db-dc40-47b0-ab1f-3918194f8eb4")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Description" "Fiducial Marker"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "f4091c16-5ab0-4954-9075-acfe67298de1")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property ki_fp_filters "Fiducial*")
+		(path "/fe1baf7b-fdfb-4714-9e3b-3cd6ec0f7dc8")
+		(sheetname "/")
+		(sheetfile "ckt-defect.kicad_sch")
+		(attr smd exclude_from_bom)
+		(fp_circle
+			(center 0 0)
+			(end 0.75 0)
+			(stroke
+				(width 0.05)
+				(type solid)
+			)
+			(fill no)
+			(layer "F.CrtYd")
+			(uuid "9c3b2da8-0df0-4fd1-a7c6-6616bb5bd453")
+		)
+		(fp_circle
+			(center 0 0)
+			(end 0.5 0)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(fill no)
+			(layer "F.Fab")
+			(uuid "3e2fd817-3c64-462f-aea1-4228963ba307")
+		)
+		(fp_text user "${REFERENCE}"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(uuid "2497d91d-ec36-4c06-93d9-5b1e84047086")
+			(effects
+				(font
+					(size 0.25 0.25)
+					(thickness 0.04)
+				)
+			)
+		)
+		(pad "" smd circle
+			(at 0 0)
+			(size 0.5 0.5)
+			(layers "F.Cu" "F.Mask")
+			(solder_mask_margin 0.25)
+			(clearance 0.35)
+			(uuid "acfdb35b-b790-4129-b47a-7c8d7f481030")
+		)
+		(embedded_fonts no)
+	)
 	(footprint "Resistor_SMD:R_0805_2012Metric"
 		(layer "F.Cu")
 		(uuid "9cc305a2-8576-402e-a036-800c00bb0a04")
@@ -17490,6 +17692,107 @@
 				(xyz 0 0 0)
 			)
 		)
+	)
+	(footprint "Fiducial:Fiducial_0.5mm_Mask1mm"
+		(layer "F.Cu")
+		(uuid "a4c55b8c-c142-4bd9-96b8-06f439c5a12c")
+		(at 52.578 102.87)
+		(descr "Fiducial, circular marking, 0.5mm bare copper, 1mm soldermask opening (Level C)")
+		(tags "fiducial")
+		(property "Reference" "FID2"
+			(at 0 -1.45 0)
+			(layer "F.SilkS")
+			(hide yes)
+			(uuid "77709e20-640b-473b-8825-1a4f42c8664b")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Value" "Fiducial"
+			(at 0 1.45 0)
+			(layer "F.Fab")
+			(uuid "c9f81dfa-afa3-4e0b-821d-4ae618f7e23f")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "0e4df015-eb84-4dd3-9780-1c51f417a16d")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Description" "Fiducial Marker"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "dc275433-fce6-403d-99aa-9da73acf4643")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property ki_fp_filters "Fiducial*")
+		(path "/e5a2b3fc-c505-4665-8172-8fc9d9a9cc98")
+		(sheetname "/")
+		(sheetfile "ckt-defect.kicad_sch")
+		(attr smd exclude_from_bom)
+		(fp_circle
+			(center 0 0)
+			(end 0.75 0)
+			(stroke
+				(width 0.05)
+				(type solid)
+			)
+			(fill no)
+			(layer "F.CrtYd")
+			(uuid "4c2f865d-a0cb-4255-bb22-b68af9182282")
+		)
+		(fp_circle
+			(center 0 0)
+			(end 0.5 0)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(fill no)
+			(layer "F.Fab")
+			(uuid "1c802ec9-3f9f-472b-b2bc-1e93c0a4995e")
+		)
+		(fp_text user "${REFERENCE}"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(uuid "ed4d8593-07ae-4260-bf3f-b77b04564333")
+			(effects
+				(font
+					(size 0.25 0.25)
+					(thickness 0.04)
+				)
+			)
+		)
+		(pad "" smd circle
+			(at 0 0)
+			(size 0.5 0.5)
+			(layers "F.Cu" "F.Mask")
+			(solder_mask_margin 0.25)
+			(clearance 0.35)
+			(uuid "09792546-acdd-4816-8a8a-69ea6303dda3")
+		)
+		(embedded_fonts no)
 	)
 	(footprint "ISE_Generic:TE_FSM4JSMA"
 		(layer "F.Cu")
@@ -30313,13 +30616,12 @@
 		(filled_polygon
 			(layer "F.Cu")
 			(pts
-				(xy 67.379121 61.996002) (xy 67.425614 62.049658) (xy 67.437 62.102) (xy 67.437 62.182232) (xy 67.435718 62.200162)
-				(xy 67.4315 62.229501) (xy 67.4315 68.835009) (xy 67.436278 68.879443) (xy 67.437 68.892912) (xy 67.437 68.962)
-				(xy 67.416998 69.030121) (xy 67.363342 69.076614) (xy 67.311 69.088) (xy 66.294 69.088) (xy 66.294 69.851)
-				(xy 66.273998 69.919121) (xy 66.220342 69.965614) (xy 66.168 69.977) (xy 60.959 69.977) (xy 60.890879 69.956998)
-				(xy 60.844386 69.903342) (xy 60.833 69.851) (xy 60.833 67.309) (xy 60.853002 67.240879) (xy 60.906658 67.194386)
-				(xy 60.959 67.183) (xy 63.627 67.183) (xy 63.627 62.102) (xy 63.647002 62.033879) (xy 63.700658 61.987386)
-				(xy 63.753 61.976) (xy 67.311 61.976)
+				(xy 67.379121 61.996002) (xy 67.425614 62.049658) (xy 67.437 62.102) (xy 67.437 68.962) (xy 67.416998 69.030121)
+				(xy 67.363342 69.076614) (xy 67.311 69.088) (xy 66.294 69.088) (xy 66.294 69.851) (xy 66.273998 69.919121)
+				(xy 66.220342 69.965614) (xy 66.168 69.977) (xy 60.959 69.977) (xy 60.890879 69.956998) (xy 60.844386 69.903342)
+				(xy 60.833 69.851) (xy 60.833 67.309) (xy 60.853002 67.240879) (xy 60.906658 67.194386) (xy 60.959 67.183)
+				(xy 63.627 67.183) (xy 63.627 62.102) (xy 63.647002 62.033879) (xy 63.700658 61.987386) (xy 63.753 61.976)
+				(xy 67.311 61.976)
 			)
 		)
 	)
