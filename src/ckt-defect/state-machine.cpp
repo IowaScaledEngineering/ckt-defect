@@ -224,17 +224,17 @@ void DetectorStateMachine::update()
 		case DetectorState::IDLE:
 			if( !cfg->infrastructureMode && data->axleDetect )
 			{
-				if(!triggerDirection1Only && !triggerDirection2Only)
+				if(!cfg->triggerDirection1Only && !cfg->triggerDirection2Only)
 				{
 					// Trigger any direction
 					transitionTo(DetectorState::ENTRANCE_AXLES);
 				}
-				else if((triggerDirection1Only) && (1 == data->direction))
+				else if((cfg->triggerDirection1Only) && (1 == data->direction))
 				{
 					// Trigger direction 1 only
 					transitionTo(DetectorState::ENTRANCE_AXLES);
 				}
-				else if((triggerDirection2Only) && (2 == data->direction))
+				else if((cfg->triggerDirection2Only) && (2 == data->direction))
 				{
 					// Trigger direction 2 only
 					transitionTo(DetectorState::ENTRANCE_AXLES);
