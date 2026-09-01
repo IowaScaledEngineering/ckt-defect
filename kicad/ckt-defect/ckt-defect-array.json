@@ -6,13 +6,13 @@
         "space": "100mil",
     },
     "tabs": {
-        "type": "fixed",
+        "type": "annotation",
         "width": "100mil",
     },
     "cuts": {
         "type": "mousebites",
         "drill": "0.5mm",
-        "spacing": "0.75mm",
+        "spacing": "0.8mm",
         "offset": "0mm",
     },
     "framing": {
@@ -22,11 +22,7 @@
         "width": "200mil",
     },
     "fiducials": {
-        "type": "3fid",
-        "hoffset": "100mil",
-        "voffset": "300mil",
-        "coppersize": "1mm",
-        "opening": "2mm",
+        "type": "none",
     },
     "post": {
         "millradius": "50mil",
