@@ -65,6 +65,10 @@ LICENSE:
 #define TRIGGER_DIR1_ONLY_DEFAULT         false
 #define TRIGGER_DIR2_ONLY_DEFAULT         false
 
+#define ENTRANCE_MSG_EN_DEFAULT           true
+#define ALERT_MSG_EN_DEFAULT              true
+#define EXIT_MSG_DEFECT_ONLY_DEFAULT      false
+
 #define INFRASTRUCTURE_MODE_DEFAULT       false
 
 #define PREF_NAMESPACE   "defectdetector"
@@ -111,6 +115,10 @@ void loadConfiguration(DetectorConfiguration* cfg)
 	cfg->temperatureUnitsF = preferences.getBool("tmpUnitF", TEMPERATURE_UNITS_F_DEFAULT);
 	cfg->minTemperatureC = preferences.getFloat("tmpMin", MIN_TEMPERATURE_DEFAULT);
 	cfg->maxTemperatureC = preferences.getFloat("tmpMax", MAX_TEMPERATURE_DEFAULT);
+
+	cfg->entranceMessageEnable = preferences.getBool("entMsgEn", ENTRANCE_MSG_EN_DEFAULT);
+	cfg->alertMessageEnable = preferences.getBool("altMsgEn", ALERT_MSG_EN_DEFAULT);
+	cfg->exitMessageDefectOnly = preferences.getBool("exitMsgDef", EXIT_MSG_DEFECT_ONLY_DEFAULT);
 
 	cfg->directionEnable = preferences.getBool("dirEn", DIRECTION_EN_DEFAULT);
 	
@@ -233,6 +241,15 @@ void saveConfiguration(DetectorConfiguration* cfg)
 
 	if(cfg->maxTemperatureC != preferences.getFloat("tmpMax", MAX_TEMPERATURE_DEFAULT))
 		preferences.putFloat("tmpMax", cfg->maxTemperatureC);
+
+	if(cfg->entranceMessageEnable != preferences.getBool("entMsgEn", ENTRANCE_MSG_EN_DEFAULT))
+		preferences.putBool("entMsgEn", cfg->entranceMessageEnable);
+
+	if(cfg->alertMessageEnable != preferences.getBool("altMsgEn", ALERT_MSG_EN_DEFAULT))
+		preferences.putBool("altMsgEn", cfg->alertMessageEnable);
+
+	if(cfg->exitMessageDefectOnly != preferences.getBool("exitMsgDef", EXIT_MSG_DEFECT_ONLY_DEFAULT))
+		preferences.putBool("exitMsgDef", cfg->exitMessageDefectOnly);
 
 	if(cfg->directionEnable != preferences.getBool("dirEn", DIRECTION_EN_DEFAULT))
 		preferences.putBool("dirEn", cfg->directionEnable);
@@ -368,6 +385,15 @@ void printConfiguration(DetectorConfiguration* cfg)
 
 	Serial.print("Max Temperature Limit: ");
 	Serial.println(cfg->maxTemperatureC);
+
+	Serial.print("Entrance Message Enable: ");
+	Serial.println(cfg->entranceMessageEnable);
+
+	Serial.print("Alert Message Enable: ");
+	Serial.println(cfg->alertMessageEnable);
+
+	Serial.print("Exit Message Defect Only: ");
+	Serial.println(cfg->exitMessageDefectOnly);
 
 	Serial.print("Direction Enable: ");
 	Serial.println(cfg->directionEnable);

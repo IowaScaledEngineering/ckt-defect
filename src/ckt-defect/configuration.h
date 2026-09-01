@@ -77,6 +77,11 @@ struct DetectorConfiguration {
 	float minTemperatureC;   // Float so conversion to/from F works cleanly
 	float maxTemperatureC;
 
+	// Messages
+	bool entranceMessageEnable;
+	bool alertMessageEnable;
+	bool exitMessageDefectOnly;
+
 	// Operation Mode
 	bool infrastructureMode;
 };

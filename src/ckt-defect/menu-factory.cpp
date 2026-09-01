@@ -379,6 +379,30 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		[&cfg, menuMinTemperature, menuMaxTemperature, degF, degC]() { saveConfiguration(&cfg); menuMinTemperature->setUnits(cfg.temperatureUnitsF ? degF : degC); menuMaxTemperature->setUnits(cfg.temperatureUnitsF ? degF : degC); }
 	);
 
+	// Messages
+	auto menuMessages = std::make_shared<MenuListSelector>("Messages");
+	auto menuEntranceMessage = std::make_shared<MenuBoolSelector>(
+		"Entrance Message",
+		&cfg.entranceMessageEnable,
+		false, 
+		"On", "ON", 
+		"Off", "OFF"
+	);
+	auto menuAlertMessage = std::make_shared<MenuBoolSelector>(
+		"Live Defect Msgs",
+		&cfg.alertMessageEnable,
+		false, 
+		"On", "ON", 
+		"Off", "OFF"
+	);
+	auto menuExitDefectOnly = std::make_shared<MenuBoolSelector>(
+		"Exit Message",
+		&cfg.exitMessageDefectOnly,
+		false, 
+		"Defect Only", "DFCT", 
+		"Always", "ALWYS"
+	);
+
 	// Operation Mode
 	auto menuOperationMode = std::make_shared<MenuBoolSelector>(
 		"Operation Mode",
@@ -528,6 +552,11 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	menuTemperatureConfig->addChild(menuTemperatureType);
 	menuTemperatureConfig->addChild(menuMinTemperature);
 	menuTemperatureConfig->addChild(menuMaxTemperature);
+
+	mainSel->addChild(menuMessages);
+	menuMessages->addChild(menuEntranceMessage);
+	menuMessages->addChild(menuAlertMessage);
+	menuMessages->addChild(menuExitDefectOnly);
 
 	mainSel->addChild(menuOperationMode);
 
