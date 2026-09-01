@@ -491,6 +491,9 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	menuTemperatureType->setSaveCallback([&cfg, managed]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg, managed); });
 	menuDirectionEn->setSaveCallback([&cfg, managed]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg, managed); updateDirectionNames(&cfg); });
 	menuRailNameEn->setSaveCallback([&cfg, managed, &trackMessages]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg, managed); updateRailNames(&cfg); setDefaultMessages(trackMessages, cfg); });
+	menuEntranceMessage->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); setDefaultMessages(trackMessages, cfg); });
+	menuAlertMessage->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); setDefaultMessages(trackMessages, cfg); });
+	menuExitDefectOnly->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); setDefaultMessages(trackMessages, cfg); });
 
 	// Trigger 1 and Trigger 2 mutual-exclusion callbacks
 	menuTriggerDir1->setSaveCallback([&cfg]() {
