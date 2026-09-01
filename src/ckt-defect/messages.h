@@ -29,8 +29,8 @@ LICENSE:
 
 struct DefectMessage {
 	std::string alertMsg;    // Played instantly when defect detected (e.g. words, silence, or tone)
-	std::string detailMsg;   // Played in exit message after defect(s) detected 
 	std::string displayMsg;  // Displayed on screen when defect detected (20 chars x 3 lines max)
+	std::string detailMsg;   // Played in exit message after defect(s) detected 
 	uint32_t axleRate;       // Number of axles on average for this defect
 };
 
