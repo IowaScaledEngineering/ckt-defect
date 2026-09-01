@@ -426,7 +426,7 @@ void setDefaultMessages(MessageBundle& trackMessages, const DetectorConfiguratio
 		tmpMessage += " total axles #axles";
 	}
 
-	if(cfg.speedEnable && cfg.axleEnable)
+	if(cfg.speedEnable)
 	{
 		tmpMessage += " train speed #speed";
 	}
