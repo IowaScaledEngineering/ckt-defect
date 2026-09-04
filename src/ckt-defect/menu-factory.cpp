@@ -287,31 +287,33 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		[&cfg]() { saveConfiguration(&cfg); updateRailNames(&cfg); }
 	);
 
-	// Timing
-	auto menuTimingConfig = std::make_shared<MenuListSelector>("Timing");
-	auto menuDetectorTimeout = std::make_shared<MenuNumberDial>(
-		"Exit Timeout",
-		&cfg.detectorTimeout,
-		false,
-		2,   // min
-		30,  // max
-		1,   //step
-		"sec",
-		[&cfg]() { saveConfiguration(&cfg); }
-	);
-	auto menuExitDisplayTimeout = std::make_shared<MenuNumberDial>(
-		"Summary Display",
-		&cfg.exitDisplayTimeout,
-		false,
-		2,   // min
-		60,  // max
-		1,   //step
-		"sec",
-		[&cfg]() { saveConfiguration(&cfg); }
+	// Messages
+	auto menuMessages = std::make_shared<MenuListSelector>("Messages");
+	auto menuTalkDefectOnly = std::make_shared<MenuBoolSelector>(
+		"Talk Defect Only",
+		&cfg.talkOnDefectOnly,
+		false, 
+		"On", "ON", 
+		"Off", "OFF"
 	);
 
-	// Defect Summary
-	auto menuDefectSummaryConfig = std::make_shared<MenuListSelector>("Defect Summary");
+	auto menuEntranceMessage = std::make_shared<MenuBoolSelector>(
+		"Entrance Message",
+		&cfg.entranceMessageEnable,
+		false, 
+		"On", "ON", 
+		"Off", "OFF"
+	);
+	auto menuAlertMessage = std::make_shared<MenuBoolSelector>(
+		"Live Defect Msgs",
+		&cfg.alertMessageEnable,
+		false, 
+		"On", "ON", 
+		"Off", "OFF"
+	);
+
+	// Exit Message
+	auto menuExitMessage = std::make_shared<MenuListSelector>("Exit Message");
 	auto menuMaxDefects = std::make_shared<MenuNumberDial>(
 		"Max Defects",
 		&cfg.maxDefects,
@@ -379,30 +381,6 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		[&cfg, menuMinTemperature, menuMaxTemperature, degF, degC]() { saveConfiguration(&cfg); menuMinTemperature->setUnits(cfg.temperatureUnitsF ? degF : degC); menuMaxTemperature->setUnits(cfg.temperatureUnitsF ? degF : degC); }
 	);
 
-	// Messages
-	auto menuMessages = std::make_shared<MenuListSelector>("Messages");
-	auto menuEntranceMessage = std::make_shared<MenuBoolSelector>(
-		"Entrance Message",
-		&cfg.entranceMessageEnable,
-		false, 
-		"On", "ON", 
-		"Off", "OFF"
-	);
-	auto menuAlertMessage = std::make_shared<MenuBoolSelector>(
-		"Live Defect Msgs",
-		&cfg.alertMessageEnable,
-		false, 
-		"On", "ON", 
-		"Off", "OFF"
-	);
-	auto menuExitDefectOnly = std::make_shared<MenuBoolSelector>(
-		"Exit Message",
-		&cfg.exitMessageDefectOnly,
-		false, 
-		"Defect Only", "DFCT", 
-		"Always", "ALWYS"
-	);
-
 	// Operation Mode
 	auto menuOperationMode = std::make_shared<MenuBoolSelector>(
 		"Operation Mode",
@@ -410,6 +388,29 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		false,
 		"Infrastructure", "INFR",
 		"Defect Detect", "DFCT",
+		[&cfg]() { saveConfiguration(&cfg); }
+	);
+
+	// Timing
+	auto menuTimingConfig = std::make_shared<MenuListSelector>("Timing");
+	auto menuDetectorTimeout = std::make_shared<MenuNumberDial>(
+		"Exit Timeout",
+		&cfg.detectorTimeout,
+		false,
+		2,   // min
+		30,  // max
+		1,   //step
+		"sec",
+		[&cfg]() { saveConfiguration(&cfg); }
+	);
+	auto menuExitDisplayTimeout = std::make_shared<MenuNumberDial>(
+		"Summary Display",
+		&cfg.exitDisplayTimeout,
+		false,
+		2,   // min
+		60,  // max
+		1,   //step
+		"sec",
 		[&cfg]() { saveConfiguration(&cfg); }
 	);
 
@@ -493,7 +494,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	menuRailNameEn->setSaveCallback([&cfg, managed, &trackMessages]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg, managed); updateRailNames(&cfg); setDefaultMessages(trackMessages, cfg); });
 	menuEntranceMessage->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); setDefaultMessages(trackMessages, cfg); });
 	menuAlertMessage->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); setDefaultMessages(trackMessages, cfg); });
-	menuExitDefectOnly->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); setDefaultMessages(trackMessages, cfg); });
+	menuTalkDefectOnly->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); setDefaultMessages(trackMessages, cfg); });
 
 	// Trigger 1 and Trigger 2 mutual-exclusion callbacks
 	menuTriggerDir1->setSaveCallback([&cfg]() {
@@ -545,9 +546,14 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	menuRailConfig->addChild(menuRailNameEn);
 	menuRailConfig->addChild(menuRailName);
 
-	mainSel->addChild(menuDefectSummaryConfig);
-	menuDefectSummaryConfig->addChild(menuMaxDefects);
-	menuDefectSummaryConfig->addChild(menuOrdinalEnable);
+	mainSel->addChild(menuMessages);
+	menuMessages->addChild(menuTalkDefectOnly);
+	menuMessages->addChild(menuEntranceMessage);
+	menuMessages->addChild(menuAlertMessage);
+
+	menuMessages->addChild(menuExitMessage);
+	menuExitMessage->addChild(menuMaxDefects);
+	menuExitMessage->addChild(menuOrdinalEnable);
 
 	mainSel->addChild(menuTemperatureConfig);
 	menuTemperatureConfig->addChild(menuTemperatureEn);
@@ -555,11 +561,6 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	menuTemperatureConfig->addChild(menuTemperatureType);
 	menuTemperatureConfig->addChild(menuMinTemperature);
 	menuTemperatureConfig->addChild(menuMaxTemperature);
-
-	mainSel->addChild(menuMessages);
-	menuMessages->addChild(menuEntranceMessage);
-	menuMessages->addChild(menuAlertMessage);
-	menuMessages->addChild(menuExitDefectOnly);
 
 	mainSel->addChild(menuOperationMode);
 

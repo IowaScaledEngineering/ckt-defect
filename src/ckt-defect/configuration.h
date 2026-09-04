@@ -62,10 +62,6 @@ struct DetectorConfiguration {
 	uint8_t minSpeed;
 	uint16_t speedScale;       // Units = deciscale
 
-	// Defects
-	bool ordinalDefectList;
-	uint8_t maxDefects;
-
 	// Other
 	uint8_t detectorTimeout;      // Units = seconds
 	uint8_t exitDisplayTimeout;   // Units = seconds
@@ -80,7 +76,11 @@ struct DetectorConfiguration {
 	// Messages
 	bool entranceMessageEnable;
 	bool alertMessageEnable;
-	bool exitMessageDefectOnly;
+	bool talkOnDefectOnly;
+
+	// Exit Config
+	bool ordinalDefectList;
+	uint8_t maxDefects;
 
 	// Operation Mode
 	bool infrastructureMode;
