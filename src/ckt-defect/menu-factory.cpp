@@ -24,6 +24,8 @@ struct ManagedMenus {
 	std::shared_ptr<Menu> directionName1;
 	std::shared_ptr<Menu> directionName2;
 	std::shared_ptr<Menu> railName;
+	std::shared_ptr<Menu> entranceMessage;
+	std::shared_ptr<Menu> alertMessage;
 };
 
 void updateAllMenuVisibility(const DetectorConfiguration &cfg, const ManagedMenus &menus)
@@ -99,6 +101,15 @@ void updateAllMenuVisibility(const DetectorConfiguration &cfg, const ManagedMenu
 		if (menus.railName) menus.railName->unhide();
 	} else {
 		if (menus.railName) menus.railName->hide();
+	}
+
+	// Talk On Defect Only Visibility
+	if (cfg.talkOnDefectOnly) {
+		if (menus.entranceMessage) menus.entranceMessage->hide();
+		if (menus.alertMessage)    menus.alertMessage->hide();
+	} else {
+		if (menus.entranceMessage) menus.entranceMessage->unhide();
+		if (menus.alertMessage)    menus.alertMessage->unhide();
 	}
 }
 
@@ -478,7 +489,8 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		menuSpeedConfig, menuSpeedUnits, menuSpeedType, menuMinSpeed,
 		menuTemperatureUnits, menuTemperatureType, menuMinTemperature, menuMaxTemperature,
 		menuDirectionName1, menuDirectionName2,
-		menuRailName
+		menuRailName,
+		menuEntranceMessage, menuAlertMessage
 	};
 
 	// ==========================================
@@ -494,7 +506,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	menuRailNameEn->setSaveCallback([&cfg, managed, &trackMessages]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg, managed); updateRailNames(&cfg); setDefaultMessages(trackMessages, cfg); });
 	menuEntranceMessage->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); setDefaultMessages(trackMessages, cfg); });
 	menuAlertMessage->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); setDefaultMessages(trackMessages, cfg); });
-	menuTalkDefectOnly->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); setDefaultMessages(trackMessages, cfg); });
+	menuTalkDefectOnly->setSaveCallback([&cfg, managed, &trackMessages]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg, managed); setDefaultMessages(trackMessages, cfg); });
 
 	// Trigger 1 and Trigger 2 mutual-exclusion callbacks
 	menuTriggerDir1->setSaveCallback([&cfg]() {
