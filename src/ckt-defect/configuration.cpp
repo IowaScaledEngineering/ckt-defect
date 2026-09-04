@@ -63,11 +63,11 @@ LICENSE:
 #define TRIGGER_DIR2_ONLY_DEFAULT         false
 
 #define DEFECT_HJ_EN_DEFAULT              true
-#define DEFECT_HJ_RATE_DEFAULT            150
+#define DEFECT_HJ_RATE_DEFAULT            125
 #define DEFECT_HIW_EN_DEFAULT             true
 #define DEFECT_HIW_RATE_DEFAULT           150
 #define DEFECT_DE_EN_DEFAULT              true
-#define DEFECT_DE_RATE_DEFAULT            150
+#define DEFECT_DE_RATE_DEFAULT            250
 
 #define ENTRANCE_MSG_EN_DEFAULT           true
 #define ALERT_MSG_EN_DEFAULT              true

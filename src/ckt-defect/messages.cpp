@@ -428,44 +428,53 @@ void setDefaultMessages(MessageBundle& trackMessages, const DetectorConfiguratio
 	
 	std::string alertMsg, detailMsg, displayMsg;
 
-	if(cfg.alertMessageEnable && !cfg.talkOnDefectOnly)
+	if(cfg.defectHotJournalEnable)
 	{
-		alertMsg = "#tone #track hot journal " + tmpMessage;
-		displayMsg = "#track \\Hot Journal\\" + tmpMessage;
+		if(cfg.alertMessageEnable && !cfg.talkOnDefectOnly)
+		{
+			alertMsg = "#tone #track hot journal " + tmpMessage;
+			displayMsg = "#track \\Hot Journal\\" + tmpMessage;
+		}
+		else
+		{
+			alertMsg = "";
+			displayMsg = "";
+		}
+		detailMsg = "hot journal " + tmpMessage;
+		trackMessages.defects.emplace_back(alertMsg, displayMsg, detailMsg, cfg.defectHotJournalAxleRate);
 	}
-	else
-	{
-		alertMsg = "";
-		displayMsg = "";
-	}
-	detailMsg = "hot journal " + tmpMessage;
-	trackMessages.defects.emplace_back(alertMsg, displayMsg, detailMsg, 125);
 
-	if(cfg.alertMessageEnable && !cfg.talkOnDefectOnly)
+	if(cfg.defectHighImpactWheelEnable)
 	{
-		alertMsg = std::string("#tone #track dragging equipment ") + (cfg.axleEnable ? "near " : "") + tmpMessage;
-		displayMsg = "#track \\Dragging Equipment\\" + tmpMessage;
+		if(cfg.alertMessageEnable && !cfg.talkOnDefectOnly)
+		{
+			alertMsg = "#tone #track high impact wheel detected " + tmpMessage;
+			displayMsg = "#track \\High Impact Wheel\\" + tmpMessage;
+		}
+		else
+		{
+			alertMsg = "";
+			displayMsg = "";
+		}
+		detailMsg = "high impact wheel detected " + tmpMessage;
+		trackMessages.defects.emplace_back(alertMsg, displayMsg, detailMsg, cfg.defectHighImpactWheelAxleRate);
 	}
-	else
-	{
-		alertMsg = "";
-		displayMsg = "";
-	}
-	detailMsg = std::string("dragging equipment ") + (cfg.axleEnable ? "near " : "") + tmpMessage;
-	trackMessages.defects.emplace_back(alertMsg, displayMsg, detailMsg, 250);
 
-	if(cfg.alertMessageEnable && !cfg.talkOnDefectOnly)
+	if(cfg.defectDraggingEquipmentEnable)
 	{
-		alertMsg = "#tone #track high impact wheel detected " + tmpMessage;
-		displayMsg = "#track \\High Impact Wheel\\" + tmpMessage;
+		if(cfg.alertMessageEnable && !cfg.talkOnDefectOnly)
+		{
+			alertMsg = std::string("#tone #track dragging equipment ") + (cfg.axleEnable ? "near " : "") + tmpMessage;
+			displayMsg = "#track \\Dragging Equipment\\" + tmpMessage;
+		}
+		else
+		{
+			alertMsg = "";
+			displayMsg = "";
+		}
+		detailMsg = std::string("dragging equipment ") + (cfg.axleEnable ? "near " : "") + tmpMessage;
+		trackMessages.defects.emplace_back(alertMsg, displayMsg, detailMsg, cfg.defectDraggingEquipmentAxleRate);
 	}
-	else
-	{
-		alertMsg = "";
-		displayMsg = "";
-	}
-	detailMsg = "high impact wheel detected " + tmpMessage;
-	trackMessages.defects.emplace_back(alertMsg, displayMsg, detailMsg, 150);
 
 	// Create Footer
 	tmpMessage.clear();
