@@ -73,6 +73,14 @@ struct DetectorConfiguration {
 	float minTemperatureC;   // Float so conversion to/from F works cleanly
 	float maxTemperatureC;
 
+	// Defects
+	bool defectHotJournalEnable;
+	uint32_t defectHotJournalAxleRate;
+	bool defectHighImpactWheelEnable;
+	uint32_t defectHighImpactWheelAxleRate;
+	bool defectDraggingEquipmentEnable;
+	uint32_t defectDraggingEquipmentAxleRate;
+
 	// Messages
 	bool entranceMessageEnable;
 	bool alertMessageEnable;

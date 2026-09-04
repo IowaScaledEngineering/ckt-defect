@@ -62,6 +62,13 @@ LICENSE:
 #define TRIGGER_DIR1_ONLY_DEFAULT         false
 #define TRIGGER_DIR2_ONLY_DEFAULT         false
 
+#define DEFECT_HJ_EN_DEFAULT              true
+#define DEFECT_HJ_RATE_DEFAULT            150
+#define DEFECT_HIW_EN_DEFAULT             true
+#define DEFECT_HIW_RATE_DEFAULT           150
+#define DEFECT_DE_EN_DEFAULT              true
+#define DEFECT_DE_RATE_DEFAULT            150
+
 #define ENTRANCE_MSG_EN_DEFAULT           true
 #define ALERT_MSG_EN_DEFAULT              true
 #define TALK_DEFECT_ONLY_DEFAULT          false
@@ -146,6 +153,16 @@ void loadConfiguration(DetectorConfiguration* cfg)
 	cfg->temperatureUnitsF = preferences.getBool("tmpUnitF", TEMPERATURE_UNITS_F_DEFAULT);
 	cfg->minTemperatureC = preferences.getFloat("tmpMin", MIN_TEMPERATURE_DEFAULT);
 	cfg->maxTemperatureC = preferences.getFloat("tmpMax", MAX_TEMPERATURE_DEFAULT);
+
+	// Defects
+	cfg->defectHotJournalEnable = preferences.getBool("hjEn", DEFECT_HJ_EN_DEFAULT);
+	cfg->defectHotJournalAxleRate = preferences.getUInt("hjRate", DEFECT_HJ_RATE_DEFAULT);
+
+	cfg->defectHighImpactWheelEnable = preferences.getBool("hiwEn", DEFECT_HIW_EN_DEFAULT);
+	cfg->defectHighImpactWheelAxleRate = preferences.getUInt("hiwRate", DEFECT_HIW_RATE_DEFAULT);
+
+	cfg->defectDraggingEquipmentEnable = preferences.getBool("deEn", DEFECT_DE_EN_DEFAULT);
+	cfg->defectDraggingEquipmentAxleRate = preferences.getUInt("deRate", DEFECT_DE_RATE_DEFAULT);
 
 	// Messages
 	cfg->entranceMessageEnable = preferences.getBool("entMsgEn", ENTRANCE_MSG_EN_DEFAULT);
@@ -278,6 +295,25 @@ void saveConfiguration(DetectorConfiguration* cfg)
 
 	if(cfg->maxTemperatureC != preferences.getFloat("tmpMax", MAX_TEMPERATURE_DEFAULT))
 		preferences.putFloat("tmpMax", cfg->maxTemperatureC);
+
+	// Defects
+	if(cfg->defectHotJournalEnable != preferences.getBool("hjEn", DEFECT_HJ_EN_DEFAULT))
+		preferences.putBool("hjEn", cfg->defectHotJournalEnable);
+
+	if(cfg->defectHotJournalAxleRate != preferences.getUInt("hjRate", DEFECT_HJ_RATE_DEFAULT))
+		preferences.putUInt("hjRate", cfg->defectHotJournalAxleRate);
+
+	if(cfg->defectHighImpactWheelEnable != preferences.getBool("hiwEn", DEFECT_HIW_EN_DEFAULT))
+		preferences.putBool("hiwEn", cfg->defectHighImpactWheelEnable);
+
+	if(cfg->defectHighImpactWheelAxleRate != preferences.getUInt("hiwRate", DEFECT_HIW_RATE_DEFAULT))
+		preferences.putUInt("hiwRate", cfg->defectHighImpactWheelAxleRate);
+
+	if(cfg->defectDraggingEquipmentEnable != preferences.getBool("deEn", DEFECT_DE_EN_DEFAULT))
+		preferences.putBool("deEn", cfg->defectDraggingEquipmentEnable);
+
+	if(cfg->defectDraggingEquipmentAxleRate != preferences.getUInt("deRate", DEFECT_DE_RATE_DEFAULT))
+		preferences.putUInt("deRate", cfg->defectDraggingEquipmentAxleRate);
 
 	// Messages
 	if(cfg->entranceMessageEnable != preferences.getBool("entMsgEn", ENTRANCE_MSG_EN_DEFAULT))
@@ -424,6 +460,22 @@ void printConfiguration(DetectorConfiguration* cfg)
 
 	Serial.print("Max Temperature Limit: ");
 	Serial.println(cfg->maxTemperatureC);
+
+	// Defects
+	Serial.print("Hot Journal Enable: ");
+	Serial.println(cfg->defectHotJournalEnable);
+	Serial.print("Hot Journal Axle Rate: ");
+	Serial.println(cfg->defectHotJournalAxleRate);
+
+	Serial.print("High Impact Wheel Enable: ");
+	Serial.println(cfg->defectHighImpactWheelEnable);
+	Serial.print("High Impact Wheel Axle Rate: ");
+	Serial.println(cfg->defectHighImpactWheelAxleRate);
+
+	Serial.print("Dragging Equipment Enable: ");
+	Serial.println(cfg->defectDraggingEquipmentEnable);
+	Serial.print("Dragging Equipment Axle Rate: ");
+	Serial.println(cfg->defectDraggingEquipmentAxleRate);
 
 	Serial.print("Entrance Message Enable: ");
 	Serial.println(cfg->entranceMessageEnable);

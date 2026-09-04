@@ -26,6 +26,9 @@ struct ManagedMenus {
 	std::shared_ptr<Menu> railName;
 	std::shared_ptr<Menu> entranceMessage;
 	std::shared_ptr<Menu> alertMessage;
+	std::shared_ptr<Menu> hotJournalRate;
+	std::shared_ptr<Menu> highImpactWheelRate;
+	std::shared_ptr<Menu> draggingEquipmentRate;
 };
 
 void updateAllMenuVisibility(const DetectorConfiguration &cfg, const ManagedMenus &menus)
@@ -110,6 +113,25 @@ void updateAllMenuVisibility(const DetectorConfiguration &cfg, const ManagedMenu
 	} else {
 		if (menus.entranceMessage) menus.entranceMessage->unhide();
 		if (menus.alertMessage)    menus.alertMessage->unhide();
+	}
+
+	// Defect Rate Visibilities
+	if (cfg.defectHotJournalEnable) {
+		if (menus.hotJournalRate) menus.hotJournalRate->unhide();
+	} else {
+		if (menus.hotJournalRate) menus.hotJournalRate->hide();
+	}
+
+	if (cfg.defectHighImpactWheelEnable) {
+		if (menus.highImpactWheelRate) menus.highImpactWheelRate->unhide();
+	} else {
+		if (menus.highImpactWheelRate) menus.highImpactWheelRate->hide();
+	}
+
+	if (cfg.defectDraggingEquipmentEnable) {
+		if (menus.draggingEquipmentRate) menus.draggingEquipmentRate->unhide();
+	} else {
+		if (menus.draggingEquipmentRate) menus.draggingEquipmentRate->hide();
 	}
 }
 
@@ -296,6 +318,66 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		false,
 		railNames,
 		[&cfg]() { saveConfiguration(&cfg); updateRailNames(&cfg); }
+	);
+
+	// Defect
+	auto menuDefects = std::make_shared<MenuListSelector>("Defects");
+
+	// Hot Journal
+	auto menuHotJournal = std::make_shared<MenuListSelector>("Hot Journal");
+	auto menuHotJournalEn = std::make_shared<MenuBoolSelector>(
+		"Hot Journal Enable",
+		&cfg.defectHotJournalEnable,
+		false,
+		"On", "ON",
+		"Off", "OFF"
+	);
+	auto menuHotJournalRate = std::make_shared<MenuDigitThumbwheel>(
+		"Axle Rate",
+		&cfg.defectHotJournalAxleRate,
+		false,
+		6,
+		0,
+		false,
+		[&cfg]() { saveConfiguration(&cfg); }
+	);
+
+	// High Impact Wheel
+	auto menuHighImpactWheel = std::make_shared<MenuListSelector>("High Impact Wheel");
+	auto menuHighImpactWheelEn = std::make_shared<MenuBoolSelector>(
+		"HI Wheel Enable",
+		&cfg.defectHighImpactWheelEnable,
+		false,
+		"On", "ON",
+		"Off", "OFF"
+	);
+	auto menuHighImpactWheelRate = std::make_shared<MenuDigitThumbwheel>(
+		"Axle Rate",
+		&cfg.defectHighImpactWheelAxleRate,
+		false,
+		6,
+		0,
+		false,
+		[&cfg]() { saveConfiguration(&cfg); }
+	);
+
+	// Dragging Equipment
+	auto menuDraggingEquipment = std::make_shared<MenuListSelector>("Dragging Equip");
+	auto menuDraggingEquipmentEn = std::make_shared<MenuBoolSelector>(
+		"Drag Equip Enable",
+		&cfg.defectDraggingEquipmentEnable,
+		false,
+		"On", "ON",
+		"Off", "OFF"
+	);
+	auto menuDraggingEquipmentRate = std::make_shared<MenuDigitThumbwheel>(
+		"Axle Rate",
+		&cfg.defectDraggingEquipmentAxleRate,
+		false,
+		6,
+		0,
+		false,
+		[&cfg]() { saveConfiguration(&cfg); }
 	);
 
 	// Messages
@@ -490,7 +572,8 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		menuTemperatureUnits, menuTemperatureType, menuMinTemperature, menuMaxTemperature,
 		menuDirectionName1, menuDirectionName2,
 		menuRailName,
-		menuEntranceMessage, menuAlertMessage
+		menuEntranceMessage, menuAlertMessage,
+		menuHotJournalRate, menuHighImpactWheelRate, menuDraggingEquipmentRate
 	};
 
 	// ==========================================
@@ -507,6 +590,11 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	menuEntranceMessage->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); setDefaultMessages(trackMessages, cfg); });
 	menuAlertMessage->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); setDefaultMessages(trackMessages, cfg); });
 	menuTalkDefectOnly->setSaveCallback([&cfg, managed, &trackMessages]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg, managed); setDefaultMessages(trackMessages, cfg); });
+
+	// Defect Enable Callbacks
+	menuHotJournalEn->setSaveCallback([&cfg, managed]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg, managed); });
+	menuHighImpactWheelEn->setSaveCallback([&cfg, managed]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg, managed); });
+	menuDraggingEquipmentEn->setSaveCallback([&cfg, managed]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg, managed); });
 
 	// Trigger 1 and Trigger 2 mutual-exclusion callbacks
 	menuTriggerDir1->setSaveCallback([&cfg]() {
@@ -557,6 +645,19 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	mainSel->addChild(menuRailConfig);
 	menuRailConfig->addChild(menuRailNameEn);
 	menuRailConfig->addChild(menuRailName);
+
+	mainSel->addChild(menuDefects);
+	menuDefects->addChild(menuHotJournal);
+	menuHotJournal->addChild(menuHotJournalEn);
+	menuHotJournal->addChild(menuHotJournalRate);
+
+	menuDefects->addChild(menuHighImpactWheel);
+	menuHighImpactWheel->addChild(menuHighImpactWheelEn);
+	menuHighImpactWheel->addChild(menuHighImpactWheelRate);
+
+	menuDefects->addChild(menuDraggingEquipment);
+	menuDraggingEquipment->addChild(menuDraggingEquipmentEn);
+	menuDraggingEquipment->addChild(menuDraggingEquipmentRate);
 
 	mainSel->addChild(menuMessages);
 	menuMessages->addChild(menuTalkDefectOnly);
