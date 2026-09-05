@@ -65,15 +65,15 @@ LICENSE:
 #define DEFECT_HJ_EN_DEFAULT              true
 #define DEFECT_HJ_RATE_DEFAULT            125
 #define DEFECT_HW_EN_DEFAULT              true
-#define DEFECT_HW_RATE_DEFAULT            175
+#define DEFECT_HW_RATE_DEFAULT            125
 #define DEFECT_HIW_EN_DEFAULT             true
 #define DEFECT_HIW_RATE_DEFAULT           150
 #define DEFECT_DE_EN_DEFAULT              true
 #define DEFECT_DE_RATE_DEFAULT            250
-#define DEFECT_HL_EN_DEFAULT              true
-#define DEFECT_HL_RATE_DEFAULT            300
-#define DEFECT_WL_EN_DEFAULT              true
-#define DEFECT_WL_RATE_DEFAULT            350
+#define DEFECT_HL_EN_DEFAULT              false
+#define DEFECT_HL_RATE_DEFAULT            500
+#define DEFECT_WL_EN_DEFAULT              false
+#define DEFECT_WL_RATE_DEFAULT            500
 
 #define ENTRANCE_MSG_EN_DEFAULT           true
 #define ALERT_MSG_EN_DEFAULT              true
