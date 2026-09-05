@@ -406,7 +406,7 @@ void setDefaultMessages(MessageBundle& trackMessages, const DetectorConfiguratio
 	}
 	tmpEntranceMessage += " #track #direction";
 
-	if(cfg.entranceMessageEnable && !cfg.talkOnDefectOnly)
+	if(cfg.entranceMessageEnable)
 	{
 		trackMessages.entranceMsg = tmpEntranceMessage;
 	}
@@ -430,7 +430,7 @@ void setDefaultMessages(MessageBundle& trackMessages, const DetectorConfiguratio
 
 	if(cfg.defectHotJournalEnable)
 	{
-		if(cfg.alertMessageEnable && !cfg.talkOnDefectOnly)
+		if(cfg.alertMessageEnable)
 		{
 			alertMsg = "#tone #track hot journal " + tmpMessage;
 			displayMsg = "#track \\Hot Journal\\" + tmpMessage;
@@ -446,7 +446,7 @@ void setDefaultMessages(MessageBundle& trackMessages, const DetectorConfiguratio
 
 	if(cfg.defectHighImpactWheelEnable)
 	{
-		if(cfg.alertMessageEnable && !cfg.talkOnDefectOnly)
+		if(cfg.alertMessageEnable)
 		{
 			alertMsg = "#tone #track high impact wheel detected " + tmpMessage;
 			displayMsg = "#track \\High Impact Wheel\\" + tmpMessage;
@@ -462,7 +462,7 @@ void setDefaultMessages(MessageBundle& trackMessages, const DetectorConfiguratio
 
 	if(cfg.defectDraggingEquipmentEnable)
 	{
-		if(cfg.alertMessageEnable && !cfg.talkOnDefectOnly)
+		if(cfg.alertMessageEnable)
 		{
 			alertMsg = std::string("#tone #track dragging equipment ") + (cfg.axleEnable ? "near " : "") + tmpMessage;
 			displayMsg = "#track \\Dragging Equipment\\" + tmpMessage;
