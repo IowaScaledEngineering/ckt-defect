@@ -24,8 +24,6 @@ struct ManagedMenus {
 	std::shared_ptr<Menu> directionName1;
 	std::shared_ptr<Menu> directionName2;
 	std::shared_ptr<Menu> railName;
-	std::shared_ptr<Menu> entranceMessage;
-	std::shared_ptr<Menu> alertMessage;
 	std::shared_ptr<Menu> hotJournalRate;
 	std::shared_ptr<Menu> highImpactWheelRate;
 	std::shared_ptr<Menu> draggingEquipmentRate;
@@ -104,15 +102,6 @@ void updateAllMenuVisibility(const DetectorConfiguration &cfg, const ManagedMenu
 		if (menus.railName) menus.railName->unhide();
 	} else {
 		if (menus.railName) menus.railName->hide();
-	}
-
-	// Talk On Defect Only Visibility
-	if (cfg.talkOnDefectOnly) {
-		if (menus.entranceMessage) menus.entranceMessage->hide();
-		if (menus.alertMessage)    menus.alertMessage->hide();
-	} else {
-		if (menus.entranceMessage) menus.entranceMessage->unhide();
-		if (menus.alertMessage)    menus.alertMessage->unhide();
 	}
 
 	// Defect Rate Visibilities
@@ -382,14 +371,6 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 
 	// Messages
 	auto menuMessages = std::make_shared<MenuListSelector>("Messages");
-	auto menuTalkDefectOnly = std::make_shared<MenuBoolSelector>(
-		"Talk Defect Only",
-		&cfg.talkOnDefectOnly,
-		false, 
-		"On", "ON", 
-		"Off", "OFF"
-	);
-
 	auto menuEntranceMessage = std::make_shared<MenuBoolSelector>(
 		"Entrance Message",
 		&cfg.entranceMessageEnable,
@@ -407,6 +388,14 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 
 	// Exit Message
 	auto menuExitMessage = std::make_shared<MenuListSelector>("Exit Message");
+	auto menuTalkDefectOnly = std::make_shared<MenuBoolSelector>(
+		"Talk Defect Only",
+		&cfg.talkOnDefectOnly,
+		false, 
+		"On", "ON", 
+		"Off", "OFF"
+	);
+
 	auto menuMaxDefects = std::make_shared<MenuNumberDial>(
 		"Max Defects",
 		&cfg.maxDefects,
@@ -572,7 +561,6 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		menuTemperatureUnits, menuTemperatureType, menuMinTemperature, menuMaxTemperature,
 		menuDirectionName1, menuDirectionName2,
 		menuRailName,
-		menuEntranceMessage, menuAlertMessage,
 		menuHotJournalRate, menuHighImpactWheelRate, menuDraggingEquipmentRate
 	};
 
@@ -589,7 +577,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	menuRailNameEn->setSaveCallback([&cfg, managed, &trackMessages]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg, managed); updateRailNames(&cfg); setDefaultMessages(trackMessages, cfg); });
 	menuEntranceMessage->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); setDefaultMessages(trackMessages, cfg); });
 	menuAlertMessage->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); setDefaultMessages(trackMessages, cfg); });
-	menuTalkDefectOnly->setSaveCallback([&cfg, managed, &trackMessages]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg, managed); setDefaultMessages(trackMessages, cfg); });
+	menuTalkDefectOnly->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); setDefaultMessages(trackMessages, cfg); });
 
 	// Defect Enable Callbacks
 	menuHotJournalEn->setSaveCallback([&cfg, managed]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg, managed); });
@@ -660,11 +648,11 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	menuDraggingEquipment->addChild(menuDraggingEquipmentRate);
 
 	mainSel->addChild(menuMessages);
-	menuMessages->addChild(menuTalkDefectOnly);
 	menuMessages->addChild(menuEntranceMessage);
 	menuMessages->addChild(menuAlertMessage);
 
 	menuMessages->addChild(menuExitMessage);
+	menuExitMessage->addChild(menuTalkDefectOnly);
 	menuExitMessage->addChild(menuMaxDefects);
 	menuExitMessage->addChild(menuOrdinalEnable);
 

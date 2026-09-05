@@ -84,9 +84,9 @@ struct DetectorConfiguration {
 	// Messages
 	bool entranceMessageEnable;
 	bool alertMessageEnable;
-	bool talkOnDefectOnly;
 
 	// Exit Config
+	bool talkOnDefectOnly;
 	bool ordinalDefectList;
 	uint8_t maxDefects;
 
