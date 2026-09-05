@@ -91,6 +91,7 @@ Sound* vocabGetWord(const uint32_t index)
 #include "vocab/include/8.h"
 #include "vocab/include/9.h"
 #include "vocab/include/a.h"
+#include "vocab/include/alarm.h"
 #include "vocab/include/alarms.h"
 #include "vocab/include/axle.h"
 #include "vocab/include/axles.h"
@@ -164,6 +165,7 @@ void loadInternalVocab(void)
 	vocab.push_back(new MemSound("8", vocab_8, vocab_8_len, 16000));
 	vocab.push_back(new MemSound("9", vocab_9, vocab_9_len, 16000));
 	vocab.push_back(new MemSound("a", vocab_a, vocab_a_len, 16000));
+	vocab.push_back(new MemSound("alarm", vocab_alarm, vocab_alarm_len, 16000));
 	vocab.push_back(new MemSound("alarms", vocab_alarms, vocab_alarms_len, 16000));
 	vocab.push_back(new MemSound("axle", vocab_axle, vocab_axle_len, 16000));
 	vocab.push_back(new MemSound("axles", vocab_axles, vocab_axles_len, 16000));
