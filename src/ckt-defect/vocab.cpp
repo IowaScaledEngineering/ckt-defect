@@ -142,7 +142,6 @@ Sound* vocabGetWord(const uint32_t index)
 #include "vocab/include/southbound.h"
 #include "vocab/include/speed.h"
 #include "vocab/include/temperature.h"
-#include "vocab/include/tenth.h"
 #include "vocab/include/third.h"
 #include "vocab/include/total.h"
 #include "vocab/include/track.h"
@@ -216,7 +215,6 @@ void loadInternalVocab(void)
 	vocab.push_back(new MemSound("southbound", vocab_southbound, vocab_southbound_len, 16000));
 	vocab.push_back(new MemSound("speed", vocab_speed, vocab_speed_len, 16000));
 	vocab.push_back(new MemSound("temperature", vocab_temperature, vocab_temperature_len, 16000));
-	vocab.push_back(new MemSound("tenth", vocab_tenth, vocab_tenth_len, 16000));
 	vocab.push_back(new MemSound("third", vocab_third, vocab_third_len, 16000));
 	vocab.push_back(new MemSound("total", vocab_total, vocab_total_len, 16000));
 	vocab.push_back(new MemSound("track", vocab_track, vocab_track_len, 16000));

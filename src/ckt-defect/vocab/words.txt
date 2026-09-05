@@ -60,7 +60,6 @@ south
 southbound
 speed
 temperature
-tenth
 third
 total
 track
