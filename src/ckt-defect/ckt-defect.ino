@@ -63,11 +63,6 @@ struct WavData {
 	size_t dataStartPosition;
 };
 
-void printMemoryUsage(void)
-{
-	Serial.printf("\n[SYS]: stack: %u heap: %u\n\n", uxTaskGetStackHighWaterMark(NULL), xPortGetFreeHeapSize());
-}
-
 void printNVSStats()
 {
 	nvs_stats_t nvs_stats;

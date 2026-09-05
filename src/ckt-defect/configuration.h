@@ -93,7 +93,7 @@ struct DetectorConfiguration {
 
 	// Exit Config
 	bool talkOnDefectOnly;
-	bool ordinalDefectList;
+	uint8_t ordinalTypeId;
 	uint8_t maxDefects;
 
 	// Operation Mode

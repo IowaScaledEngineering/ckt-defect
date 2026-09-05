@@ -56,6 +56,31 @@ const std::vector<std::string> railNames = {
 	"North/South",
 };
 
+const std::vector<std::string> ordinalTypes = {   // Corresponds with oridinal string
+	"None",
+	"1st",
+	"1st Alarm",
+	"1st Defect",
+	"Alarm 1",
+	"Defect 1",
+};
+
+const std::vector<std::string> ordinalString = {   // Corresponds with oridinal type
+	"",
+	"#ord",
+	"#ord alarm",
+	"#ord defect",
+	"alarm #count",
+	"defect #count",
+};
+
+
+
+void printMemoryUsage(void)
+{
+	Serial.printf("\n[SYS]: stack: %u heap: %u\n\n", uxTaskGetStackHighWaterMark(NULL), xPortGetFreeHeapSize());
+}
+
 void toLowercase(std::string& str)
 {
 	std::transform(str.begin(), str.end(), str.begin(),
@@ -137,7 +162,6 @@ std::string getOrdinalWord(const uint8_t& num)
 	if (7 == num) return "seventh";
 	if (8 == num) return "eighth";
 	if (9 == num) return "ninth";
-	if (10 == num) return "tenth";
 	else return "";
 }
 

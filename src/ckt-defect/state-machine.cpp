@@ -194,9 +194,11 @@ void DetectorStateMachine::enqueueMessageInternal(const std::string& spokenMsg, 
 	Serial.println(obj->msg.c_str());
 	if (dispMsg != nullptr)
 	{
-		Serial.println("**> ");
+		Serial.println("--------------------");
 		Serial.println(obj->displayMsg.c_str());
+		Serial.println("--------------------");
 	}
+	printMemoryUsage();
 }
 
 void DetectorStateMachine::enqueueMessage(const std::string& spokenMsg)
@@ -372,31 +374,36 @@ void DetectorStateMachine::update()
 			break;
 			
 		case DetectorState::AXLE_DEFECT:
-			for (uint32_t i = 0; i < msgs->defects.size(); i++)
+			if(defectCount < MAX_DEFECTS)
 			{
-				if (rollDice() < (PROBABILITY_MAX / msgs->defects[i].axleRate))
+				for (uint32_t i = 0; i < msgs->defects.size(); i++)
 				{
-					// We have a defect
-					std::string temporaryMsg;
-					
-					data->rail = rollDice() % 2;  // Randomly pick a rail for the defect
+					if (rollDice() < (PROBABILITY_MAX / msgs->defects[i].axleRate))
+					{
+						// We have a defect
+						std::string temporaryMsg;
+						
+						data->rail = rollDice() % 2;  // Randomly pick a rail for the defect
 
-					defectCount++;  // Yes, this can in theory roll over but we're not going to worry about 4 billion defects...
-					if(defectCount <= cfg->maxDefects)
-					{
-						// Create and store detail message for listing later
-						transformMessage(msgs->defects[i].detailMsg, temporaryMsg, *cfg, *data, trackNum, true);
-						data->defects.push_back(temporaryMsg);
+						defectCount++;  // Yes, this can in theory roll over but we're not going to worry about 4 billion defects...
+						Serial.print("\nDefect #");
+						Serial.println(defectCount);
+						if(defectCount <= cfg->maxDefects)
+						{
+							// Create and store detail message for listing later
+							transformMessage(msgs->defects[i].detailMsg, temporaryMsg, *cfg, *data, trackNum, true);
+							data->defects.push_back(temporaryMsg);
+						}
+						else if(defectCount == cfg->maxDefects + 1)
+						{
+							// On the next defect after max, insert excessive alarms message
+							data->defects.push_back(msgs->excessAlarmsMsg);
+						}
+						
+						// Play alert message (and send along display message)
+						enqueueMessage(msgs->defects[i].alertMsg, msgs->defects[i].displayMsg);
+						break;
 					}
-					else if(defectCount == cfg->maxDefects + 1)
-					{
-						// On the next defect after max, insert excessive alarms message
-						data->defects.push_back(msgs->excessAlarmsMsg);
-					}
-					
-					// Play alert message (and send along display message)
-					enqueueMessage(msgs->defects[i].alertMsg, msgs->defects[i].displayMsg);
-					break;
 				}
 			}
 			transitionTo(DetectorState::AXLE_COUNT);

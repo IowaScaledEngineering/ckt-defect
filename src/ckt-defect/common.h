@@ -30,7 +30,7 @@ LICENSE:
 #define PARSER_TASK_PRIORITY  4
 
 #define PROBABILITY_MAX       1'000'000
-#define MAX_DEFECTS_MAX       10
+#define MAX_DEFECTS           10
 
 // Speed Calculation
 //
@@ -50,7 +50,10 @@ LICENSE:
 extern const std::vector<std::string> trackNames;
 extern const std::vector<std::string> directionNames;
 extern const std::vector<std::string> railNames;
+extern const std::vector<std::string> ordinalTypes;
+extern const std::vector<std::string> ordinalString;
 
+void printMemoryUsage(void);
 void toLowercase(std::string& str);
 std::string centerString(const std::string& text, int width = 20);
 std::string intToString(int32_t intVal, uint32_t integerDigits, uint32_t fractionalDigits);

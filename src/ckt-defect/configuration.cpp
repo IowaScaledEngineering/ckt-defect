@@ -80,7 +80,7 @@ LICENSE:
 #define TALK_DEFECT_ONLY_DEFAULT          false
 
 #define MAX_DEFECTS_DEFAULT               3
-#define ORDINAL_DEFECT_LIST_DEFAULT       true
+#define ORDINAL_TYPE_ID_DEFAULT           2
 
 #define INFRASTRUCTURE_MODE_DEFAULT       false
 
@@ -185,7 +185,7 @@ void loadConfiguration(DetectorConfiguration* cfg)
 	cfg->talkOnDefectOnly = preferences.getBool("talkDefOnly", TALK_DEFECT_ONLY_DEFAULT);
 
 	// Exit Config
-	cfg->ordinalDefectList = preferences.getBool("ordList", ORDINAL_DEFECT_LIST_DEFAULT);
+	cfg->ordinalTypeId = preferences.getUChar("ordTypeId", ORDINAL_TYPE_ID_DEFAULT);
 	cfg->maxDefects = preferences.getUChar("maxDef", MAX_DEFECTS_DEFAULT);
 
 	// Operation Mode
@@ -359,8 +359,8 @@ void saveConfiguration(DetectorConfiguration* cfg)
 		preferences.putBool("talkDefOnly", cfg->talkOnDefectOnly);
 
 	// Exit Config
-	if(cfg->ordinalDefectList != preferences.getBool("ordList", ORDINAL_DEFECT_LIST_DEFAULT))
-		preferences.putBool("ordList", cfg->ordinalDefectList);
+	if(cfg->ordinalTypeId != preferences.getUChar("ordTypeId", ORDINAL_TYPE_ID_DEFAULT))
+		preferences.putUChar("ordTypeId", cfg->ordinalTypeId);
 
 	if(cfg->maxDefects != preferences.getUChar("maxDef", MAX_DEFECTS_DEFAULT))
 		preferences.putUChar("maxDef", cfg->maxDefects);
@@ -535,8 +535,8 @@ void printConfiguration(DetectorConfiguration* cfg)
 	Serial.println(cfg->talkOnDefectOnly);
 
 	// Exit Config
-	Serial.print("Ordinal Defect List: ");
-	Serial.println(cfg->ordinalDefectList ? "True" : "False");
+	Serial.print("Ordinal Type ID: ");
+	Serial.println(cfg->ordinalTypeId);
 
 	Serial.print("Max Defects: ");
 	Serial.println(cfg->maxDefects);

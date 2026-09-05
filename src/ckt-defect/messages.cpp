@@ -440,7 +440,7 @@ void setDefaultMessages(MessageBundle& trackMessages, const DetectorConfiguratio
 			alertMsg = "";
 			displayMsg = "";
 		}
-		detailMsg = "hot journal " + tmpMessage;
+		detailMsg = ordinalString[cfg.ordinalTypeId] + " hot journal " + tmpMessage;
 		trackMessages.defects.emplace_back(alertMsg, displayMsg, detailMsg, cfg.defectHotJournalAxleRate);
 	}
 
@@ -456,7 +456,7 @@ void setDefaultMessages(MessageBundle& trackMessages, const DetectorConfiguratio
 			alertMsg = "";
 			displayMsg = "";
 		}
-		detailMsg = "hot wheel " + tmpMessage;
+		detailMsg = ordinalString[cfg.ordinalTypeId] + " hot wheel " + tmpMessage;
 		trackMessages.defects.emplace_back(alertMsg, displayMsg, detailMsg, cfg.defectHotWheelAxleRate);
 	}
 
@@ -472,7 +472,7 @@ void setDefaultMessages(MessageBundle& trackMessages, const DetectorConfiguratio
 			alertMsg = "";
 			displayMsg = "";
 		}
-		detailMsg = "high impact wheel detected " + tmpMessage;
+		detailMsg = ordinalString[cfg.ordinalTypeId] + " high impact wheel detected " + tmpMessage;
 		trackMessages.defects.emplace_back(alertMsg, displayMsg, detailMsg, cfg.defectHighImpactWheelAxleRate);
 	}
 
@@ -488,7 +488,7 @@ void setDefaultMessages(MessageBundle& trackMessages, const DetectorConfiguratio
 			alertMsg = "";
 			displayMsg = "";
 		}
-		detailMsg = std::string("dragging equipment ") + (cfg.axleEnable ? "near " : "") + tmpMessage;
+		detailMsg = ordinalString[cfg.ordinalTypeId] + std::string(" dragging equipment ") + (cfg.axleEnable ? "near " : "") + tmpMessage;
 		trackMessages.defects.emplace_back(alertMsg, displayMsg, detailMsg, cfg.defectDraggingEquipmentAxleRate);
 	}
 
@@ -504,7 +504,7 @@ void setDefaultMessages(MessageBundle& trackMessages, const DetectorConfiguratio
 			alertMsg = "";
 			displayMsg = "";
 		}
-		detailMsg = std::string("high load ") + (cfg.axleEnable ? "near " : "") + tmpMessage;
+		detailMsg = ordinalString[cfg.ordinalTypeId] + " high load " + tmpMessage;
 		trackMessages.defects.emplace_back(alertMsg, displayMsg, detailMsg, cfg.defectHighLoadAxleRate);
 	}
 
@@ -520,7 +520,7 @@ void setDefaultMessages(MessageBundle& trackMessages, const DetectorConfiguratio
 			alertMsg = "";
 			displayMsg = "";
 		}
-		detailMsg = std::string("wide load ") + (cfg.axleEnable ? "near " : "") + tmpMessage;
+		detailMsg = ordinalString[cfg.ordinalTypeId] + " wide load " + tmpMessage;
 		trackMessages.defects.emplace_back(alertMsg, displayMsg, detailMsg, cfg.defectWideLoadAxleRate);
 	}
 

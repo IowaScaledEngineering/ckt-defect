@@ -348,8 +348,14 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		false,
 		6,
 		0,
-		false,
-		[&cfg]() { saveConfiguration(&cfg); }
+		true,
+		[&cfg, &trackMessages]() {
+			if (cfg.defectHotJournalAxleRate == 0) {
+				cfg.defectHotJournalAxleRate = 1;
+			}
+			saveConfiguration(&cfg);
+			setDefaultMessages(trackMessages, cfg);
+		}
 	);
 
 	// Hot Wheel
@@ -367,14 +373,20 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		false,
 		6,
 		0,
-		false,
-		[&cfg]() { saveConfiguration(&cfg); }
+		true,
+		[&cfg, &trackMessages]() {
+			if (cfg.defectHotWheelAxleRate == 0) {
+				cfg.defectHotWheelAxleRate = 1;
+			}
+			saveConfiguration(&cfg);
+			setDefaultMessages(trackMessages, cfg);
+		}
 	);
 
 	// High Impact Wheel
 	auto menuHighImpactWheel = std::make_shared<MenuListSelector>("High Impact Wheel");
 	auto menuHighImpactWheelEn = std::make_shared<MenuBoolSelector>(
-		"HI Wheel Enable",
+		"High Impact Enable",
 		&cfg.defectHighImpactWheelEnable,
 		false,
 		"On", "ON",
@@ -386,8 +398,14 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		false,
 		6,
 		0,
-		false,
-		[&cfg]() { saveConfiguration(&cfg); }
+		true,
+		[&cfg, &trackMessages]() {
+			if (cfg.defectHighImpactWheelAxleRate == 0) {
+				cfg.defectHighImpactWheelAxleRate = 1;
+			}
+			saveConfiguration(&cfg);
+			setDefaultMessages(trackMessages, cfg);
+		}
 	);
 
 	// Dragging Equipment
@@ -405,8 +423,14 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		false,
 		6,
 		0,
-		false,
-		[&cfg]() { saveConfiguration(&cfg); }
+		true,
+		[&cfg, &trackMessages]() {
+			if (cfg.defectDraggingEquipmentAxleRate == 0) {
+				cfg.defectDraggingEquipmentAxleRate = 1;
+			}
+			saveConfiguration(&cfg);
+			setDefaultMessages(trackMessages, cfg);
+		}
 	);
 
 	// High Load
@@ -424,8 +448,14 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		false,
 		6,
 		0,
-		false,
-		[&cfg]() { saveConfiguration(&cfg); }
+		true,
+		[&cfg, &trackMessages]() {
+			if (cfg.defectHighLoadAxleRate == 0) {
+				cfg.defectHighLoadAxleRate = 1;
+			}
+			saveConfiguration(&cfg);
+			setDefaultMessages(trackMessages, cfg);
+		}
 	);
 
 	// Wide Load
@@ -443,8 +473,14 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		false,
 		6,
 		0,
-		false,
-		[&cfg]() { saveConfiguration(&cfg); }
+		true,
+		[&cfg, &trackMessages]() {
+			if (cfg.defectWideLoadAxleRate == 0) {
+				cfg.defectWideLoadAxleRate = 1;
+			}
+			saveConfiguration(&cfg);
+			setDefaultMessages(trackMessages, cfg);
+		}
 	);
 
 	// Messages
@@ -479,17 +515,17 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		&cfg.maxDefects,
 		false,
 		1,   // min
-		10,  // max
+		9,  // max
 		1,   //step
 		"defects",
 		[&cfg]() { saveConfiguration(&cfg); }
 	);
-	auto menuOrdinalEnable = std::make_shared<MenuBoolSelector>(
-		"Ordinal Enable",
-		&cfg.ordinalDefectList,
-		false, 
-		"On", "ON", 
-		"Off", "OFF"
+	auto menuOrdinalType = std::make_shared<MenuOptionSelector>(
+		"Ordinal Type", 
+		&cfg.ordinalTypeId,
+		false,
+		ordinalTypes,
+		[&cfg, &trackMessages]() { saveConfiguration(&cfg); setDefaultMessages(trackMessages, cfg); }
 	);
 
 	// Temperature
@@ -659,12 +695,12 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	menuTalkDefectOnly->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); setDefaultMessages(trackMessages, cfg); });
 
 	// Defect Enable Callbacks
-	menuHotJournalEn->setSaveCallback([&cfg, managed]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg, managed); });
-	menuHotWheelEn->setSaveCallback([&cfg, managed]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg, managed); });
-	menuHighImpactWheelEn->setSaveCallback([&cfg, managed]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg, managed); });
-	menuDraggingEquipmentEn->setSaveCallback([&cfg, managed]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg, managed); });
-	menuHighLoadEn->setSaveCallback([&cfg, managed]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg, managed); });
-	menuWideLoadEn->setSaveCallback([&cfg, managed]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg, managed); });
+	menuHotJournalEn->setSaveCallback([&cfg, managed, &trackMessages]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg, managed); setDefaultMessages(trackMessages, cfg); });
+	menuHotWheelEn->setSaveCallback([&cfg, managed, &trackMessages]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg, managed); setDefaultMessages(trackMessages, cfg); });
+	menuHighImpactWheelEn->setSaveCallback([&cfg, managed, &trackMessages]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg, managed); setDefaultMessages(trackMessages, cfg); });
+	menuDraggingEquipmentEn->setSaveCallback([&cfg, managed, &trackMessages]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg, managed); setDefaultMessages(trackMessages, cfg); });
+	menuHighLoadEn->setSaveCallback([&cfg, managed, &trackMessages]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg, managed); setDefaultMessages(trackMessages, cfg); });
+	menuWideLoadEn->setSaveCallback([&cfg, managed, &trackMessages]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg, managed); setDefaultMessages(trackMessages, cfg); });
 
 	// Trigger 1 and Trigger 2 mutual-exclusion callbacks
 	menuTriggerDir1->setSaveCallback([&cfg]() {
@@ -748,7 +784,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	menuMessages->addChild(menuExitMessage);
 	menuExitMessage->addChild(menuTalkDefectOnly);
 	menuExitMessage->addChild(menuMaxDefects);
-	menuExitMessage->addChild(menuOrdinalEnable);
+	menuExitMessage->addChild(menuOrdinalType);
 
 	mainSel->addChild(menuTemperatureConfig);
 	menuTemperatureConfig->addChild(menuTemperatureEn);

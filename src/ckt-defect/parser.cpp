@@ -69,6 +69,7 @@ BaseType_t parserQueuePop(ParserObject** obj)
 
 static void parseTask(void *args)
 {
+	uint32_t count = 1;
 	parserState = PARSER_IDLE;
 	WavSound wavSound = { nullptr, true };
 
@@ -92,6 +93,7 @@ static void parseTask(void *args)
 				break;
 
 			case PARSER_PARSE:
+				count = 1;
 				if(parserQueuePop(&obj) && obj != nullptr)  // Should only get here when there is something in the queue, so portMAX_DELAY is fine
 				{
 //					Serial.print("Parsing: ");
@@ -217,6 +219,22 @@ clrTestPoint(TP1);
 							}
 							wavSound.wav = new SilenceSound(1600 * decisecs, 16000);
 							audioQueuePush(&wavSound);
+						}
+						else if(lookup_token.starts_with("#count"))
+						{
+							if(NULL != (wavSound.wav = vocabGetWord(std::to_string(count))))
+							{
+								audioQueuePush(&wavSound);
+							}
+							count++;
+						}
+						else if(lookup_token.starts_with("#ord"))
+						{
+							if(NULL != (wavSound.wav = vocabGetWord(getOrdinalWord(count))))
+							{
+								audioQueuePush(&wavSound);
+							}
+							count++;
 						}
 						else if(NULL != (wavSound.wav = vocabGetWord(std::string(lookup_token))))
 						{
