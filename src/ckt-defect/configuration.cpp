@@ -49,9 +49,6 @@ LICENSE:
 #define MIN_SPEED_DEFAULT                 10
 #define SPEED_SCALE_DEFAULT               871
 
-#define MAX_DEFECTS_DEFAULT               3
-#define ORDINAL_DEFECT_LIST_DEFAULT       true
-
 #define DETECTOR_TIMEOUT_DEFAULT          5
 #define EXIT_DISPLAY_TIMEOUT_DEFAULT      7
 
@@ -64,6 +61,26 @@ LICENSE:
 #define DIRECTION_EN_DEFAULT              true
 #define TRIGGER_DIR1_ONLY_DEFAULT         false
 #define TRIGGER_DIR2_ONLY_DEFAULT         false
+
+#define DEFECT_HJ_EN_DEFAULT              true
+#define DEFECT_HJ_RATE_DEFAULT            125
+#define DEFECT_HW_EN_DEFAULT              true
+#define DEFECT_HW_RATE_DEFAULT            125
+#define DEFECT_HIW_EN_DEFAULT             true
+#define DEFECT_HIW_RATE_DEFAULT           150
+#define DEFECT_DE_EN_DEFAULT              true
+#define DEFECT_DE_RATE_DEFAULT            250
+#define DEFECT_HL_EN_DEFAULT              false
+#define DEFECT_HL_RATE_DEFAULT            500
+#define DEFECT_WL_EN_DEFAULT              false
+#define DEFECT_WL_RATE_DEFAULT            500
+
+#define ENTRANCE_MSG_EN_DEFAULT           true
+#define ALERT_MSG_EN_DEFAULT              true
+#define TALK_DEFECT_ONLY_DEFAULT          false
+
+#define MAX_DEFECTS_DEFAULT               3
+#define ORDINAL_DEFECT_LIST_DEFAULT       true
 
 #define INFRASTRUCTURE_MODE_DEFAULT       false
 
@@ -81,55 +98,13 @@ void loadConfiguration(DetectorConfiguration* cfg)
 	cfg->noiseStep = preferences.getUChar("noise", NOISE_STEP_DEFAULT);
 	cfg->pttDelay = preferences.getUChar("pttDelay", PTT_DELAY_DEFAULT);
 	cfg->popcornStep = preferences.getUChar("popcorn", POPCORN_STEP_DEFAULT);
+
 	cfg->lcdBrightness = preferences.getUChar("lcd", LCD_BRIGHT_DEFAULT);
 
 	cfg->milepostEnable = preferences.getBool("mpEn", MILEPOST_EN_DEFAULT);
 	cfg->milepost = preferences.getUShort("mp", MILEPOST_DEFAULT);
 
 	cfg->trackNameEnable = preferences.getBool("trkNameEn", TRACK_NAME_EN_DEFAULT);
-
-	cfg->axleEnable = preferences.getBool("axleEn", AXLE_EN_DEFAULT);
-	cfg->entranceAxles = preferences.getUShort("entAxle", ENTRANCE_AXLES_DEFAULT);
-	cfg->minAxles = preferences.getUShort("minAxle", MIN_AXLES_DEFAULT);
-
-	cfg->speedEnable = preferences.getBool("spdEn", SPEED_EN_DEFAULT);
-	cfg->speedUnitsMph = preferences.getBool("spdUnit", SPEED_UNITS_MPH_DEFAULT);
-	cfg->speedTypeEnter = preferences.getBool("spdTyp", SPEED_TYPE_ENTER_DEFAULT);
-	cfg->minSpeed = preferences.getUChar("minSpd", MIN_SPEED_DEFAULT);
-	cfg->speedScale = preferences.getUShort("spdScale", SPEED_SCALE_DEFAULT);
-
-	// Defects
-	cfg->ordinalDefectList = preferences.getBool("ordList", ORDINAL_DEFECT_LIST_DEFAULT);
-	cfg->maxDefects = preferences.getUChar("maxDef", MAX_DEFECTS_DEFAULT);
-
-	// Other
-	cfg->detectorTimeout = preferences.getUChar("detTo", DETECTOR_TIMEOUT_DEFAULT);
-	cfg->exitDisplayTimeout = preferences.getUChar("exitTo", EXIT_DISPLAY_TIMEOUT_DEFAULT);
-
-	cfg->temperatureEnable = preferences.getBool("tmpEn", TEMPERATURE_EN_DEFAULT);
-	cfg->temperatureReal = preferences.getBool("tmpReal", TEMPERATURE_REAL_DEFAULT);
-	cfg->temperatureUnitsF = preferences.getBool("tmpUnitF", TEMPERATURE_UNITS_F_DEFAULT);
-	cfg->minTemperatureC = preferences.getFloat("tmpMin", MIN_TEMPERATURE_DEFAULT);
-	cfg->maxTemperatureC = preferences.getFloat("tmpMax", MAX_TEMPERATURE_DEFAULT);
-
-	cfg->directionEnable = preferences.getBool("dirEn", DIRECTION_EN_DEFAULT);
-	
-	uint8_t loadedDir1Id = preferences.getUChar("dir1Id", 0);
-	cfg->direction1NameId = (loadedDir1Id >= directionNames.size()) ? 0 : loadedDir1Id;
-	
-	uint8_t loadedDir2Id = preferences.getUChar("dir2Id", 1); // fallback default to 1 if available
-	cfg->direction2NameId = (loadedDir2Id >= directionNames.size()) ? 0 : loadedDir2Id;
-
-	cfg->railNameEnable = preferences.getBool("railNameEn", RAIL_NAME_EN_DEFAULT);
-
-	uint8_t loadedRailId = preferences.getUChar("railId", 0);
-	cfg->railNameId = (loadedRailId >= railNames.size()) ? 0 : loadedRailId;
-
-	cfg->triggerDirection1Only = preferences.getBool("trigDir1", TRIGGER_DIR1_ONLY_DEFAULT);
-	cfg->triggerDirection2Only = preferences.getBool("trigDir2", TRIGGER_DIR2_ONLY_DEFAULT);
-
-	cfg->infrastructureMode = preferences.getBool("infra", INFRASTRUCTURE_MODE_DEFAULT);
-
 	for(uint32_t i=0; i<NUM_TRACKS; i++)
 	{
 		key = "trkNameId" + String(i);
@@ -145,6 +120,76 @@ void loadConfiguration(DetectorConfiguration* cfg)
 			cfg->trackNameId[i] = loadedId;
 		}
 	}
+
+	cfg->directionEnable = preferences.getBool("dirEn", DIRECTION_EN_DEFAULT);
+	
+	uint8_t loadedDir1Id = preferences.getUChar("dir1Id", 0);
+	cfg->direction1NameId = (loadedDir1Id >= directionNames.size()) ? 0 : loadedDir1Id;
+	
+	uint8_t loadedDir2Id = preferences.getUChar("dir2Id", 1); // fallback default to 1 if available
+	cfg->direction2NameId = (loadedDir2Id >= directionNames.size()) ? 0 : loadedDir2Id;
+
+	cfg->triggerDirection1Only = preferences.getBool("trigDir1", TRIGGER_DIR1_ONLY_DEFAULT);
+	cfg->triggerDirection2Only = preferences.getBool("trigDir2", TRIGGER_DIR2_ONLY_DEFAULT);
+
+	cfg->railNameEnable = preferences.getBool("railNameEn", RAIL_NAME_EN_DEFAULT);
+
+	uint8_t loadedRailId = preferences.getUChar("railId", 0);
+	cfg->railNameId = (loadedRailId >= railNames.size()) ? 0 : loadedRailId;
+
+	// Axles
+	cfg->axleEnable = preferences.getBool("axleEn", AXLE_EN_DEFAULT);
+	cfg->entranceAxles = preferences.getUShort("entAxle", ENTRANCE_AXLES_DEFAULT);
+	cfg->minAxles = preferences.getUShort("minAxle", MIN_AXLES_DEFAULT);
+
+	// Speed
+	cfg->speedEnable = preferences.getBool("spdEn", SPEED_EN_DEFAULT);
+	cfg->speedUnitsMph = preferences.getBool("spdUnit", SPEED_UNITS_MPH_DEFAULT);
+	cfg->speedTypeEnter = preferences.getBool("spdTyp", SPEED_TYPE_ENTER_DEFAULT);
+	cfg->minSpeed = preferences.getUChar("minSpd", MIN_SPEED_DEFAULT);
+	cfg->speedScale = preferences.getUShort("spdScale", SPEED_SCALE_DEFAULT);
+
+	// Other
+	cfg->detectorTimeout = preferences.getUChar("detTo", DETECTOR_TIMEOUT_DEFAULT);
+	cfg->exitDisplayTimeout = preferences.getUChar("exitTo", EXIT_DISPLAY_TIMEOUT_DEFAULT);
+
+	// Temperature
+	cfg->temperatureEnable = preferences.getBool("tmpEn", TEMPERATURE_EN_DEFAULT);
+	cfg->temperatureReal = preferences.getBool("tmpReal", TEMPERATURE_REAL_DEFAULT);
+	cfg->temperatureUnitsF = preferences.getBool("tmpUnitF", TEMPERATURE_UNITS_F_DEFAULT);
+	cfg->minTemperatureC = preferences.getFloat("tmpMin", MIN_TEMPERATURE_DEFAULT);
+	cfg->maxTemperatureC = preferences.getFloat("tmpMax", MAX_TEMPERATURE_DEFAULT);
+
+	// Defects
+	cfg->defectHotJournalEnable = preferences.getBool("hjEn", DEFECT_HJ_EN_DEFAULT);
+	cfg->defectHotJournalAxleRate = preferences.getUInt("hjRate", DEFECT_HJ_RATE_DEFAULT);
+
+	cfg->defectHotWheelEnable = preferences.getBool("hwEn", DEFECT_HW_EN_DEFAULT);
+	cfg->defectHotWheelAxleRate = preferences.getUInt("hwRate", DEFECT_HW_RATE_DEFAULT);
+
+	cfg->defectHighImpactWheelEnable = preferences.getBool("hiwEn", DEFECT_HIW_EN_DEFAULT);
+	cfg->defectHighImpactWheelAxleRate = preferences.getUInt("hiwRate", DEFECT_HIW_RATE_DEFAULT);
+
+	cfg->defectDraggingEquipmentEnable = preferences.getBool("deEn", DEFECT_DE_EN_DEFAULT);
+	cfg->defectDraggingEquipmentAxleRate = preferences.getUInt("deRate", DEFECT_DE_RATE_DEFAULT);
+
+	cfg->defectHighLoadEnable = preferences.getBool("hlEn", DEFECT_HL_EN_DEFAULT);
+	cfg->defectHighLoadAxleRate = preferences.getUInt("hlRate", DEFECT_HL_RATE_DEFAULT);
+
+	cfg->defectWideLoadEnable = preferences.getBool("wlEn", DEFECT_WL_EN_DEFAULT);
+	cfg->defectWideLoadAxleRate = preferences.getUInt("wlRate", DEFECT_WL_RATE_DEFAULT);
+
+	// Messages
+	cfg->entranceMessageEnable = preferences.getBool("entMsgEn", ENTRANCE_MSG_EN_DEFAULT);
+	cfg->alertMessageEnable = preferences.getBool("altMsgEn", ALERT_MSG_EN_DEFAULT);
+	cfg->talkOnDefectOnly = preferences.getBool("talkDefOnly", TALK_DEFECT_ONLY_DEFAULT);
+
+	// Exit Config
+	cfg->ordinalDefectList = preferences.getBool("ordList", ORDINAL_DEFECT_LIST_DEFAULT);
+	cfg->maxDefects = preferences.getUChar("maxDef", MAX_DEFECTS_DEFAULT);
+
+	// Operation Mode
+	cfg->infrastructureMode = preferences.getBool("infra", INFRASTRUCTURE_MODE_DEFAULT);
 
 	preferences.end();
 }
@@ -181,6 +226,43 @@ void saveConfiguration(DetectorConfiguration* cfg)
 	if(cfg->trackNameEnable != preferences.getBool("trkNameEn", TRACK_NAME_EN_DEFAULT))
 		preferences.putBool("trkNameEn", cfg->trackNameEnable);
 
+	for(uint32_t i=0; i<NUM_TRACKS; i++)
+	{
+		// Defensive check: Ensure memory configuration isn't corrupted out-of-bounds before saving
+		if (cfg->trackNameId[i] >= trackNames.size()) {
+			cfg->trackNameId[i] = 0; 
+		}
+
+		key = "trkNameId" + String(i);
+		if(cfg->trackNameId[i] != preferences.getUChar(key.c_str(), i))
+			preferences.putUChar(key.c_str(), cfg->trackNameId[i]);
+	}
+
+	if(cfg->directionEnable != preferences.getBool("dirEn", DIRECTION_EN_DEFAULT))
+		preferences.putBool("dirEn", cfg->directionEnable);
+
+	if (cfg->direction1NameId >= directionNames.size()) cfg->direction1NameId = 0;
+	if(cfg->direction1NameId != preferences.getUChar("dir1Id", 0))
+		preferences.putUChar("dir1Id", cfg->direction1NameId);
+
+	if (cfg->direction2NameId >= directionNames.size()) cfg->direction2NameId = 0;
+	if(cfg->direction2NameId != preferences.getUChar("dir2Id", 1))
+		preferences.putUChar("dir2Id", cfg->direction2NameId);
+
+	if(cfg->triggerDirection1Only != preferences.getBool("trigDir1", TRIGGER_DIR1_ONLY_DEFAULT))
+		preferences.putBool("trigDir1", cfg->triggerDirection1Only);
+
+	if(cfg->triggerDirection2Only != preferences.getBool("trigDir2", TRIGGER_DIR2_ONLY_DEFAULT))
+		preferences.putBool("trigDir2", cfg->triggerDirection2Only);
+
+	if(cfg->railNameEnable != preferences.getBool("railNameEn", RAIL_NAME_EN_DEFAULT))
+		preferences.putBool("railNameEn", cfg->railNameEnable);
+
+	if (cfg->railNameId >= railNames.size()) cfg->railNameId = 0;
+	if(cfg->railNameId != preferences.getUChar("railId", 0))
+		preferences.putUChar("railId", cfg->railNameId);
+
+	// Axles
 	if(cfg->axleEnable != preferences.getBool("axleEn", AXLE_EN_DEFAULT))
 		preferences.putBool("axleEn", cfg->axleEnable);
 
@@ -190,6 +272,7 @@ void saveConfiguration(DetectorConfiguration* cfg)
 	if(cfg->minAxles != preferences.getUShort("minAxle", MIN_AXLES_DEFAULT))
 		preferences.putUShort("minAxle", cfg->minAxles);
 
+	// Speed
 	if(cfg->speedEnable != preferences.getBool("spdEn", SPEED_EN_DEFAULT))
 		preferences.putBool("spdEn", cfg->speedEnable);
 
@@ -205,13 +288,6 @@ void saveConfiguration(DetectorConfiguration* cfg)
 	if(cfg->speedScale != preferences.getUShort("spdScale", SPEED_SCALE_DEFAULT))
 		preferences.putUShort("spdScale", cfg->speedScale);
 
-	// Defects
-	if(cfg->ordinalDefectList != preferences.getBool("ordList", ORDINAL_DEFECT_LIST_DEFAULT))
-		preferences.putBool("ordList", cfg->ordinalDefectList);
-
-	if(cfg->maxDefects != preferences.getUChar("maxDef", MAX_DEFECTS_DEFAULT))
-		preferences.putUChar("maxDef", cfg->maxDefects);
-
 	// Other
 	if(cfg->detectorTimeout != preferences.getUChar("detTo", DETECTOR_TIMEOUT_DEFAULT))
 		preferences.putUChar("detTo", cfg->detectorTimeout);
@@ -219,6 +295,7 @@ void saveConfiguration(DetectorConfiguration* cfg)
 	if(cfg->exitDisplayTimeout != preferences.getUChar("exitTo", EXIT_DISPLAY_TIMEOUT_DEFAULT))
 		preferences.putUChar("exitTo", cfg->exitDisplayTimeout);
 
+	// Temperature
 	if(cfg->temperatureEnable != preferences.getBool("tmpEn", TEMPERATURE_EN_DEFAULT))
 		preferences.putBool("tmpEn", cfg->temperatureEnable);
 
@@ -234,44 +311,63 @@ void saveConfiguration(DetectorConfiguration* cfg)
 	if(cfg->maxTemperatureC != preferences.getFloat("tmpMax", MAX_TEMPERATURE_DEFAULT))
 		preferences.putFloat("tmpMax", cfg->maxTemperatureC);
 
-	if(cfg->directionEnable != preferences.getBool("dirEn", DIRECTION_EN_DEFAULT))
-		preferences.putBool("dirEn", cfg->directionEnable);
+	// Defects
+	if(cfg->defectHotJournalEnable != preferences.getBool("hjEn", DEFECT_HJ_EN_DEFAULT))
+		preferences.putBool("hjEn", cfg->defectHotJournalEnable);
 
-	if (cfg->direction1NameId >= directionNames.size()) cfg->direction1NameId = 0;
-	if(cfg->direction1NameId != preferences.getUChar("dir1Id", 0))
-		preferences.putUChar("dir1Id", cfg->direction1NameId);
+	if(cfg->defectHotJournalAxleRate != preferences.getUInt("hjRate", DEFECT_HJ_RATE_DEFAULT))
+		preferences.putUInt("hjRate", cfg->defectHotJournalAxleRate);
 
-	if (cfg->direction2NameId >= directionNames.size()) cfg->direction2NameId = 0;
-	if(cfg->direction2NameId != preferences.getUChar("dir2Id", 1))
-		preferences.putUChar("dir2Id", cfg->direction2NameId);
+	if(cfg->defectHotWheelEnable != preferences.getBool("hwEn", DEFECT_HW_EN_DEFAULT))
+		preferences.putBool("hwEn", cfg->defectHotWheelEnable);
 
-	if(cfg->railNameEnable != preferences.getBool("railNameEn", RAIL_NAME_EN_DEFAULT))
-		preferences.putBool("railNameEn", cfg->railNameEnable);
+	if(cfg->defectHotWheelAxleRate != preferences.getUInt("hwRate", DEFECT_HW_RATE_DEFAULT))
+		preferences.putUInt("hwRate", cfg->defectHotWheelAxleRate);
 
-	if (cfg->railNameId >= railNames.size()) cfg->railNameId = 0;
-	if(cfg->railNameId != preferences.getUChar("railId", 0))
-		preferences.putUChar("railId", cfg->railNameId);
+	if(cfg->defectHighImpactWheelEnable != preferences.getBool("hiwEn", DEFECT_HIW_EN_DEFAULT))
+		preferences.putBool("hiwEn", cfg->defectHighImpactWheelEnable);
 
-	if(cfg->triggerDirection1Only != preferences.getBool("trigDir1", TRIGGER_DIR1_ONLY_DEFAULT))
-		preferences.putBool("trigDir1", cfg->triggerDirection1Only);
+	if(cfg->defectHighImpactWheelAxleRate != preferences.getUInt("hiwRate", DEFECT_HIW_RATE_DEFAULT))
+		preferences.putUInt("hiwRate", cfg->defectHighImpactWheelAxleRate);
 
-	if(cfg->triggerDirection2Only != preferences.getBool("trigDir2", TRIGGER_DIR2_ONLY_DEFAULT))
-		preferences.putBool("trigDir2", cfg->triggerDirection2Only);
+	if(cfg->defectDraggingEquipmentEnable != preferences.getBool("deEn", DEFECT_DE_EN_DEFAULT))
+		preferences.putBool("deEn", cfg->defectDraggingEquipmentEnable);
 
+	if(cfg->defectDraggingEquipmentAxleRate != preferences.getUInt("deRate", DEFECT_DE_RATE_DEFAULT))
+		preferences.putUInt("deRate", cfg->defectDraggingEquipmentAxleRate);
+
+	if(cfg->defectHighLoadEnable != preferences.getBool("hlEn", DEFECT_HL_EN_DEFAULT))
+		preferences.putBool("hlEn", cfg->defectHighLoadEnable);
+
+	if(cfg->defectHighLoadAxleRate != preferences.getUInt("hlRate", DEFECT_HL_RATE_DEFAULT))
+		preferences.putUInt("hlRate", cfg->defectHighLoadAxleRate);
+
+	if(cfg->defectWideLoadEnable != preferences.getBool("wlEn", DEFECT_WL_EN_DEFAULT))
+		preferences.putBool("wlEn", cfg->defectWideLoadEnable);
+
+	if(cfg->defectWideLoadAxleRate != preferences.getUInt("wlRate", DEFECT_WL_RATE_DEFAULT))
+		preferences.putUInt("wlRate", cfg->defectWideLoadAxleRate);
+
+	// Messages
+	if(cfg->entranceMessageEnable != preferences.getBool("entMsgEn", ENTRANCE_MSG_EN_DEFAULT))
+		preferences.putBool("entMsgEn", cfg->entranceMessageEnable);
+
+	if(cfg->alertMessageEnable != preferences.getBool("altMsgEn", ALERT_MSG_EN_DEFAULT))
+		preferences.putBool("altMsgEn", cfg->alertMessageEnable);
+
+	if(cfg->talkOnDefectOnly != preferences.getBool("talkDefOnly", TALK_DEFECT_ONLY_DEFAULT))
+		preferences.putBool("talkDefOnly", cfg->talkOnDefectOnly);
+
+	// Exit Config
+	if(cfg->ordinalDefectList != preferences.getBool("ordList", ORDINAL_DEFECT_LIST_DEFAULT))
+		preferences.putBool("ordList", cfg->ordinalDefectList);
+
+	if(cfg->maxDefects != preferences.getUChar("maxDef", MAX_DEFECTS_DEFAULT))
+		preferences.putUChar("maxDef", cfg->maxDefects);
+
+	// Operation Mode
 	if(cfg->infrastructureMode != preferences.getBool("infra", INFRASTRUCTURE_MODE_DEFAULT))
 		preferences.putBool("infra", cfg->infrastructureMode);
-
-	for(uint32_t i=0; i<NUM_TRACKS; i++)
-	{
-		// Defensive check: Ensure memory configuration isn't corrupted out-of-bounds before saving
-		if (cfg->trackNameId[i] >= trackNames.size()) {
-			cfg->trackNameId[i] = 0; 
-		}
-
-		key = "trkNameId" + String(i);
-		if(cfg->trackNameId[i] != preferences.getUChar(key.c_str(), i))
-			preferences.putUChar(key.c_str(), cfg->trackNameId[i]);
-	}
 
 	preferences.end();
 }
@@ -304,14 +400,50 @@ void printConfiguration(DetectorConfiguration* cfg)
 	Serial.print("Track Name Enable: ");
 	Serial.println(cfg->trackNameEnable);
 
+	for(uint32_t i=0; i<NUM_TRACKS; i++)
+	{
+		Serial.print('\n');
+
+		Serial.print("Track ");
+		Serial.println(i+1);
+
+		Serial.print("   Track Name ID: ");
+		Serial.println(cfg->trackNameId[i]);
+		
+		Serial.print("   Track Name: ");
+		Serial.println(cfg->trackName[i].c_str());
+	}
+
+	Serial.print("Direction Enable: ");
+	Serial.println(cfg->directionEnable);
+	Serial.print("   Direction 1 Name ID: ");
+	Serial.println(cfg->direction1NameId);
+	Serial.print("   Direction 1 Name: ");
+	Serial.println(cfg->direction1Name.c_str());
+	Serial.print("   Direction 2 Name ID: ");
+	Serial.println(cfg->direction2NameId);
+	Serial.print("   Direction 2 Name: ");
+	Serial.println(cfg->direction2Name.c_str());
+	Serial.print("   Trigger Direction 1 Only: ");
+	Serial.println(cfg->triggerDirection1Only);
+	Serial.print("   Trigger Direction 2 Only: ");
+	Serial.println(cfg->triggerDirection2Only);
+
+	Serial.print("Rail Name Enable: ");
+	Serial.println(cfg->railNameEnable);
+	Serial.print("   Rail Name ID: ");
+	Serial.println(cfg->railNameId);
+	Serial.print("   Rail Name: ");
+	Serial.println(cfg->railName.c_str());
+
 	Serial.print("Axle Enable: ");
 	Serial.println(cfg->axleEnable);
 
-	Serial.print("Minimum Axles: ");
-	Serial.println(cfg->minAxles);
-
 	Serial.print("Entrance Axles: ");
 	Serial.println(cfg->entranceAxles);
+
+	Serial.print("Minimum Axles: ");
+	Serial.println(cfg->minAxles);
 
 	Serial.print("Speed Enable: ");
 	Serial.println(cfg->speedEnable);
@@ -333,13 +465,6 @@ void printConfiguration(DetectorConfiguration* cfg)
 
 	Serial.print("Speed Scale: ");
 	Serial.println(cfg->speedScale / 10.0);
-
-	// Defects
-	Serial.print("Ordinal Defect List: ");
-	Serial.println(cfg->ordinalDefectList ? "True" : "False");
-
-	Serial.print("Max Defects: ");
-	Serial.println(cfg->maxDefects);
 
 	// Other
 	Serial.print("Detector Timeout: ");
@@ -369,48 +494,58 @@ void printConfiguration(DetectorConfiguration* cfg)
 	Serial.print("Max Temperature Limit: ");
 	Serial.println(cfg->maxTemperatureC);
 
-	Serial.print("Direction Enable: ");
-	Serial.println(cfg->directionEnable);
-	Serial.print("   Direction 1 Name ID: ");
-	Serial.println(cfg->direction1NameId);
-	Serial.print("   Direction 1 Name: ");
-	Serial.println(cfg->direction1Name.c_str());
-	Serial.print("   Direction 2 Name ID: ");
-	Serial.println(cfg->direction2NameId);
-	Serial.print("   Direction 2 Name: ");
-	Serial.println(cfg->direction2Name.c_str());
+	// Defects
+	Serial.print("Hot Journal Enable: ");
+	Serial.println(cfg->defectHotJournalEnable);
+	Serial.print("Hot Journal Axle Rate: ");
+	Serial.println(cfg->defectHotJournalAxleRate);
 
-	Serial.print("Rail Name Enable: ");
-	Serial.println(cfg->railNameEnable);
-	Serial.print("   Rail Name ID: ");
-	Serial.println(cfg->railNameId);
-	Serial.print("   Rail Name: ");
-	Serial.println(cfg->railName.c_str());
+	Serial.print("Hot Wheel Enable: ");
+	Serial.println(cfg->defectHotWheelEnable);
+	Serial.print("Hot Wheel Axle Rate: ");
+	Serial.println(cfg->defectHotWheelAxleRate);
 
-	Serial.print("   Trigger Direction 1 Only: ");
-	Serial.println(cfg->triggerDirection1Only);
-	Serial.print("   Trigger Direction 2 Only: ");
-	Serial.println(cfg->triggerDirection2Only);
+	Serial.print("High Impact Wheel Enable: ");
+	Serial.println(cfg->defectHighImpactWheelEnable);
+	Serial.print("High Impact Wheel Axle Rate: ");
+	Serial.println(cfg->defectHighImpactWheelAxleRate);
+
+	Serial.print("Dragging Equipment Enable: ");
+	Serial.println(cfg->defectDraggingEquipmentEnable);
+	Serial.print("Dragging Equipment Axle Rate: ");
+	Serial.println(cfg->defectDraggingEquipmentAxleRate);
+
+	Serial.print("High Load Enable: ");
+	Serial.println(cfg->defectHighLoadEnable);
+	Serial.print("High Load Axle Rate: ");
+	Serial.println(cfg->defectHighLoadAxleRate);
+
+	Serial.print("Wide Load Enable: ");
+	Serial.println(cfg->defectWideLoadEnable);
+	Serial.print("Wide Load Axle Rate: ");
+	Serial.println(cfg->defectWideLoadAxleRate);
+
+	Serial.print("Entrance Message Enable: ");
+	Serial.println(cfg->entranceMessageEnable);
+
+	Serial.print("Alert Message Enable: ");
+	Serial.println(cfg->alertMessageEnable);
+
+	Serial.print("Talk On Defect Only: ");
+	Serial.println(cfg->talkOnDefectOnly);
+
+	// Exit Config
+	Serial.print("Ordinal Defect List: ");
+	Serial.println(cfg->ordinalDefectList ? "True" : "False");
+
+	Serial.print("Max Defects: ");
+	Serial.println(cfg->maxDefects);
 
 	Serial.print("Operation Mode: ");
 	if(cfg->infrastructureMode)
 		Serial.println("Infrastructure");
 	else
 		Serial.println("Defect Detect");
-
-	for(uint32_t i=0; i<NUM_TRACKS; i++)
-	{
-		Serial.print('\n');
-
-		Serial.print("Track ");
-		Serial.println(i+1);
-
-		Serial.print("   Track Name ID: ");
-		Serial.println(cfg->trackNameId[i]);
-		
-		Serial.print("   Track Name: ");
-		Serial.println(cfg->trackName[i].c_str());
-	}
 }
 
 

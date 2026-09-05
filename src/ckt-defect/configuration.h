@@ -62,10 +62,6 @@ struct DetectorConfiguration {
 	uint8_t minSpeed;
 	uint16_t speedScale;       // Units = deciscale
 
-	// Defects
-	bool ordinalDefectList;
-	uint8_t maxDefects;
-
 	// Other
 	uint8_t detectorTimeout;      // Units = seconds
 	uint8_t exitDisplayTimeout;   // Units = seconds
@@ -76,6 +72,29 @@ struct DetectorConfiguration {
 	bool temperatureUnitsF;
 	float minTemperatureC;   // Float so conversion to/from F works cleanly
 	float maxTemperatureC;
+
+	// Defects
+	bool defectHotJournalEnable;
+	uint32_t defectHotJournalAxleRate;
+	bool defectHotWheelEnable;
+	uint32_t defectHotWheelAxleRate;
+	bool defectHighImpactWheelEnable;
+	uint32_t defectHighImpactWheelAxleRate;
+	bool defectDraggingEquipmentEnable;
+	uint32_t defectDraggingEquipmentAxleRate;
+	bool defectHighLoadEnable;
+	uint32_t defectHighLoadAxleRate;
+	bool defectWideLoadEnable;
+	uint32_t defectWideLoadAxleRate;
+
+	// Messages
+	bool entranceMessageEnable;
+	bool alertMessageEnable;
+
+	// Exit Config
+	bool talkOnDefectOnly;
+	bool ordinalDefectList;
+	uint8_t maxDefects;
 
 	// Operation Mode
 	bool infrastructureMode;

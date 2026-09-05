@@ -392,18 +392,28 @@ void transformMessage(const std::string& inputMessage, std::string& outputMessag
 
 void setDefaultMessages(MessageBundle& trackMessages, const DetectorConfiguration& cfg)
 {
+	std::string tmpEntranceMessage;
 	std::string tmpMessage;
 	std::string tmpDispMessage;
 
 	// Entrance Message
-	trackMessages.entranceMsg = "Equipment Defect Detector";
-//	trackMessages.entranceMsg = "1 #tone 2 #tone= 3 #tone=5 4 #tone=20 5 #tone=10,0 #tone=10,1 #tone=10,2 #tone=10,3";   // Tone Test
-//	trackMessages.entranceMsg = "#tone=1 #pause #tone=1 #pause= #tone=1 #pause=10 #tone=1 #pause=20 #tone";   // Silence Test
+	tmpEntranceMessage = "Equipment Defect Detector";
+//	tmpEntranceMessage = "1 #tone 2 #tone= 3 #tone=5 4 #tone=20 5 #tone=10,0 #tone=10,1 #tone=10,2 #tone=10,3";   // Tone Test
+//	tmpEntranceMessage = "#tone=1 #pause #tone=1 #pause= #tone=1 #pause=10 #tone=1 #pause=20 #tone";   // Silence Test
 	if(cfg.milepostEnable)
 	{
-		trackMessages.entranceMsg += " milepost #milepost";
+		tmpEntranceMessage += " milepost #milepost";
 	}
-	trackMessages.entranceMsg += " #track #direction";
+	tmpEntranceMessage += " #track #direction";
+
+	if(cfg.entranceMessageEnable)
+	{
+		trackMessages.entranceMsg = tmpEntranceMessage;
+	}
+	else
+	{
+		trackMessages.entranceMsg = "";
+	}
 
 	// Defect Messages
 	if(cfg.axleEnable)
@@ -415,9 +425,104 @@ void setDefaultMessages(MessageBundle& trackMessages, const DetectorConfiguratio
 		tmpMessage += " #rail Rail";
 	}
 	trackMessages.defects.clear();
-	trackMessages.defects.emplace_back("#tone #track hot journal " + tmpMessage, "hot journal " + tmpMessage, "#track \\Hot Journal\\" + tmpMessage, 125);
-	trackMessages.defects.emplace_back("#tone #track dragging equipment near " + tmpMessage, "dragging equipment near " + tmpMessage, "#track \\Dragging Equipment\\" + tmpMessage, 250);
-	trackMessages.defects.emplace_back("#tone #track high impact wheel detected " + tmpMessage, "high impact wheel detected " + tmpMessage, "#track \\High Impact Wheel\\" + tmpMessage, 150);
+	
+	std::string alertMsg, detailMsg, displayMsg;
+
+	if(cfg.defectHotJournalEnable)
+	{
+		if(cfg.alertMessageEnable)
+		{
+			alertMsg = "#tone #track hot journal " + tmpMessage;
+			displayMsg = "#track \\Hot Journal\\" + tmpMessage;
+		}
+		else
+		{
+			alertMsg = "";
+			displayMsg = "";
+		}
+		detailMsg = "hot journal " + tmpMessage;
+		trackMessages.defects.emplace_back(alertMsg, displayMsg, detailMsg, cfg.defectHotJournalAxleRate);
+	}
+
+	if(cfg.defectHotWheelEnable)
+	{
+		if(cfg.alertMessageEnable)
+		{
+			alertMsg = "#tone #track hot wheel " + tmpMessage;
+			displayMsg = "#track \\Hot Wheel\\" + tmpMessage;
+		}
+		else
+		{
+			alertMsg = "";
+			displayMsg = "";
+		}
+		detailMsg = "hot wheel " + tmpMessage;
+		trackMessages.defects.emplace_back(alertMsg, displayMsg, detailMsg, cfg.defectHotWheelAxleRate);
+	}
+
+	if(cfg.defectHighImpactWheelEnable)
+	{
+		if(cfg.alertMessageEnable)
+		{
+			alertMsg = "#tone #track high impact wheel detected " + tmpMessage;
+			displayMsg = "#track \\High Impact Wheel\\" + tmpMessage;
+		}
+		else
+		{
+			alertMsg = "";
+			displayMsg = "";
+		}
+		detailMsg = "high impact wheel detected " + tmpMessage;
+		trackMessages.defects.emplace_back(alertMsg, displayMsg, detailMsg, cfg.defectHighImpactWheelAxleRate);
+	}
+
+	if(cfg.defectDraggingEquipmentEnable)
+	{
+		if(cfg.alertMessageEnable)
+		{
+			alertMsg = std::string("#tone #track dragging equipment ") + (cfg.axleEnable ? "near " : "") + tmpMessage;
+			displayMsg = "#track \\Dragging Equipment\\" + tmpMessage;
+		}
+		else
+		{
+			alertMsg = "";
+			displayMsg = "";
+		}
+		detailMsg = std::string("dragging equipment ") + (cfg.axleEnable ? "near " : "") + tmpMessage;
+		trackMessages.defects.emplace_back(alertMsg, displayMsg, detailMsg, cfg.defectDraggingEquipmentAxleRate);
+	}
+
+	if(cfg.defectHighLoadEnable)
+	{
+		if(cfg.alertMessageEnable)
+		{
+			alertMsg = std::string("#tone #track high load ") + (cfg.axleEnable ? "near " : "") + tmpMessage;
+			displayMsg = "#track \\High Load\\" + tmpMessage;
+		}
+		else
+		{
+			alertMsg = "";
+			displayMsg = "";
+		}
+		detailMsg = std::string("high load ") + (cfg.axleEnable ? "near " : "") + tmpMessage;
+		trackMessages.defects.emplace_back(alertMsg, displayMsg, detailMsg, cfg.defectHighLoadAxleRate);
+	}
+
+	if(cfg.defectWideLoadEnable)
+	{
+		if(cfg.alertMessageEnable)
+		{
+			alertMsg = std::string("#tone #track wide load ") + (cfg.axleEnable ? "near " : "") + tmpMessage;
+			displayMsg = "#track \\Wide Load\\" + tmpMessage;
+		}
+		else
+		{
+			alertMsg = "";
+			displayMsg = "";
+		}
+		detailMsg = std::string("wide load ") + (cfg.axleEnable ? "near " : "") + tmpMessage;
+		trackMessages.defects.emplace_back(alertMsg, displayMsg, detailMsg, cfg.defectWideLoadAxleRate);
+	}
 
 	// Create Footer
 	tmpMessage.clear();
@@ -426,7 +531,7 @@ void setDefaultMessages(MessageBundle& trackMessages, const DetectorConfiguratio
 		tmpMessage += " total axles #axles";
 	}
 
-	if(cfg.speedEnable && cfg.axleEnable)
+	if(cfg.speedEnable)
 	{
 		tmpMessage += " train speed #speed";
 	}
@@ -452,24 +557,32 @@ void setDefaultMessages(MessageBundle& trackMessages, const DetectorConfiguratio
 	}
 
 	// Clean Exit Message
-	trackMessages.exitCleanMsg = trackMessages.entranceMsg + " no defects repeat no defects" + tmpMessage;
-	trackMessages.exitCleanDisplayMsg = "#track\\NO DEFECTS\\" + tmpDispMessage;
+	if(cfg.talkOnDefectOnly)
+	{
+		trackMessages.exitCleanMsg = "";
+		trackMessages.exitCleanDisplayMsg = "";
+	}
+	else
+	{
+		trackMessages.exitCleanMsg = tmpEntranceMessage + " no defects repeat no defects" + tmpMessage;
+		trackMessages.exitCleanDisplayMsg = "#track\\NO DEFECTS\\" + tmpDispMessage;
+	}
 
 	// Defect Exit Message
-	trackMessages.exitDefectMsg = trackMessages.entranceMsg + " you have a defect #defectlist" + tmpMessage + " detector out";
+	trackMessages.exitDefectMsg = tmpEntranceMessage + " you have a defect #defectlist" + tmpMessage + " detector out";
 	trackMessages.exitDefectDisplayMsg = "#track\\DEFECT DETECTED!\\" + tmpDispMessage;
 
 	// Detector Integrity Message
-	trackMessages.integrityMsg = trackMessages.entranceMsg + " integrity failure" + tmpMessage;
+	trackMessages.integrityMsg = tmpEntranceMessage + " integrity failure" + tmpMessage;
 	trackMessages.integrityDisplayMsg = "#track\\INTEGRITY FAILURE\\" + tmpDispMessage;
 	trackMessages.integrityTrainRate = 100;
 
 	// Too Slow Message
-	trackMessages.tooSlowMsg = trackMessages.entranceMsg + " train 2 slow";
+	trackMessages.tooSlowMsg = tmpEntranceMessage + " train 2 slow";
 	trackMessages.tooSlowDisplayMsg = "#track\\TRAIN TOO SLOW\\" + tmpDispMessage;
 
 	// Detector Blocked Message
-	trackMessages.detectorBlockedMsg = trackMessages.entranceMsg + " detector blocked";
+	trackMessages.detectorBlockedMsg = tmpEntranceMessage + " detector blocked";
 	trackMessages.detectorBlockedDisplayMsg = "#track\\DETECTOR BLOCKED\\" + tmpDispMessage;
 
 	// Excessive Alarms Message
