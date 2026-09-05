@@ -25,8 +25,11 @@ struct ManagedMenus {
 	std::shared_ptr<Menu> directionName2;
 	std::shared_ptr<Menu> railName;
 	std::shared_ptr<Menu> hotJournalRate;
+	std::shared_ptr<Menu> hotWheelRate;
 	std::shared_ptr<Menu> highImpactWheelRate;
 	std::shared_ptr<Menu> draggingEquipmentRate;
+	std::shared_ptr<Menu> highLoadRate;
+	std::shared_ptr<Menu> wideLoadRate;
 };
 
 void updateAllMenuVisibility(const DetectorConfiguration &cfg, const ManagedMenus &menus)
@@ -111,6 +114,12 @@ void updateAllMenuVisibility(const DetectorConfiguration &cfg, const ManagedMenu
 		if (menus.hotJournalRate) menus.hotJournalRate->hide();
 	}
 
+	if (cfg.defectHotWheelEnable) {
+		if (menus.hotWheelRate) menus.hotWheelRate->unhide();
+	} else {
+		if (menus.hotWheelRate) menus.hotWheelRate->hide();
+	}
+
 	if (cfg.defectHighImpactWheelEnable) {
 		if (menus.highImpactWheelRate) menus.highImpactWheelRate->unhide();
 	} else {
@@ -121,6 +130,18 @@ void updateAllMenuVisibility(const DetectorConfiguration &cfg, const ManagedMenu
 		if (menus.draggingEquipmentRate) menus.draggingEquipmentRate->unhide();
 	} else {
 		if (menus.draggingEquipmentRate) menus.draggingEquipmentRate->hide();
+	}
+
+	if (cfg.defectHighLoadEnable) {
+		if (menus.highLoadRate) menus.highLoadRate->unhide();
+	} else {
+		if (menus.highLoadRate) menus.highLoadRate->hide();
+	}
+
+	if (cfg.defectWideLoadEnable) {
+		if (menus.wideLoadRate) menus.wideLoadRate->unhide();
+	} else {
+		if (menus.wideLoadRate) menus.wideLoadRate->hide();
 	}
 }
 
@@ -331,6 +352,25 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		[&cfg]() { saveConfiguration(&cfg); }
 	);
 
+	// Hot Wheel
+	auto menuHotWheel = std::make_shared<MenuListSelector>("Hot Wheel");
+	auto menuHotWheelEn = std::make_shared<MenuBoolSelector>(
+		"Hot Wheel Enable",
+		&cfg.defectHotWheelEnable,
+		false,
+		"On", "ON",
+		"Off", "OFF"
+	);
+	auto menuHotWheelRate = std::make_shared<MenuDigitThumbwheel>(
+		"Axle Rate",
+		&cfg.defectHotWheelAxleRate,
+		false,
+		6,
+		0,
+		false,
+		[&cfg]() { saveConfiguration(&cfg); }
+	);
+
 	// High Impact Wheel
 	auto menuHighImpactWheel = std::make_shared<MenuListSelector>("High Impact Wheel");
 	auto menuHighImpactWheelEn = std::make_shared<MenuBoolSelector>(
@@ -362,6 +402,44 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	auto menuDraggingEquipmentRate = std::make_shared<MenuDigitThumbwheel>(
 		"Axle Rate",
 		&cfg.defectDraggingEquipmentAxleRate,
+		false,
+		6,
+		0,
+		false,
+		[&cfg]() { saveConfiguration(&cfg); }
+	);
+
+	// High Load
+	auto menuHighLoad = std::make_shared<MenuListSelector>("High Load");
+	auto menuHighLoadEn = std::make_shared<MenuBoolSelector>(
+		"High Load Enable",
+		&cfg.defectHighLoadEnable,
+		false,
+		"On", "ON",
+		"Off", "OFF"
+	);
+	auto menuHighLoadRate = std::make_shared<MenuDigitThumbwheel>(
+		"Axle Rate",
+		&cfg.defectHighLoadAxleRate,
+		false,
+		6,
+		0,
+		false,
+		[&cfg]() { saveConfiguration(&cfg); }
+	);
+
+	// Wide Load
+	auto menuWideLoad = std::make_shared<MenuListSelector>("Wide Load");
+	auto menuWideLoadEn = std::make_shared<MenuBoolSelector>(
+		"Wide Load Enable",
+		&cfg.defectWideLoadEnable,
+		false,
+		"On", "ON",
+		"Off", "OFF"
+	);
+	auto menuWideLoadRate = std::make_shared<MenuDigitThumbwheel>(
+		"Axle Rate",
+		&cfg.defectWideLoadAxleRate,
 		false,
 		6,
 		0,
@@ -561,7 +639,8 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		menuTemperatureUnits, menuTemperatureType, menuMinTemperature, menuMaxTemperature,
 		menuDirectionName1, menuDirectionName2,
 		menuRailName,
-		menuHotJournalRate, menuHighImpactWheelRate, menuDraggingEquipmentRate
+		menuHotJournalRate, menuHotWheelRate, menuHighImpactWheelRate,
+		menuDraggingEquipmentRate, menuHighLoadRate, menuWideLoadRate
 	};
 
 	// ==========================================
@@ -581,8 +660,11 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 
 	// Defect Enable Callbacks
 	menuHotJournalEn->setSaveCallback([&cfg, managed]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg, managed); });
+	menuHotWheelEn->setSaveCallback([&cfg, managed]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg, managed); });
 	menuHighImpactWheelEn->setSaveCallback([&cfg, managed]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg, managed); });
 	menuDraggingEquipmentEn->setSaveCallback([&cfg, managed]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg, managed); });
+	menuHighLoadEn->setSaveCallback([&cfg, managed]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg, managed); });
+	menuWideLoadEn->setSaveCallback([&cfg, managed]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg, managed); });
 
 	// Trigger 1 and Trigger 2 mutual-exclusion callbacks
 	menuTriggerDir1->setSaveCallback([&cfg]() {
@@ -639,6 +721,10 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	menuHotJournal->addChild(menuHotJournalEn);
 	menuHotJournal->addChild(menuHotJournalRate);
 
+	menuDefects->addChild(menuHotWheel);
+	menuHotWheel->addChild(menuHotWheelEn);
+	menuHotWheel->addChild(menuHotWheelRate);
+
 	menuDefects->addChild(menuHighImpactWheel);
 	menuHighImpactWheel->addChild(menuHighImpactWheelEn);
 	menuHighImpactWheel->addChild(menuHighImpactWheelRate);
@@ -646,6 +732,14 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	menuDefects->addChild(menuDraggingEquipment);
 	menuDraggingEquipment->addChild(menuDraggingEquipmentEn);
 	menuDraggingEquipment->addChild(menuDraggingEquipmentRate);
+
+	menuDefects->addChild(menuHighLoad);
+	menuHighLoad->addChild(menuHighLoadEn);
+	menuHighLoad->addChild(menuHighLoadRate);
+
+	menuDefects->addChild(menuWideLoad);
+	menuWideLoad->addChild(menuWideLoadEn);
+	menuWideLoad->addChild(menuWideLoadRate);
 
 	mainSel->addChild(menuMessages);
 	menuMessages->addChild(menuEntranceMessage);

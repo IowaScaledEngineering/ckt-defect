@@ -64,10 +64,16 @@ LICENSE:
 
 #define DEFECT_HJ_EN_DEFAULT              true
 #define DEFECT_HJ_RATE_DEFAULT            125
+#define DEFECT_HW_EN_DEFAULT              true
+#define DEFECT_HW_RATE_DEFAULT            175
 #define DEFECT_HIW_EN_DEFAULT             true
 #define DEFECT_HIW_RATE_DEFAULT           150
 #define DEFECT_DE_EN_DEFAULT              true
 #define DEFECT_DE_RATE_DEFAULT            250
+#define DEFECT_HL_EN_DEFAULT              true
+#define DEFECT_HL_RATE_DEFAULT            300
+#define DEFECT_WL_EN_DEFAULT              true
+#define DEFECT_WL_RATE_DEFAULT            350
 
 #define ENTRANCE_MSG_EN_DEFAULT           true
 #define ALERT_MSG_EN_DEFAULT              true
@@ -158,11 +164,20 @@ void loadConfiguration(DetectorConfiguration* cfg)
 	cfg->defectHotJournalEnable = preferences.getBool("hjEn", DEFECT_HJ_EN_DEFAULT);
 	cfg->defectHotJournalAxleRate = preferences.getUInt("hjRate", DEFECT_HJ_RATE_DEFAULT);
 
+	cfg->defectHotWheelEnable = preferences.getBool("hwEn", DEFECT_HW_EN_DEFAULT);
+	cfg->defectHotWheelAxleRate = preferences.getUInt("hwRate", DEFECT_HW_RATE_DEFAULT);
+
 	cfg->defectHighImpactWheelEnable = preferences.getBool("hiwEn", DEFECT_HIW_EN_DEFAULT);
 	cfg->defectHighImpactWheelAxleRate = preferences.getUInt("hiwRate", DEFECT_HIW_RATE_DEFAULT);
 
 	cfg->defectDraggingEquipmentEnable = preferences.getBool("deEn", DEFECT_DE_EN_DEFAULT);
 	cfg->defectDraggingEquipmentAxleRate = preferences.getUInt("deRate", DEFECT_DE_RATE_DEFAULT);
+
+	cfg->defectHighLoadEnable = preferences.getBool("hlEn", DEFECT_HL_EN_DEFAULT);
+	cfg->defectHighLoadAxleRate = preferences.getUInt("hlRate", DEFECT_HL_RATE_DEFAULT);
+
+	cfg->defectWideLoadEnable = preferences.getBool("wlEn", DEFECT_WL_EN_DEFAULT);
+	cfg->defectWideLoadAxleRate = preferences.getUInt("wlRate", DEFECT_WL_RATE_DEFAULT);
 
 	// Messages
 	cfg->entranceMessageEnable = preferences.getBool("entMsgEn", ENTRANCE_MSG_EN_DEFAULT);
@@ -303,6 +318,12 @@ void saveConfiguration(DetectorConfiguration* cfg)
 	if(cfg->defectHotJournalAxleRate != preferences.getUInt("hjRate", DEFECT_HJ_RATE_DEFAULT))
 		preferences.putUInt("hjRate", cfg->defectHotJournalAxleRate);
 
+	if(cfg->defectHotWheelEnable != preferences.getBool("hwEn", DEFECT_HW_EN_DEFAULT))
+		preferences.putBool("hwEn", cfg->defectHotWheelEnable);
+
+	if(cfg->defectHotWheelAxleRate != preferences.getUInt("hwRate", DEFECT_HW_RATE_DEFAULT))
+		preferences.putUInt("hwRate", cfg->defectHotWheelAxleRate);
+
 	if(cfg->defectHighImpactWheelEnable != preferences.getBool("hiwEn", DEFECT_HIW_EN_DEFAULT))
 		preferences.putBool("hiwEn", cfg->defectHighImpactWheelEnable);
 
@@ -314,6 +335,18 @@ void saveConfiguration(DetectorConfiguration* cfg)
 
 	if(cfg->defectDraggingEquipmentAxleRate != preferences.getUInt("deRate", DEFECT_DE_RATE_DEFAULT))
 		preferences.putUInt("deRate", cfg->defectDraggingEquipmentAxleRate);
+
+	if(cfg->defectHighLoadEnable != preferences.getBool("hlEn", DEFECT_HL_EN_DEFAULT))
+		preferences.putBool("hlEn", cfg->defectHighLoadEnable);
+
+	if(cfg->defectHighLoadAxleRate != preferences.getUInt("hlRate", DEFECT_HL_RATE_DEFAULT))
+		preferences.putUInt("hlRate", cfg->defectHighLoadAxleRate);
+
+	if(cfg->defectWideLoadEnable != preferences.getBool("wlEn", DEFECT_WL_EN_DEFAULT))
+		preferences.putBool("wlEn", cfg->defectWideLoadEnable);
+
+	if(cfg->defectWideLoadAxleRate != preferences.getUInt("wlRate", DEFECT_WL_RATE_DEFAULT))
+		preferences.putUInt("wlRate", cfg->defectWideLoadAxleRate);
 
 	// Messages
 	if(cfg->entranceMessageEnable != preferences.getBool("entMsgEn", ENTRANCE_MSG_EN_DEFAULT))
@@ -467,6 +500,11 @@ void printConfiguration(DetectorConfiguration* cfg)
 	Serial.print("Hot Journal Axle Rate: ");
 	Serial.println(cfg->defectHotJournalAxleRate);
 
+	Serial.print("Hot Wheel Enable: ");
+	Serial.println(cfg->defectHotWheelEnable);
+	Serial.print("Hot Wheel Axle Rate: ");
+	Serial.println(cfg->defectHotWheelAxleRate);
+
 	Serial.print("High Impact Wheel Enable: ");
 	Serial.println(cfg->defectHighImpactWheelEnable);
 	Serial.print("High Impact Wheel Axle Rate: ");
@@ -476,6 +514,16 @@ void printConfiguration(DetectorConfiguration* cfg)
 	Serial.println(cfg->defectDraggingEquipmentEnable);
 	Serial.print("Dragging Equipment Axle Rate: ");
 	Serial.println(cfg->defectDraggingEquipmentAxleRate);
+
+	Serial.print("High Load Enable: ");
+	Serial.println(cfg->defectHighLoadEnable);
+	Serial.print("High Load Axle Rate: ");
+	Serial.println(cfg->defectHighLoadAxleRate);
+
+	Serial.print("Wide Load Enable: ");
+	Serial.println(cfg->defectWideLoadEnable);
+	Serial.print("Wide Load Axle Rate: ");
+	Serial.println(cfg->defectWideLoadAxleRate);
 
 	Serial.print("Entrance Message Enable: ");
 	Serial.println(cfg->entranceMessageEnable);

@@ -76,10 +76,16 @@ struct DetectorConfiguration {
 	// Defects
 	bool defectHotJournalEnable;
 	uint32_t defectHotJournalAxleRate;
+	bool defectHotWheelEnable;
+	uint32_t defectHotWheelAxleRate;
 	bool defectHighImpactWheelEnable;
 	uint32_t defectHighImpactWheelAxleRate;
 	bool defectDraggingEquipmentEnable;
 	uint32_t defectDraggingEquipmentAxleRate;
+	bool defectHighLoadEnable;
+	uint32_t defectHighLoadAxleRate;
+	bool defectWideLoadEnable;
+	uint32_t defectWideLoadAxleRate;
 
 	// Messages
 	bool entranceMessageEnable;

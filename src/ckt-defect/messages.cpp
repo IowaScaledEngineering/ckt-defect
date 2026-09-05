@@ -444,6 +444,22 @@ void setDefaultMessages(MessageBundle& trackMessages, const DetectorConfiguratio
 		trackMessages.defects.emplace_back(alertMsg, displayMsg, detailMsg, cfg.defectHotJournalAxleRate);
 	}
 
+	if(cfg.defectHotWheelEnable)
+	{
+		if(cfg.alertMessageEnable)
+		{
+			alertMsg = "#tone #track hot wheel " + tmpMessage;
+			displayMsg = "#track \\Hot Wheel\\" + tmpMessage;
+		}
+		else
+		{
+			alertMsg = "";
+			displayMsg = "";
+		}
+		detailMsg = "hot wheel " + tmpMessage;
+		trackMessages.defects.emplace_back(alertMsg, displayMsg, detailMsg, cfg.defectHotWheelAxleRate);
+	}
+
 	if(cfg.defectHighImpactWheelEnable)
 	{
 		if(cfg.alertMessageEnable)
@@ -474,6 +490,38 @@ void setDefaultMessages(MessageBundle& trackMessages, const DetectorConfiguratio
 		}
 		detailMsg = std::string("dragging equipment ") + (cfg.axleEnable ? "near " : "") + tmpMessage;
 		trackMessages.defects.emplace_back(alertMsg, displayMsg, detailMsg, cfg.defectDraggingEquipmentAxleRate);
+	}
+
+	if(cfg.defectHighLoadEnable)
+	{
+		if(cfg.alertMessageEnable)
+		{
+			alertMsg = std::string("#tone #track high load ") + (cfg.axleEnable ? "near " : "") + tmpMessage;
+			displayMsg = "#track \\High Load\\" + tmpMessage;
+		}
+		else
+		{
+			alertMsg = "";
+			displayMsg = "";
+		}
+		detailMsg = std::string("high load ") + (cfg.axleEnable ? "near " : "") + tmpMessage;
+		trackMessages.defects.emplace_back(alertMsg, displayMsg, detailMsg, cfg.defectHighLoadAxleRate);
+	}
+
+	if(cfg.defectWideLoadEnable)
+	{
+		if(cfg.alertMessageEnable)
+		{
+			alertMsg = std::string("#tone #track wide load ") + (cfg.axleEnable ? "near " : "") + tmpMessage;
+			displayMsg = "#track \\Wide Load\\" + tmpMessage;
+		}
+		else
+		{
+			alertMsg = "";
+			displayMsg = "";
+		}
+		detailMsg = std::string("wide load ") + (cfg.axleEnable ? "near " : "") + tmpMessage;
+		trackMessages.defects.emplace_back(alertMsg, displayMsg, detailMsg, cfg.defectWideLoadAxleRate);
 	}
 
 	// Create Footer
