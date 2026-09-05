@@ -386,10 +386,6 @@ void DetectorStateMachine::update()
 					{
 						// Create and store detail message for listing later
 						transformMessage(msgs->defects[i].detailMsg, temporaryMsg, *cfg, *data, trackNum, true);
-						if(cfg->ordinalDefectList)
-						{
-							temporaryMsg.insert(0, getOrdinalWord(defectCount) + " ");
-						}
 						data->defects.push_back(temporaryMsg);
 					}
 					else if(defectCount == cfg->maxDefects + 1)
@@ -398,11 +394,8 @@ void DetectorStateMachine::update()
 						data->defects.push_back(msgs->excessAlarmsMsg);
 					}
 					
-					// Create display message
-					transformMessage(msgs->defects[i].displayMsg, temporaryMsg, *cfg, *data, trackNum, false);
-					
 					// Play alert message (and send along display message)
-					enqueueMessage(msgs->defects[i].alertMsg, temporaryMsg);
+					enqueueMessage(msgs->defects[i].alertMsg, msgs->defects[i].displayMsg);
 					break;
 				}
 			}
