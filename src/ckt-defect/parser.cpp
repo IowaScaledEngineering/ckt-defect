@@ -271,6 +271,10 @@ clrTestPoint(TP1);
 					}
 				}
 				break;
+
+			default:
+				parserState = PARSER_IDLE;
+				break;
 		}
 
 		if(killParser)

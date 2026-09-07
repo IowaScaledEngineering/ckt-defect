@@ -488,6 +488,10 @@ clrTestPoint(TP0);
 				oldSampleRate = 0;
 				playerState = PLAYER_IDLE;
 				break;
+			
+			default:
+				playerState = PLAYER_RESET;
+				break;
 		}
 
 		if(killPlayer)

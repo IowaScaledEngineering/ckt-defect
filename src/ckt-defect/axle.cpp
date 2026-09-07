@@ -85,6 +85,8 @@ void IRAM_ATTR axle_A1_isr(void *arg)
 		case AxleIsrState::COUNT_2:
 			exitDeltaMicros[0] = time - currentAxleTime[0];
 			break;
+		default:
+			axleIsrState[0] = AxleIsrState::IDLE;
 	}
 }
 
@@ -115,6 +117,8 @@ void IRAM_ATTR axle_A2_isr(void *arg)
 		case AxleIsrState::COUNT_1:
 			exitDeltaMicros[0] = time - currentAxleTime[0];
 			break;
+		default:
+			axleIsrState[0] = AxleIsrState::IDLE;
 	}
 }
 
@@ -145,6 +149,8 @@ void IRAM_ATTR axle_B1_isr(void *arg)
 		case AxleIsrState::COUNT_2:
 			exitDeltaMicros[1] = time - currentAxleTime[1];
 			break;
+		default:
+			axleIsrState[1] = AxleIsrState::IDLE;
 	}
 }
 
@@ -175,6 +181,8 @@ void IRAM_ATTR axle_B2_isr(void *arg)
 		case AxleIsrState::COUNT_1:
 			exitDeltaMicros[1] = time - currentAxleTime[1];
 			break;
+		default:
+			axleIsrState[1] = AxleIsrState::IDLE;
 	}
 }
 

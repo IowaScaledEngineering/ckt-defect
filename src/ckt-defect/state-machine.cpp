@@ -74,6 +74,9 @@ void IrStateMachine::update()
 				transitionTo(IrState::IDLE);
 			}
 			break;
+		default:
+			transitionTo(IrState::IDLE);
+			break;
 	}
 }
 
@@ -138,6 +141,9 @@ void AxleStateMachine::update()
 		case AxleState::TIMEOUT:
 			data->totalAxles = data->axleCount;
 			transitionTo(AxleState::RESET);
+			break;
+		default:
+			transitionTo(AxleState::IDLE);
 			break;
 	}
 }
@@ -463,6 +469,9 @@ void DetectorStateMachine::update()
 			{
 				transitionTo(DetectorState::RESET);
 			}
+			break;
+		default:
+			transitionTo(DetectorState::IDLE);
 			break;
 			
 	}
