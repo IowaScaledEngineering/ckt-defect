@@ -30,7 +30,7 @@ void MenuHome::onEnter()
 	disp->createCustomChar(0, bulb);
 }
 
-void MenuHome::renderHomeUI(const std::string& statusText, bool showLightButton)
+void MenuHome::renderHomeUI(const std::string& statusText, bool showLightButton, bool showRepeatButton)
 {
 	TemperatureManager* tempMgr = TemperatureManager::getInstance();
 	std::string tmpString1;
@@ -66,6 +66,17 @@ void MenuHome::renderHomeUI(const std::string& statusText, bool showLightButton)
 	else
 	{
 		disp->print("    "); // Clear out the lower-left corner if needed
+	}
+
+	// 5. Repeat button prompt (ONLY shown if explicitly enabled and a stored message exists)
+	disp->gotoxy(6, 3);
+	if (showRepeatButton && !data->lastSpokenMsg.empty())
+	{
+		disp->print("RPT ");
+	}
+	else
+	{
+		disp->print("    ");
 	}
 }
 
@@ -138,7 +149,7 @@ MenuEvent MenuHome::update()
 	switch(state)
 	{
 		case MenuHomeState::STANDBY:
-			renderHomeUI("STANDBY", true);
+			renderHomeUI("STANDBY", true, true); // Allow RPT in STANDBY
 
 			if(active)
 			{
@@ -149,7 +160,7 @@ MenuEvent MenuHome::update()
 
 		case MenuHomeState::ACTIVE:
 			backlightState = true;
-			renderHomeUI("ACTIVE", false);
+			renderHomeUI("ACTIVE", false, false); // Suppress RPT in ACTIVE
 
 			dispString = getDisplayMessage();
 			if(!dispString.empty())
@@ -194,6 +205,17 @@ MenuEvent MenuHome::update()
 		case MenuHomeState::WAIT:
 			renderMessage(lastDisplayedMessage);
 
+			// Draw RPT button prompt at coords (6, 3) for button 2 during WAIT
+			disp->gotoxy(6, 3);
+			if (!data->lastSpokenMsg.empty())
+			{
+				disp->print("RPT ");
+			}
+			else
+			{
+				disp->print("    ");
+			}
+
 			if( (millis() - waitStartTime) >= (cfg.exitDisplayTimeout * 1000) )
 			{
 				backlightState = false;
@@ -223,7 +245,7 @@ MenuEvent MenuHome::update()
 		{
 			switch(ev.keyNum)
 			{
-				case 1: // Toggle Backlight
+				case 1: // Toggle Backlight (STANDBY)
 					if(MenuHomeState::STANDBY == state)
 					{
 						if(delayBacklightOff)
@@ -231,6 +253,20 @@ MenuEvent MenuHome::update()
 						else
 							backlightState = !backlightState;
 						delayBacklightOff = false;  // Force immediate change
+					}
+					break;
+
+				case 2: // Repeat Message (STANDBY or WAIT)
+					if(MenuHomeState::STANDBY == state || MenuHomeState::WAIT == state)
+					{
+						if(!data->lastSpokenMsg.empty())
+						{
+							ParserObject* obj = new ParserObject();
+							obj->msg = data->lastSpokenMsg;
+							parserQueuePush(obj);
+
+							waitStartTime = millis(); // Reset wait timer on repeat press
+						}
 					}
 					break;
 
@@ -456,4 +492,3 @@ MenuEvent MenuVocabTest::update()
 
 	return MenuEvent::NOOP;
 }
-

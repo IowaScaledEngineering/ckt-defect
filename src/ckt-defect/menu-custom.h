@@ -25,7 +25,7 @@ class MenuHome : public Menu
 		const DetectorConfiguration &cfg;
 		DataBundle* data;
 		MenuHomeState state;
-		void renderHomeUI(const std::string& statusText, bool showLightButton);
+		void renderHomeUI(const std::string& statusText, bool showLightButton, bool showRepeatButton);
 		void renderMessage(const std::string& message);
 		std::string dispString;
 		std::string lastDisplayedMessage;

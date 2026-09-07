@@ -182,6 +182,9 @@ void DetectorStateMachine::enqueueMessageInternal(const std::string& spokenMsg, 
 	transformMessage(spokenMsg, obj->msg, *cfg, *data, trackNum, true);
 	toLowercase(obj->msg);  // lowercase before parsing
 
+	// Save pre-transformed spoken message for RPT playback
+	data->lastSpokenMsg = obj->msg;
+
 	// Conditional display message processing
 	if (dispMsg != nullptr)
 	{
