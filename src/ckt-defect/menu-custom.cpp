@@ -216,7 +216,7 @@ MenuEvent MenuHome::update()
 				disp->print("    ");
 			}
 
-			if( (millis() - waitStartTime) >= (cfg.exitDisplayTimeout * 1000) )
+			if( (millis() - waitStartTime) >= (cfg.summaryDisplayTime * 1000) )
 			{
 				backlightState = false;
 				backlightDelayStartTime = millis();

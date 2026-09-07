@@ -590,7 +590,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	// Timing
 	auto menuTimingConfig = std::make_shared<MenuListSelector>("Timing");
 	auto menuDetectorTimeout = std::make_shared<MenuNumberDial>(
-		"Exit Timeout",
+		"Detector Timeout",
 		&cfg.detectorTimeout,
 		false,
 		2,   // min
@@ -599,9 +599,19 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		"sec",
 		[&cfg]() { saveConfiguration(&cfg); }
 	);
-	auto menuExitDisplayTimeout = std::make_shared<MenuNumberDial>(
-		"Summary Display",
-		&cfg.exitDisplayTimeout,
+	auto menuSummaryDisplayTime = std::make_shared<MenuNumberDial>(
+		"Summary Disp Time",
+		&cfg.summaryDisplayTime,
+		false,
+		2,   // min
+		60,  // max
+		1,   // step
+		"sec",
+		[&cfg]() { saveConfiguration(&cfg); }
+	);
+	auto menuMsgRepeatTimeout = std::make_shared<MenuNumberDial>(
+		"Msg Repeat Timeout",
+		&cfg.msgRepeatTimeout,
 		false,
 		2,   // min
 		60,  // max
@@ -785,7 +795,8 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 
 	mainSel->addChild(menuTimingConfig);
 	menuTimingConfig->addChild(menuDetectorTimeout);
-	menuTimingConfig->addChild(menuExitDisplayTimeout);
+	menuTimingConfig->addChild(menuSummaryDisplayTime);
+	menuTimingConfig->addChild(menuMsgRepeatTimeout);
 
 	mainSel->addChild(menuAudio);
 	menuAudio->addChild(menuVolume);

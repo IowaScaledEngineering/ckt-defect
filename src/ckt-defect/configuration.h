@@ -64,7 +64,8 @@ struct DetectorConfiguration {
 
 	// Other
 	uint8_t detectorTimeout;      // Units = seconds
-	uint8_t exitDisplayTimeout;   // Units = seconds
+	uint8_t summaryDisplayTime;   // Units = seconds
+	uint8_t msgRepeatTimeout;     // Units = seconds
 
 	// Temperature
 	bool temperatureEnable;

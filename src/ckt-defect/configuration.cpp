@@ -50,7 +50,8 @@ LICENSE:
 #define SPEED_SCALE_DEFAULT               871
 
 #define DETECTOR_TIMEOUT_DEFAULT          5
-#define EXIT_DISPLAY_TIMEOUT_DEFAULT      7
+#define SUMMARY_DISPLAY_TIME_DEFAULT      7
+#define MSG_REPEAT_TIMEOUT_DEFAULT        15
 
 #define TEMPERATURE_EN_DEFAULT            true
 #define TEMPERATURE_REAL_DEFAULT          true
@@ -151,7 +152,8 @@ void loadConfiguration(DetectorConfiguration* cfg)
 
 	// Other
 	cfg->detectorTimeout = preferences.getUChar("detTo", DETECTOR_TIMEOUT_DEFAULT);
-	cfg->exitDisplayTimeout = preferences.getUChar("exitTo", EXIT_DISPLAY_TIMEOUT_DEFAULT);
+	cfg->summaryDisplayTime = preferences.getUChar("sumDispTime", SUMMARY_DISPLAY_TIME_DEFAULT);
+	cfg->msgRepeatTimeout = preferences.getUChar("msgRepTo", MSG_REPEAT_TIMEOUT_DEFAULT);
 
 	// Temperature
 	cfg->temperatureEnable = preferences.getBool("tmpEn", TEMPERATURE_EN_DEFAULT);
@@ -292,8 +294,11 @@ void saveConfiguration(DetectorConfiguration* cfg)
 	if(cfg->detectorTimeout != preferences.getUChar("detTo", DETECTOR_TIMEOUT_DEFAULT))
 		preferences.putUChar("detTo", cfg->detectorTimeout);
 
-	if(cfg->exitDisplayTimeout != preferences.getUChar("exitTo", EXIT_DISPLAY_TIMEOUT_DEFAULT))
-		preferences.putUChar("exitTo", cfg->exitDisplayTimeout);
+	if(cfg->summaryDisplayTime != preferences.getUChar("sumDispTime", SUMMARY_DISPLAY_TIME_DEFAULT))
+		preferences.putUChar("sumDispTime", cfg->summaryDisplayTime);
+
+	if(cfg->msgRepeatTimeout != preferences.getUChar("msgRepTo", MSG_REPEAT_TIMEOUT_DEFAULT))
+		preferences.putUChar("msgRepTo", cfg->msgRepeatTimeout);
 
 	// Temperature
 	if(cfg->temperatureEnable != preferences.getBool("tmpEn", TEMPERATURE_EN_DEFAULT))
@@ -470,8 +475,11 @@ void printConfiguration(DetectorConfiguration* cfg)
 	Serial.print("Detector Timeout: ");
 	Serial.println(cfg->detectorTimeout);
 
-	Serial.print("Exit Display Timeout: ");
-	Serial.println(cfg->exitDisplayTimeout);
+	Serial.print("Summary Display Time: ");
+	Serial.println(cfg->summaryDisplayTime);
+
+	Serial.print("Message Repeat Timeout: ");
+	Serial.println(cfg->msgRepeatTimeout);
 
 	Serial.print("Temperature Enable: ");
 	Serial.println(cfg->temperatureEnable);
