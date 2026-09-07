@@ -41,7 +41,7 @@ enum class AxleIsrState
 	COUNT_2,
 };
 
-volatile AxleIsrState axleIsrState[NUM_TRACKS];
+volatile AxleIsrState axleIsrState[NUM_TRACKS] = { AxleIsrState::IDLE, AxleIsrState::IDLE };
 
 /*
    ISR Notes:
@@ -180,6 +180,11 @@ void IRAM_ATTR axle_B2_isr(void *arg)
 
 void axleInit()
 {
+	for (uint32_t i = 0; i < NUM_TRACKS; i++)
+	{
+		axleReset(i);
+	}
+
 	gpio_install_isr_service(0);
 	gpio_isr_handler_add(AXLE_A1, axle_A1_isr, NULL);
 	gpio_isr_handler_add(AXLE_A2, axle_A2_isr, NULL);
@@ -217,6 +222,7 @@ uint8_t axleGetDirection(uint32_t track)
 void axleReset(uint32_t track)
 {
 	axleCount[track] = 0;
+	firstAxleTime[track] = 0;
 	currentAxleTime[track] = 0;
 	entranceDeltaMicros[track] = 0;
 	exitDeltaMicros[track] = 0;

@@ -546,8 +546,6 @@ void loop()
 	audioInit();
 	parserInit();
 	axleInit();
-	axleReset(0);
-	axleReset(1);
 
 	audioUnmute();
 
