@@ -203,6 +203,12 @@ MenuEvent MenuHome::update()
 			}
 
 			break;
+		
+		default:
+			// In case we get lost...
+			state = MenuHomeState::STANDBY;
+			break;
+		
 	}
 
 

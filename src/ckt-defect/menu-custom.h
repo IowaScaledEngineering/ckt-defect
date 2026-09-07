@@ -31,7 +31,7 @@ class MenuHome : public Menu
 		std::string lastDisplayedMessage;
 	public:
 		MenuHome(const std::string &n, const DetectorConfiguration &c, DataBundle* d) 
-			: Menu(n), cfg(c), data(d) {}
+			: Menu(n), cfg(c), data(d) { state = MenuHomeState::STANDBY; }
 		void onEnter() override;
 		MenuEvent update() override;
 };
