@@ -512,3 +512,76 @@ MenuEvent MenuVocabTest::update()
 
 	return MenuEvent::NOOP;
 }
+
+void MenuReset::onEnter()
+{
+	Menu::onEnter(); // Clear display and reset button states
+	pressCount = 0;
+}
+
+MenuEvent MenuReset::update()
+{
+	disp->backlightOn();
+
+	// Line 0 (Row 0): Menu Name
+	disp->gotoxy(0, 0);
+	disp->print(menuName);
+
+	// Line 1 (Row 1): Instruction prompt centered
+	disp->gotoxy(0, 1);
+	disp->print("Press left button 5");
+	disp->gotoxy(0, 2);
+	disp->print("times to reset");
+
+	// Line 3 (Row 3): Count indicator on leftmost button and BACK
+	disp->gotoxy(2, 3);
+	std::string countStr = std::to_string(5 - pressCount);
+	disp->print(countStr.c_str());
+
+	disp->gotoxy(16, 3);
+	disp->print("BACK");
+
+	DisplayEvent ev;
+	if (getMenuInputEvent(&ev))
+	{
+		if (ev.type == DisplayEventType::KEY_PRESS)
+		{
+			switch (ev.keyNum)
+			{
+				case 1: // Leftmost Button
+					handleButtonPress(1);
+					pressCount++;
+					if (pressCount >= 5)
+					{
+						resetConfiguration();
+
+						// Display reset message
+						disp->gotoxy(0, 1);
+						disp->print(centerString("Resetting...", 20).c_str());
+						disp->gotoxy(0, 2);
+						disp->print("                    ");
+
+						// Clear button label to DONE
+						disp->gotoxy(0, 3);
+						disp->print("     ");
+
+						// Force watchdog reset via infinite loop
+						while (1)
+						{
+							// Hold execution until watchdog triggers system reset
+						}
+					}
+					break;
+
+				case 4: // Button 4: BACK
+					return MenuEvent::BACK;
+			}
+		}
+		else if (ev.type == DisplayEventType::KEY_RELEASE)
+		{
+			handleButtonRelease(ev.keyNum);
+		}
+	}
+
+	return MenuEvent::NOOP;
+}

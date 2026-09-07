@@ -80,3 +80,15 @@ public:
     MenuEvent update() override;
 };
 
+class MenuReset : public Menu
+{
+private:
+    uint8_t pressCount = 0;
+
+public:
+    MenuReset(const std::string &name)
+        : Menu(name) {}
+
+    void onEnter() override;
+    MenuEvent update() override;
+};
