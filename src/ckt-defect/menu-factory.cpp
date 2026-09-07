@@ -7,141 +7,141 @@
 #include "menu-custom.h"
 #include "audio.h"
 
-struct ManagedMenus {
-	std::shared_ptr<Menu> milepost;
-	std::shared_ptr<Menu> trackNameA;
-	std::shared_ptr<Menu> trackNameB;
-	std::shared_ptr<Menu> minAxles;
-	std::shared_ptr<Menu> entranceAxles;
-	std::shared_ptr<Menu> speedConfig;
-	std::shared_ptr<Menu> speedUnits;
-	std::shared_ptr<Menu> speedType;
-	std::shared_ptr<Menu> minSpeed;
-	std::shared_ptr<Menu> tempUnits;
-	std::shared_ptr<Menu> tempType;
-	std::shared_ptr<Menu> minTemp;
-	std::shared_ptr<Menu> maxTemp;
-	std::shared_ptr<Menu> directionName1;
-	std::shared_ptr<Menu> directionName2;
-	std::shared_ptr<Menu> railName;
-	std::shared_ptr<Menu> hotJournalRate;
-	std::shared_ptr<Menu> hotWheelRate;
-	std::shared_ptr<Menu> highImpactWheelRate;
-	std::shared_ptr<Menu> draggingEquipmentRate;
-	std::shared_ptr<Menu> highLoadRate;
-	std::shared_ptr<Menu> wideLoadRate;
-};
+namespace {
+// File-scoped menu references restricted to this translation unit
+std::shared_ptr<Menu> menuMilepost;
+std::shared_ptr<Menu> menuTrackNameA;
+std::shared_ptr<Menu> menuTrackNameB;
+std::shared_ptr<Menu> menuMinAxles;
+std::shared_ptr<Menu> menuEntranceAxles;
+std::shared_ptr<Menu> menuSpeedUnits;
+std::shared_ptr<Menu> menuSpeedType;
+std::shared_ptr<Menu> menuMinSpeed;
+std::shared_ptr<Menu> menuTemperatureUnits;
+std::shared_ptr<Menu> menuTemperatureType;
+std::shared_ptr<Menu> menuMinTemperature;
+std::shared_ptr<Menu> menuMaxTemperature;
+std::shared_ptr<Menu> menuDirectionName1;
+std::shared_ptr<Menu> menuDirectionName2;
+std::shared_ptr<Menu> menuRailName;
+std::shared_ptr<Menu> menuHotJournalRate;
+std::shared_ptr<Menu> menuHotWheelRate;
+std::shared_ptr<Menu> menuHighImpactWheelRate;
+std::shared_ptr<Menu> menuDraggingEquipmentRate;
+std::shared_ptr<Menu> menuHighLoadRate;
+std::shared_ptr<Menu> menuWideLoadRate;
+} // namespace
 
-void updateAllMenuVisibility(const DetectorConfiguration &cfg, const ManagedMenus &menus)
+void updateAllMenuVisibility(const DetectorConfiguration &cfg)
 {
 	// Milepost Visibility
-	if (cfg.milepostEnable) { if (menus.milepost) menus.milepost->unhide(); }
-	else                    { if (menus.milepost) menus.milepost->hide(); }
+	if (cfg.milepostEnable) { if (menuMilepost) menuMilepost->unhide(); }
+	else                    { if (menuMilepost) menuMilepost->hide(); }
 
 	// Track Name Visibility
 	if (cfg.trackNameEnable) {
-		if (menus.trackNameA) menus.trackNameA->unhide();
-		if (menus.trackNameB) menus.trackNameB->unhide();
+		if (menuTrackNameA) menuTrackNameA->unhide();
+		if (menuTrackNameB) menuTrackNameB->unhide();
 	} else {
-		if (menus.trackNameA) menus.trackNameA->hide();
-		if (menus.trackNameB) menus.trackNameB->hide();
+		if (menuTrackNameA) menuTrackNameA->hide();
+		if (menuTrackNameB) menuTrackNameB->hide();
 	}
 
 	// Axle Config Visibility & Child Menu Item Visibility
 	if (cfg.axleEnable) {
-		if (menus.minAxles)      menus.minAxles->unhide();      
-		if (menus.entranceAxles) menus.entranceAxles->unhide();
+		if (menuMinAxles)      menuMinAxles->unhide();      
+		if (menuEntranceAxles) menuEntranceAxles->unhide();
 	} else {
-		if (menus.minAxles)      menus.minAxles->hide();        
-		if (menus.entranceAxles) menus.entranceAxles->hide();
+		if (menuMinAxles)      menuMinAxles->hide();        
+		if (menuEntranceAxles) menuEntranceAxles->hide();
 	}
 
 	// Individual Speed Item Visibilities 
 	if (cfg.speedEnable) {
-		if (menus.speedUnits)   menus.speedUnits->unhide();
-		if (menus.speedType)   menus.speedType->unhide();
-		if (menus.minSpeed)    menus.minSpeed->unhide();      
+		if (menuSpeedUnits)   menuSpeedUnits->unhide();
+		if (menuSpeedType)    menuSpeedType->unhide();
+		if (menuMinSpeed)     menuMinSpeed->unhide();      
 	} else {
-		if (menus.speedUnits)   menus.speedUnits->hide();
-		if (menus.speedType)   menus.speedType->hide();
-		if (menus.minSpeed)    menus.minSpeed->hide();
+		if (menuSpeedUnits)   menuSpeedUnits->hide();
+		if (menuSpeedType)    menuSpeedType->hide();
+		if (menuMinSpeed)     menuMinSpeed->hide();
 	}
 
 	// Temperature
-	if(cfg.temperatureEnable)
+	if (cfg.temperatureEnable)
 	{
-		if(menus.tempUnits) menus.tempUnits->unhide();
-		if(menus.tempType)  menus.tempType->unhide();
-		if(!cfg.temperatureReal)
+		if (menuTemperatureUnits) menuTemperatureUnits->unhide();
+		if (menuTemperatureType)  menuTemperatureType->unhide();
+		if (!cfg.temperatureReal)
 		{
-			if(menus.minTemp)   menus.minTemp->unhide();
-			if(menus.maxTemp)   menus.maxTemp->unhide();
+			if (menuMinTemperature) menuMinTemperature->unhide();
+			if (menuMaxTemperature) menuMaxTemperature->unhide();
 		}
 		else
 		{
-			if(menus.minTemp)   menus.minTemp->hide();
-			if(menus.maxTemp)   menus.maxTemp->hide();
+			if (menuMinTemperature) menuMinTemperature->hide();
+			if (menuMaxTemperature) menuMaxTemperature->hide();
 		}
 	}
 	else
 	{
-		if(menus.tempUnits) menus.tempUnits->hide();
-		if(menus.tempType)  menus.tempType->hide();
-		if(menus.minTemp)   menus.minTemp->hide();
-		if(menus.maxTemp)   menus.maxTemp->hide();
+		if (menuTemperatureUnits) menuTemperatureUnits->hide();
+		if (menuTemperatureType)  menuTemperatureType->hide();
+		if (menuMinTemperature)   menuMinTemperature->hide();
+		if (menuMaxTemperature)   menuMaxTemperature->hide();
 	}
 
 	// Direction Visibility
 	if (cfg.directionEnable) {
-		if (menus.directionName1) menus.directionName1->unhide();
-		if (menus.directionName2) menus.directionName2->unhide();
+		if (menuDirectionName1) menuDirectionName1->unhide();
+		if (menuDirectionName2) menuDirectionName2->unhide();
 	} else {
-		if (menus.directionName1) menus.directionName1->hide();
-		if (menus.directionName2) menus.directionName2->hide();
+		if (menuDirectionName1) menuDirectionName1->hide();
+		if (menuDirectionName2) menuDirectionName2->hide();
 	}
 
 	// Rail Name Visibility
 	if (cfg.railNameEnable) {
-		if (menus.railName) menus.railName->unhide();
+		if (menuRailName) menuRailName->unhide();
 	} else {
-		if (menus.railName) menus.railName->hide();
+		if (menuRailName) menuRailName->hide();
 	}
 
 	// Defect Rate Visibilities
 	if (cfg.defectHotJournalEnable) {
-		if (menus.hotJournalRate) menus.hotJournalRate->unhide();
+		if (menuHotJournalRate) menuHotJournalRate->unhide();
 	} else {
-		if (menus.hotJournalRate) menus.hotJournalRate->hide();
+		if (menuHotJournalRate) menuHotJournalRate->hide();
 	}
 
 	if (cfg.defectHotWheelEnable) {
-		if (menus.hotWheelRate) menus.hotWheelRate->unhide();
+		if (menuHotWheelRate) menuHotWheelRate->unhide();
 	} else {
-		if (menus.hotWheelRate) menus.hotWheelRate->hide();
+		if (menuHotWheelRate) menuHotWheelRate->hide();
 	}
 
 	if (cfg.defectHighImpactWheelEnable) {
-		if (menus.highImpactWheelRate) menus.highImpactWheelRate->unhide();
+		if (menuHighImpactWheelRate) menuHighImpactWheelRate->unhide();
 	} else {
-		if (menus.highImpactWheelRate) menus.highImpactWheelRate->hide();
+		if (menuHighImpactWheelRate) menuHighImpactWheelRate->hide();
 	}
 
 	if (cfg.defectDraggingEquipmentEnable) {
-		if (menus.draggingEquipmentRate) menus.draggingEquipmentRate->unhide();
+		if (menuDraggingEquipmentRate) menuDraggingEquipmentRate->unhide();
 	} else {
-		if (menus.draggingEquipmentRate) menus.draggingEquipmentRate->hide();
+		if (menuDraggingEquipmentRate) menuDraggingEquipmentRate->hide();
 	}
 
 	if (cfg.defectHighLoadEnable) {
-		if (menus.highLoadRate) menus.highLoadRate->unhide();
+		if (menuHighLoadRate) menuHighLoadRate->unhide();
 	} else {
-		if (menus.highLoadRate) menus.highLoadRate->hide();
+		if (menuHighLoadRate) menuHighLoadRate->hide();
 	}
 
 	if (cfg.defectWideLoadEnable) {
-		if (menus.wideLoadRate) menus.wideLoadRate->unhide();
+		if (menuWideLoadRate) menuWideLoadRate->unhide();
 	} else {
-		if (menus.wideLoadRate) menus.wideLoadRate->hide();
+		if (menuWideLoadRate) menuWideLoadRate->hide();
 	}
 }
 
@@ -152,10 +152,6 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	auto mainSel = std::make_shared<MenuListSelector>("Main");
 	home->addChild(mainSel);
 
-	// ==========================================
-	// Non-Toggle Menu Objects
-	// ==========================================
-
 	// Milepost
 	auto menuMilepostConfig = std::make_shared<MenuListSelector>("Milepost");
 	auto menuMilepostEn = std::make_shared<MenuBoolSelector>(
@@ -165,7 +161,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		"On", "ON", 
 		"Off", "OFF"
 	);
-	auto menuMilepost = std::make_shared<MenuDigitThumbwheel>(
+	menuMilepost = std::make_shared<MenuDigitThumbwheel>(
 		"Milepost",
 		&cfg.milepost,
 		false,
@@ -184,7 +180,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		"On", "ON", 
 		"Off", "OFF"
 	);
-	auto menuTrackNameA = std::make_shared<MenuOptionSelector>(
+	menuTrackNameA = std::make_shared<MenuOptionSelector>(
 		"Track A Name", 
 		&cfg.trackNameId[0],
 		false,
@@ -192,7 +188,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		[&cfg]() { saveConfiguration(&cfg); updateTrackNames(&cfg); }
 	);
 
-	auto menuTrackNameB = std::make_shared<MenuOptionSelector>(
+	menuTrackNameB = std::make_shared<MenuOptionSelector>(
 		"Track B Name", 
 		&cfg.trackNameId[1],
 		false,
@@ -209,23 +205,23 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		"On", "ON", 
 		"Off", "OFF"
 	);
-	auto menuEntranceAxles = std::make_shared<MenuNumberDial>(
+	menuEntranceAxles = std::make_shared<MenuNumberDial>(
 		"Entrance Axles",
 		&cfg.entranceAxles,
 		false,
 		0,   // min
 		10,  // max
-		1,   //step
+		1,   // step
 		"",
 		[&cfg]() { saveConfiguration(&cfg); }
 	);
-	auto menuMinAxles = std::make_shared<MenuNumberDial>(
+	menuMinAxles = std::make_shared<MenuNumberDial>(
 		"Minimum Axles",
 		&cfg.minAxles,
 		false,
 		0,   // min
-		100,  // max
-		1,   //step
+		100, // max
+		1,   // step
 		"",
 		[&cfg]() { saveConfiguration(&cfg); }
 	);
@@ -239,7 +235,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		"On", "ON", 
 		"Off", "OFF"
 	);
-	auto menuSpeedType = std::make_shared<MenuBoolSelector>(
+	menuSpeedType = std::make_shared<MenuBoolSelector>(
 		"Enter/Exit",
 		&cfg.speedTypeEnter,
 		false, 
@@ -247,23 +243,23 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		"Exit Speed", "EXIT", 
 		[&cfg]() { saveConfiguration(&cfg); }
 	);
-	auto menuMinSpeed = std::make_shared<MenuNumberDial>(
+	menuMinSpeed = std::make_shared<MenuNumberDial>(
 		"Minimum Speed",
 		&cfg.minSpeed,
 		false,
 		0,   // min
 		50,  // max
-		1,   //step
+		1,   // step
 		cfg.speedUnitsMph ? "mph" : "kph",
 		[&cfg]() { saveConfiguration(&cfg); }
 	);
-	auto menuSpeedUnits = std::make_shared<MenuBoolSelector>(  // Declare after menus that need units updated
+	menuSpeedUnits = std::make_shared<MenuBoolSelector>(
 		"Units",
 		&cfg.speedUnitsMph,
 		false, 
 		"Miles/Hour", "MPH",
 		"Kilometers/Hour", "KPH", 
-		[&cfg, menuMinSpeed]() { saveConfiguration(&cfg); menuMinSpeed->setUnits(cfg.speedUnitsMph ? "mph" : "kph"); }
+		[&cfg]() { saveConfiguration(&cfg); std::static_pointer_cast<MenuNumberDial>(menuMinSpeed)->setUnits(cfg.speedUnitsMph ? "mph" : "kph"); }
 	);
 	auto menuSpeedScale = std::make_shared<MenuDigitThumbwheel>(
 		"Speed Scale",
@@ -284,14 +280,14 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		"On", "ON", 
 		"Off", "OFF"
 	);
-	auto menuDirectionName1 = std::make_shared<MenuOptionSelector>(
+	menuDirectionName1 = std::make_shared<MenuOptionSelector>(
 		"Direction 1 Name", 
 		&cfg.direction1NameId,
 		false,
 		directionNames,
 		[&cfg]() { saveConfiguration(&cfg); updateDirectionNames(&cfg); }
 	);
-	auto menuDirectionName2 = std::make_shared<MenuOptionSelector>(
+	menuDirectionName2 = std::make_shared<MenuOptionSelector>(
 		"Direction 2 Name", 
 		&cfg.direction2NameId,
 		false,
@@ -322,7 +318,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		"On", "ON", 
 		"Off", "OFF"
 	);
-	auto menuRailName = std::make_shared<MenuOptionSelector>(
+	menuRailName = std::make_shared<MenuOptionSelector>(
 		"Rail Name", 
 		&cfg.railNameId,
 		false,
@@ -342,7 +338,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		"On", "ON",
 		"Off", "OFF"
 	);
-	auto menuHotJournalRate = std::make_shared<MenuDigitThumbwheel>(
+	menuHotJournalRate = std::make_shared<MenuDigitThumbwheel>(
 		"Axle Rate",
 		&cfg.defectHotJournalAxleRate,
 		false,
@@ -367,7 +363,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		"On", "ON",
 		"Off", "OFF"
 	);
-	auto menuHotWheelRate = std::make_shared<MenuDigitThumbwheel>(
+	menuHotWheelRate = std::make_shared<MenuDigitThumbwheel>(
 		"Axle Rate",
 		&cfg.defectHotWheelAxleRate,
 		false,
@@ -392,7 +388,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		"On", "ON",
 		"Off", "OFF"
 	);
-	auto menuHighImpactWheelRate = std::make_shared<MenuDigitThumbwheel>(
+	menuHighImpactWheelRate = std::make_shared<MenuDigitThumbwheel>(
 		"Axle Rate",
 		&cfg.defectHighImpactWheelAxleRate,
 		false,
@@ -417,7 +413,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		"On", "ON",
 		"Off", "OFF"
 	);
-	auto menuDraggingEquipmentRate = std::make_shared<MenuDigitThumbwheel>(
+	menuDraggingEquipmentRate = std::make_shared<MenuDigitThumbwheel>(
 		"Axle Rate",
 		&cfg.defectDraggingEquipmentAxleRate,
 		false,
@@ -442,7 +438,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		"On", "ON",
 		"Off", "OFF"
 	);
-	auto menuHighLoadRate = std::make_shared<MenuDigitThumbwheel>(
+	menuHighLoadRate = std::make_shared<MenuDigitThumbwheel>(
 		"Axle Rate",
 		&cfg.defectHighLoadAxleRate,
 		false,
@@ -467,7 +463,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		"On", "ON",
 		"Off", "OFF"
 	);
-	auto menuWideLoadRate = std::make_shared<MenuDigitThumbwheel>(
+	menuWideLoadRate = std::make_shared<MenuDigitThumbwheel>(
 		"Axle Rate",
 		&cfg.defectWideLoadAxleRate,
 		false,
@@ -515,8 +511,8 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		&cfg.maxDefects,
 		false,
 		1,   // min
-		9,  // max
-		1,   //step
+		9,   // max
+		1,   // step
 		"defects",
 		[&cfg]() { saveConfiguration(&cfg); }
 	);
@@ -537,7 +533,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		"On", "ON", 
 		"Off", "OFF"
 	);
-	auto menuTemperatureType = std::make_shared<MenuBoolSelector>(
+	menuTemperatureType = std::make_shared<MenuBoolSelector>(
 		"Real/Simulated",
 		&cfg.temperatureReal,
 		false, 
@@ -546,35 +542,39 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	);
 	std::string degF("\xDF" "F", 2);
 	std::string degC("\xDF" "C", 2);
-	auto menuMinTemperature = std::make_shared<MenuNumberDial>(
+	menuMinTemperature = std::make_shared<MenuNumberDial>(
 		"Minimum Temp",
 		[&cfg]() { return getMinTemperature(&cfg); },
 		[&cfg](int16_t val) { setMinTemperature(&cfg, val); },
 		false,
 		-99,   // min
 		150,  // max
-		1,   //step
+		1,    // step
 		cfg.temperatureUnitsF ? degF : degC,
 		[&cfg]() { saveConfiguration(&cfg); }
 	);
-	auto menuMaxTemperature = std::make_shared<MenuNumberDial>(
+	menuMaxTemperature = std::make_shared<MenuNumberDial>(
 		"Maximum Temp",
 		[&cfg]() { return getMaxTemperature(&cfg); },
 		[&cfg](int16_t val) { setMaxTemperature(&cfg, val); },
 		false,
 		-99,   // min
 		150,  // max
-		1,   //step
+		1,    // step
 		cfg.temperatureUnitsF ? degF : degC,
 		[&cfg]() { saveConfiguration(&cfg); }
 	);
-	auto menuTemperatureUnits = std::make_shared<MenuBoolSelector>(  // Declare after menus that need units updated
+	menuTemperatureUnits = std::make_shared<MenuBoolSelector>(
 		"Units",
 		&cfg.temperatureUnitsF,
 		false, 
 		"Fahrenheit", degF,
 		"Celsius", degC, 
-		[&cfg, menuMinTemperature, menuMaxTemperature, degF, degC]() { saveConfiguration(&cfg); menuMinTemperature->setUnits(cfg.temperatureUnitsF ? degF : degC); menuMaxTemperature->setUnits(cfg.temperatureUnitsF ? degF : degC); }
+		[&cfg, degF, degC]() {
+			saveConfiguration(&cfg);
+			std::static_pointer_cast<MenuNumberDial>(menuMinTemperature)->setUnits(cfg.temperatureUnitsF ? degF : degC);
+			std::static_pointer_cast<MenuNumberDial>(menuMaxTemperature)->setUnits(cfg.temperatureUnitsF ? degF : degC);
+		}
 	);
 
 	// Operation Mode
@@ -595,7 +595,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		false,
 		2,   // min
 		30,  // max
-		1,   //step
+		1,   // step
 		"sec",
 		[&cfg]() { saveConfiguration(&cfg); }
 	);
@@ -605,7 +605,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		false,
 		2,   // min
 		60,  // max
-		1,   //step
+		1,   // step
 		"sec",
 		[&cfg]() { saveConfiguration(&cfg); }
 	);
@@ -667,40 +667,28 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	auto menuDiagnostics = std::make_shared<MenuListSelector>("Diagnostics");
 	auto menuVocabTest = std::make_shared<MenuVocabTest>("Vocab Test");
 
-	// Package up all managed controls into our visibility group
-	ManagedMenus managed = {
-		menuMilepost, menuTrackNameA, menuTrackNameB, 
-		menuMinAxles, menuEntranceAxles,
-		menuSpeedConfig, menuSpeedUnits, menuSpeedType, menuMinSpeed,
-		menuTemperatureUnits, menuTemperatureType, menuMinTemperature, menuMaxTemperature,
-		menuDirectionName1, menuDirectionName2,
-		menuRailName,
-		menuHotJournalRate, menuHotWheelRate, menuHighImpactWheelRate,
-		menuDraggingEquipmentRate, menuHighLoadRate, menuWideLoadRate
-	};
-
 	// ==========================================
 	// Assign Button Callbacks
 	// ==========================================
-	menuMilepostEn->setSaveCallback([&cfg, managed]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg, managed); });
-	menuTrackNameEn->setSaveCallback([&cfg, managed]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg, managed); updateTrackNames(&cfg); });
-	menuAxleEn->setSaveCallback([&cfg, managed, &trackMessages]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg, managed); setDefaultMessages(trackMessages, cfg); });
-	menuSpeedEn->setSaveCallback([&cfg, managed, &trackMessages]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg, managed); setDefaultMessages(trackMessages, cfg); });
-	menuTemperatureEn->setSaveCallback([&cfg, managed]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg, managed); });
-	menuTemperatureType->setSaveCallback([&cfg, managed]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg, managed); });
-	menuDirectionEn->setSaveCallback([&cfg, managed]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg, managed); updateDirectionNames(&cfg); });
-	menuRailNameEn->setSaveCallback([&cfg, managed, &trackMessages]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg, managed); updateRailNames(&cfg); setDefaultMessages(trackMessages, cfg); });
+	menuMilepostEn->setSaveCallback([&cfg]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg); });
+	menuTrackNameEn->setSaveCallback([&cfg]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg); updateTrackNames(&cfg); });
+	menuAxleEn->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg); setDefaultMessages(trackMessages, cfg); });
+	menuSpeedEn->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg); setDefaultMessages(trackMessages, cfg); });
+	menuTemperatureEn->setSaveCallback([&cfg]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg); });
+	menuTemperatureType->setSaveCallback([&cfg]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg); });
+	menuDirectionEn->setSaveCallback([&cfg]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg); updateDirectionNames(&cfg); });
+	menuRailNameEn->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg); updateRailNames(&cfg); setDefaultMessages(trackMessages, cfg); });
 	menuEntranceMessage->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); setDefaultMessages(trackMessages, cfg); });
 	menuAlertMessage->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); setDefaultMessages(trackMessages, cfg); });
 	menuTalkDefectOnly->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); setDefaultMessages(trackMessages, cfg); });
 
 	// Defect Enable Callbacks
-	menuHotJournalEn->setSaveCallback([&cfg, managed, &trackMessages]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg, managed); setDefaultMessages(trackMessages, cfg); });
-	menuHotWheelEn->setSaveCallback([&cfg, managed, &trackMessages]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg, managed); setDefaultMessages(trackMessages, cfg); });
-	menuHighImpactWheelEn->setSaveCallback([&cfg, managed, &trackMessages]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg, managed); setDefaultMessages(trackMessages, cfg); });
-	menuDraggingEquipmentEn->setSaveCallback([&cfg, managed, &trackMessages]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg, managed); setDefaultMessages(trackMessages, cfg); });
-	menuHighLoadEn->setSaveCallback([&cfg, managed, &trackMessages]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg, managed); setDefaultMessages(trackMessages, cfg); });
-	menuWideLoadEn->setSaveCallback([&cfg, managed, &trackMessages]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg, managed); setDefaultMessages(trackMessages, cfg); });
+	menuHotJournalEn->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg); setDefaultMessages(trackMessages, cfg); });
+	menuHotWheelEn->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg); setDefaultMessages(trackMessages, cfg); });
+	menuHighImpactWheelEn->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg); setDefaultMessages(trackMessages, cfg); });
+	menuDraggingEquipmentEn->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg); setDefaultMessages(trackMessages, cfg); });
+	menuHighLoadEn->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg); setDefaultMessages(trackMessages, cfg); });
+	menuWideLoadEn->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg); setDefaultMessages(trackMessages, cfg); });
 
 	// Trigger 1 and Trigger 2 mutual-exclusion callbacks
 	menuTriggerDir1->setSaveCallback([&cfg]() {
@@ -811,7 +799,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	mainSel->addChild(menuDiagnostics);
 	menuDiagnostics->addChild(menuVocabTest);
 
-	updateAllMenuVisibility(cfg, managed);
+	updateAllMenuVisibility(cfg);
 	
 	return home;
 }
