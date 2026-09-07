@@ -1,3 +1,6 @@
 #!/bin/bash
 
-g++ -O2 -std=c++17 -I. test_messages.cpp common.cpp messages.cpp -o test_messages && ./test_messages
+# c++ standard from $HOME/.arduino15/packages/esp32/tools/esp32s2-libs/3.3.7/flags/cpp_flags
+
+#g++ -O2 -std=c++17 -I. test_messages.cpp common.cpp messages.cpp -o test_messages && ./test_messages
+g++ -O2 -std=gnu++2b -I. test_messages.cpp common.cpp messages.cpp -o test_messages && ./test_messages

@@ -1,6 +1,13 @@
 #pragma once
 #include <iostream>
 #include <string>
+#include <cstdarg>
+#include <cstdio>
+#include <cstdint>
+
+// FreeRTOS Mock Stubs
+inline uint32_t uxTaskGetStackHighWaterMark(void*) { return 4096; }
+inline uint32_t xPortGetFreeHeapSize(void) { return 128000; }
 
 // Simulating Arduino Serial Object
 class MockSerial {
@@ -9,6 +16,14 @@ public:
     void print(int n) { std::cout << n; }
     void println(const char* s) { std::cout << s << "\n"; }
     void println(int n) { std::cout << n << "\n"; }
+
+    // Implement printf for MockSerial
+    void printf(const char* format, ...) {
+        va_list args;
+        va_start(args, format);
+        vprintf(format, args);
+        va_end(args);
+    }
 };
 extern MockSerial Serial;
 
