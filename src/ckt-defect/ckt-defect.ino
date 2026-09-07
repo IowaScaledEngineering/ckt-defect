@@ -319,16 +319,6 @@ void loop()
 
 	TemperatureManager temperatureMgr(&cfg);
 	unsigned long temperatureUpdateTime = millis();
-	
-/*
-	uint8_t state = 255;  // Start in default
-	uint8_t returnState = 0;
-	ParserObject obj;
-	std::string* msg;
-	std::string* msgPtr;
-	unsigned long startTime;
-	unsigned long axleTime = millis();
-*/
 
 	bool sdCardInserted = false;
 	unsigned long sdDetectTime = 0;
@@ -514,30 +504,12 @@ void loop()
 	printMemoryUsage();
 	printNVSStats();
 
-	Serial.print("Random Number: ");
-	Serial.println(rollDice());
-	Serial.print('\n');
-
-
-
-
 	// Print configuration values
 	Serial.print('\n');
 	printMessages(&trackMessages);
 	Serial.print('\n');
 	printConfiguration(&cfg);
 	Serial.print('\n');
-	
-
-
-
-
-
-
-
-
-
-
 
 	esp_task_wdt_reset();
 
