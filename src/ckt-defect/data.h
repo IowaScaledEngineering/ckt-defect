@@ -35,6 +35,7 @@ struct DataBundle {
 
 	// Saved pre-transformed spoken message for RPT button playback
 	std::string lastSpokenMsg;
+	unsigned long lastSpokenMsgTime;
 
 	//  Inter-state machine communication
 	bool irDetect = false;

@@ -51,7 +51,7 @@ LICENSE:
 
 #define DETECTOR_TIMEOUT_DEFAULT          5
 #define SUMMARY_DISPLAY_TIME_DEFAULT      7
-#define MSG_REPEAT_TIMEOUT_DEFAULT        15
+#define MSG_REPEAT_TIMEOUT_DEFAULT        30
 
 #define TEMPERATURE_EN_DEFAULT            true
 #define TEMPERATURE_REAL_DEFAULT          true

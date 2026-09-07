@@ -68,9 +68,15 @@ void MenuHome::renderHomeUI(const std::string& statusText, bool showLightButton,
 		disp->print("    "); // Clear out the lower-left corner if needed
 	}
 
-	// 5. Repeat button prompt (ONLY shown if explicitly enabled and a stored message exists)
+	// 5. Repeat button prompt (ONLY shown if message exists and timeout has not expired)
 	disp->gotoxy(6, 3);
-	if (showRepeatButton && !data->lastSpokenMsg.empty())
+	bool repeatValid = !data->lastSpokenMsg.empty();
+	if (cfg.msgRepeatTimeout > 0 && (millis() - data->lastSpokenMsgTime) >= (cfg.msgRepeatTimeout * 1000U))
+	{
+		repeatValid = false;
+	}
+
+	if (showRepeatButton && repeatValid)
 	{
 		disp->print("RPT ");
 	}
@@ -149,7 +155,7 @@ MenuEvent MenuHome::update()
 	switch(state)
 	{
 		case MenuHomeState::STANDBY:
-			renderHomeUI("STANDBY", true, true); // Allow RPT in STANDBY
+			renderHomeUI("STANDBY", true, true); // Allow RPT in STANDBY (if within timeout)
 
 			if(active)
 			{
@@ -206,6 +212,7 @@ MenuEvent MenuHome::update()
 			renderMessage(lastDisplayedMessage);
 
 			// Draw RPT button prompt at coords (6, 3) for button 2 during WAIT
+			// Timeout does not apply during WAIT; only check if message exists
 			disp->gotoxy(6, 3);
 			if (!data->lastSpokenMsg.empty())
 			{
@@ -221,6 +228,7 @@ MenuEvent MenuHome::update()
 				backlightState = false;
 				backlightDelayStartTime = millis();
 				delayBacklightOff = true;
+				data->lastSpokenMsgTime = millis(); // Set repeat timeout timestamp upon entering STANDBY
 				state = MenuHomeState::STANDBY;
 			}
 
@@ -259,13 +267,25 @@ MenuEvent MenuHome::update()
 				case 2: // Repeat Message (STANDBY or WAIT)
 					if(MenuHomeState::STANDBY == state || MenuHomeState::WAIT == state)
 					{
-						if(!data->lastSpokenMsg.empty())
+						bool repeatValid = !data->lastSpokenMsg.empty();
+
+						// Apply timeout check ONLY when in STANDBY mode
+						if(MenuHomeState::STANDBY == state)
+						{
+							if(cfg.msgRepeatTimeout > 0 && (millis() - data->lastSpokenMsgTime) >= (cfg.msgRepeatTimeout * 1000U))
+							{
+								repeatValid = false;
+							}
+						}
+
+						if(repeatValid)
 						{
 							ParserObject* obj = new ParserObject();
 							obj->msg = data->lastSpokenMsg;
 							parserQueuePush(obj);
 
 							waitStartTime = millis(); // Reset wait timer on repeat press
+							data->lastSpokenMsgTime = millis(); // Reset repeat timeout timer
 						}
 					}
 					break;
