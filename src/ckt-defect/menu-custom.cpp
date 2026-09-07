@@ -555,21 +555,19 @@ MenuEvent MenuReset::update()
 					{
 						resetConfiguration();
 
-						// Display reset message
+						// Display reset message and clear buttons
 						disp->gotoxy(0, 1);
-						disp->print(centerString("Resetting...", 20).c_str());
+						disp->print("                    ");
 						disp->gotoxy(0, 2);
+						disp->print(centerString("Resetting...", 20).c_str());
+						disp->gotoxy(0, 3);
 						disp->print("                    ");
 
-						// Clear button label to DONE
-						disp->gotoxy(0, 3);
-						disp->print("     ");
+						// Non-blocking wait for 2 seconds while yielding to watchdog/other tasks
+						vTaskDelay(pdMS_TO_TICKS(2000));
 
-						// Force watchdog reset via infinite loop
-						while (1)
-						{
-							// Hold execution until watchdog triggers system reset
-						}
+						// Trigger system restart
+						esp_restart();
 					}
 					break;
 
