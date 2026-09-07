@@ -1,0 +1,5 @@
+#!/bin/bash
+
+# c++ standard from $HOME/.arduino15/packages/esp32/tools/esp32s2-libs/3.3.7/flags/cpp_flags
+
+g++ -O2 -std=gnu++2b -I. display-term.cpp -o display-term
