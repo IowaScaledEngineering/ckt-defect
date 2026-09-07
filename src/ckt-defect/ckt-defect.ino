@@ -55,8 +55,6 @@ LICENSE:
 // 3 sec watchdog 
 #define TWDT_TIMEOUT_MS    3000
 
-bool restart = false;
-
 struct WavData {
 	uint32_t sampleRate;
 	uint32_t wavDataSize;
@@ -695,9 +693,6 @@ clrTestPoint(TP2);
 					audioSetVolumeStep(cfg.volumeStep);
 					saveConfiguration(&cfg);
 					break;
-				case 'q':
-					restart = true;
-					break;
 				case '~':
 					Serial.print("Clearing preferences...");
 					resetConfiguration();
@@ -707,163 +702,6 @@ clrTestPoint(TP2);
 
 
 
-
-
-
-		// FIXME Send some test audio
-/*
-		switch(state)
-		{
-			case 0:
-//				data.temperature = 97;
-				data[0].defectAxle = 0;
-				data[0].totalAxles = 0;
-				data[0].speed = 0;
-				if(millis() - startTime >= 1000)
-					state++;
-				break;
-
-
-			case 1:
-				msgPtr = &trackMessages.entranceMsg;
-				Serial.print("Pre msg: ");
-				Serial.println(msgPtr->c_str());
-				msg = transformMessage(msgPtr, &cfg, &data[0], 0);
-				returnState = state + 1;
-				state = 100;
-				break;
-			case 2:
-				data[0].speed = 37;
-				if(millis() - startTime >= 10000)
-					state = 0;
-//					state++;
-				break;
-
-			case 3:
-				data[0].defectAxle = 29;
-				msgPtr = &trackMessages.defects[0].detailMsg;
-				msg = transformMessage(msgPtr, &cfg, &data[0], 0);
-				data[0].defects.emplace_back(*msg);
-				delete msg;
-				msgPtr = &trackMessages.defects[0].alertMsg;
-				Serial.print("Pre msg: ");
-				Serial.println(msgPtr->c_str());
-				msg = transformMessage(msgPtr, &cfg, &data[0], 0);
-				returnState = state + 1;
-				state = 100;
-				break;
-			case 4:
-				if(millis() - startTime >= 7000)
-					state++;
-				break;
-
-			case 5:
-				data[0].defectAxle = 108;
-				msgPtr = &trackMessages.defects[1].detailMsg;
-				msg = transformMessage(msgPtr, &cfg, &data[0], 0);
-				data[0].defects.emplace_back(*msg);
-				delete msg;
-				msgPtr = &trackMessages.defects[1].alertMsg;
-				Serial.print("Pre msg: ");
-				Serial.println(msgPtr->c_str());
-				msg = transformMessage(msgPtr, &cfg, &data[0], 0);
-				returnState = state + 1;
-				state = 100;
-				break;
-			case 6:
-				if(millis() - startTime >= 10000)
-					state++;
-				break;
-
-			case 7:
-				data[0].totalAxles = 184;
-				msgPtr = &trackMessages.exitDefectMsg;
-				Serial.print("Pre msg: ");
-				Serial.println(msgPtr->c_str());
-				msg = transformMessage(msgPtr, &cfg, &data[0], 0);
-				returnState = state + 1;
-				state = 100;
-				break;
-			case 8:
-				if(millis() - startTime >= 30000)
-					state++;
-				break;
-
-			case 9:
-				startTime = millis();
-				data[0].defects.clear();
-				state++;
-				break;
-			case 10:
-				if(millis() - startTime >= 1000)
-					state++;
-				break;
-			case 11:
-				Serial.println("Done.");
-				printMemoryUsage();
-				state = 0;
-				break;
-
-
-
-			case 100:
-				if(parserQueueEmpty())
-				{
-					startTime = millis();
-					printMemoryUsage();
-					obj.msg = msg;
-					obj.deleteWhenDone = true;
-					Serial.print("Sending msg: ");
-					Serial.println(obj.msg->c_str());
-					parserQueuePush(&obj);
-					state = returnState;
-				}
-				break;
-
-			case 255:
-			default:
-				startTime = millis();
-				state = 0;
-				break;
-		}
-*/
-
-/*
-		if(millis() - axleTime >= 1000)
-		{
-			// 87 * 1000000 * 3600 / 12 / 5280 = 4,943,182
-			axleTime = millis();
-			Serial.print("Axle Count A: ");
-			Serial.println(axleGetCount(0));
-			Serial.print("Entrance Delta A: ");
-			Serial.println(axleGetEntranceDeltaMicros(0));
-			Serial.print("Exit Delta A: ");
-			Serial.println(axleGetExitDeltaMicros(0));
-			Serial.print("Entrance Speed A: ");
-			if(axleGetEntranceDeltaMicros(0) > 0)
-				Serial.print((49431820)/(axleGetEntranceDeltaMicros(0))/10.0,1);
-			Serial.print('\n');
-			Serial.print("Exit Speed A: ");
-			if(axleGetExitDeltaMicros(0) > 0)
-				Serial.print((49431820)/(axleGetExitDeltaMicros(0))/10.0,1);
-			Serial.print('\n');
-			Serial.print("Axle Count B: ");
-			Serial.println(axleGetCount(1));
-			Serial.print("Entrance Delta B: ");
-			Serial.println(axleGetEntranceDeltaMicros(1));
-			Serial.print("Exit Delta B: ");
-			Serial.println(axleGetExitDeltaMicros(1));
-			Serial.print("Entrance Speed B: ");
-			if(axleGetEntranceDeltaMicros(1) > 0)
-				Serial.print((49431820)/(axleGetEntranceDeltaMicros(1))/10.0,1);
-			Serial.print('\n');
-			Serial.print("Exit Speed B: ");
-			if(axleGetExitDeltaMicros(1) > 0)
-				Serial.print((49431820)/(axleGetExitDeltaMicros(1))/10.0,1);
-			Serial.print('\n');
-			Serial.println("---");
-		}
-*/
 
 		if(sdCardInserted)
 		{
@@ -896,27 +734,6 @@ clrTestPoint(TP2);
 			{
 				sdDetectTime = millis();
 			}
-		}
-
-
-		if(restart)
-		{
-			restart = false;
-			Serial.print("\n*** Restarting ***\n\n");
-
-			//  Terminate the parser first, then the audio, due to queue dependencies
-			parserTerminate();
-			audioTerminate();
-			axleTerminate();
-
-			vocabDelete();
-			sfxDelete();
-			
-			// FIXME: Clean up menus
-
-			SD.end();
-
-			break;	// Restart the loop() function
 		}
 
 	}
