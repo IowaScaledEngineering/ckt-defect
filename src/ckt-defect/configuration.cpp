@@ -204,174 +204,176 @@ void saveConfiguration(DetectorConfiguration* cfg)
 
 	preferences.begin(PREF_NAMESPACE, false);  // Open in read-write mode
 
-	if(cfg->volumeStep != preferences.getUChar("vol", VOL_STEP_DEFAULT))
+	// Using inverted values as defaults forces
+	// preferences.get*() to return a non-matching value if the key does not exist in NVS yet.
+
+	if(cfg->volumeStep != preferences.getUChar("vol", ~cfg->volumeStep))
 		preferences.putUChar("vol", cfg->volumeStep);
 
-	if(cfg->noiseStep != preferences.getUChar("noise", NOISE_STEP_DEFAULT))
+	if(cfg->noiseStep != preferences.getUChar("noise", ~cfg->noiseStep))
 		preferences.putUChar("noise", cfg->noiseStep);
 
-	if(cfg->pttDelay != preferences.getUChar("pttDelay", PTT_DELAY_DEFAULT))
+	if(cfg->pttDelay != preferences.getUChar("pttDelay", ~cfg->pttDelay))
 		preferences.putUChar("pttDelay", cfg->pttDelay);
 
-	if(cfg->popcornStep != preferences.getUChar("popcorn", POPCORN_STEP_DEFAULT))
+	if(cfg->popcornStep != preferences.getUChar("popcorn", ~cfg->popcornStep))
 		preferences.putUChar("popcorn", cfg->popcornStep);
 
-	if(cfg->lcdBrightness != preferences.getUChar("lcd", LCD_BRIGHT_DEFAULT))
+	if(cfg->lcdBrightness != preferences.getUChar("lcd", ~cfg->lcdBrightness))
 		preferences.putUChar("lcd", cfg->lcdBrightness);
 
-	if(cfg->milepostEnable != preferences.getBool("mpEn", MILEPOST_EN_DEFAULT))
+	if(cfg->milepostEnable != preferences.getBool("mpEn", !cfg->milepostEnable))
 		preferences.putBool("mpEn", cfg->milepostEnable);
 
-	if(cfg->milepost != preferences.getUShort("mp", MILEPOST_DEFAULT))
+	if(cfg->milepost != preferences.getUShort("mp", ~cfg->milepost))
 		preferences.putUShort("mp", cfg->milepost);
 
-	if(cfg->trackNameEnable != preferences.getBool("trkNameEn", TRACK_NAME_EN_DEFAULT))
+	if(cfg->trackNameEnable != preferences.getBool("trkNameEn", !cfg->trackNameEnable))
 		preferences.putBool("trkNameEn", cfg->trackNameEnable);
 
 	for(uint32_t i=0; i<NUM_TRACKS; i++)
 	{
-		// Defensive check: Ensure memory configuration isn't corrupted out-of-bounds before saving
 		if (cfg->trackNameId[i] >= trackNames.size()) {
 			cfg->trackNameId[i] = 0; 
 		}
 
 		key = "trkNameId" + String(i);
-		if(cfg->trackNameId[i] != preferences.getUChar(key.c_str(), i))
+		if(cfg->trackNameId[i] != preferences.getUChar(key.c_str(), ~cfg->trackNameId[i]))
 			preferences.putUChar(key.c_str(), cfg->trackNameId[i]);
 	}
 
-	if(cfg->directionEnable != preferences.getBool("dirEn", DIRECTION_EN_DEFAULT))
+	if(cfg->directionEnable != preferences.getBool("dirEn", !cfg->directionEnable))
 		preferences.putBool("dirEn", cfg->directionEnable);
 
 	if (cfg->direction1NameId >= directionNames.size()) cfg->direction1NameId = 0;
-	if(cfg->direction1NameId != preferences.getUChar("dir1Id", 0))
+	if(cfg->direction1NameId != preferences.getUChar("dir1Id", ~cfg->direction1NameId))
 		preferences.putUChar("dir1Id", cfg->direction1NameId);
 
 	if (cfg->direction2NameId >= directionNames.size()) cfg->direction2NameId = 0;
-	if(cfg->direction2NameId != preferences.getUChar("dir2Id", 1))
+	if(cfg->direction2NameId != preferences.getUChar("dir2Id", ~cfg->direction2NameId))
 		preferences.putUChar("dir2Id", cfg->direction2NameId);
 
-	if(cfg->triggerDirection1Only != preferences.getBool("trigDir1", TRIGGER_DIR1_ONLY_DEFAULT))
+	if(cfg->triggerDirection1Only != preferences.getBool("trigDir1", !cfg->triggerDirection1Only))
 		preferences.putBool("trigDir1", cfg->triggerDirection1Only);
 
-	if(cfg->triggerDirection2Only != preferences.getBool("trigDir2", TRIGGER_DIR2_ONLY_DEFAULT))
+	if(cfg->triggerDirection2Only != preferences.getBool("trigDir2", !cfg->triggerDirection2Only))
 		preferences.putBool("trigDir2", cfg->triggerDirection2Only);
 
-	if(cfg->railNameEnable != preferences.getBool("railNameEn", RAIL_NAME_EN_DEFAULT))
+	if(cfg->railNameEnable != preferences.getBool("railNameEn", !cfg->railNameEnable))
 		preferences.putBool("railNameEn", cfg->railNameEnable);
 
 	if (cfg->railNameId >= railNames.size()) cfg->railNameId = 0;
-	if(cfg->railNameId != preferences.getUChar("railId", 0))
+	if(cfg->railNameId != preferences.getUChar("railId", ~cfg->railNameId))
 		preferences.putUChar("railId", cfg->railNameId);
 
 	// Axles
-	if(cfg->axleEnable != preferences.getBool("axleEn", AXLE_EN_DEFAULT))
+	if(cfg->axleEnable != preferences.getBool("axleEn", !cfg->axleEnable))
 		preferences.putBool("axleEn", cfg->axleEnable);
 
-	if(cfg->entranceAxles != preferences.getUShort("entAxle", ENTRANCE_AXLES_DEFAULT))
+	if(cfg->entranceAxles != preferences.getUShort("entAxle", ~cfg->entranceAxles))
 		preferences.putUShort("entAxle", cfg->entranceAxles);
 
-	if(cfg->minAxles != preferences.getUShort("minAxle", MIN_AXLES_DEFAULT))
+	if(cfg->minAxles != preferences.getUShort("minAxle", ~cfg->minAxles))
 		preferences.putUShort("minAxle", cfg->minAxles);
 
 	// Speed
-	if(cfg->speedEnable != preferences.getBool("spdEn", SPEED_EN_DEFAULT))
+	if(cfg->speedEnable != preferences.getBool("spdEn", !cfg->speedEnable))
 		preferences.putBool("spdEn", cfg->speedEnable);
 
-	if(cfg->speedUnitsMph != preferences.getBool("spdUnit", SPEED_UNITS_MPH_DEFAULT))
+	if(cfg->speedUnitsMph != preferences.getBool("spdUnit", !cfg->speedUnitsMph))
 		preferences.putBool("spdUnit", cfg->speedUnitsMph);
 
-	if(cfg->speedTypeEnter != preferences.getBool("spdTyp", SPEED_TYPE_ENTER_DEFAULT))
+	if(cfg->speedTypeEnter != preferences.getBool("spdTyp", !cfg->speedTypeEnter))
 		preferences.putBool("spdTyp", cfg->speedTypeEnter);
 
-	if(cfg->minSpeed != preferences.getUChar("minSpd", MIN_SPEED_DEFAULT))
+	if(cfg->minSpeed != preferences.getUChar("minSpd", ~cfg->minSpeed))
 		preferences.putUChar("minSpd", cfg->minSpeed);
 
-	if(cfg->speedScale != preferences.getUShort("spdScale", SPEED_SCALE_DEFAULT))
+	if(cfg->speedScale != preferences.getUShort("spdScale", ~cfg->speedScale))
 		preferences.putUShort("spdScale", cfg->speedScale);
 
 	// Other
-	if(cfg->detectorTimeout != preferences.getUChar("detTo", DETECTOR_TIMEOUT_DEFAULT))
+	if(cfg->detectorTimeout != preferences.getUChar("detTo", ~cfg->detectorTimeout))
 		preferences.putUChar("detTo", cfg->detectorTimeout);
 
-	if(cfg->summaryDisplayTime != preferences.getUChar("sumDispTime", SUMMARY_DISPLAY_TIME_DEFAULT))
+	if(cfg->summaryDisplayTime != preferences.getUChar("sumDispTime", ~cfg->summaryDisplayTime))
 		preferences.putUChar("sumDispTime", cfg->summaryDisplayTime);
 
-	if(cfg->msgRepeatTimeout != preferences.getUChar("msgRepTo", MSG_REPEAT_TIMEOUT_DEFAULT))
+	if(cfg->msgRepeatTimeout != preferences.getUChar("msgRepTo", ~cfg->msgRepeatTimeout))
 		preferences.putUChar("msgRepTo", cfg->msgRepeatTimeout);
 
 	// Temperature
-	if(cfg->temperatureEnable != preferences.getBool("tmpEn", TEMPERATURE_EN_DEFAULT))
+	if(cfg->temperatureEnable != preferences.getBool("tmpEn", !cfg->temperatureEnable))
 		preferences.putBool("tmpEn", cfg->temperatureEnable);
 
-	if(cfg->temperatureReal != preferences.getBool("tmpReal", TEMPERATURE_REAL_DEFAULT))
+	if(cfg->temperatureReal != preferences.getBool("tmpReal", !cfg->temperatureReal))
 		preferences.putBool("tmpReal", cfg->temperatureReal);
 
-	if(cfg->temperatureUnitsF != preferences.getBool("tmpUnitF", TEMPERATURE_UNITS_F_DEFAULT))
+	if(cfg->temperatureUnitsF != preferences.getBool("tmpUnitF", !cfg->temperatureUnitsF))
 		preferences.putBool("tmpUnitF", cfg->temperatureUnitsF);
 
-	if(cfg->minTemperatureC != preferences.getFloat("tmpMin", MIN_TEMPERATURE_DEFAULT))
+	if(cfg->minTemperatureC != preferences.getFloat("tmpMin", NAN))
 		preferences.putFloat("tmpMin", cfg->minTemperatureC);
 
-	if(cfg->maxTemperatureC != preferences.getFloat("tmpMax", MAX_TEMPERATURE_DEFAULT))
+	if(cfg->maxTemperatureC != preferences.getFloat("tmpMax", NAN))
 		preferences.putFloat("tmpMax", cfg->maxTemperatureC);
 
 	// Defects
-	if(cfg->defectHotJournalEnable != preferences.getBool("hjEn", DEFECT_HJ_EN_DEFAULT))
+	if(cfg->defectHotJournalEnable != preferences.getBool("hjEn", !cfg->defectHotJournalEnable))
 		preferences.putBool("hjEn", cfg->defectHotJournalEnable);
 
-	if(cfg->defectHotJournalAxleRate != preferences.getUInt("hjRate", DEFECT_HJ_RATE_DEFAULT))
+	if(cfg->defectHotJournalAxleRate != preferences.getUInt("hjRate", ~cfg->defectHotJournalAxleRate))
 		preferences.putUInt("hjRate", cfg->defectHotJournalAxleRate);
 
-	if(cfg->defectHotWheelEnable != preferences.getBool("hwEn", DEFECT_HW_EN_DEFAULT))
+	if(cfg->defectHotWheelEnable != preferences.getBool("hwEn", !cfg->defectHotWheelEnable))
 		preferences.putBool("hwEn", cfg->defectHotWheelEnable);
 
-	if(cfg->defectHotWheelAxleRate != preferences.getUInt("hwRate", DEFECT_HW_RATE_DEFAULT))
+	if(cfg->defectHotWheelAxleRate != preferences.getUInt("hwRate", ~cfg->defectHotWheelAxleRate))
 		preferences.putUInt("hwRate", cfg->defectHotWheelAxleRate);
 
-	if(cfg->defectHighImpactWheelEnable != preferences.getBool("hiwEn", DEFECT_HIW_EN_DEFAULT))
+	if(cfg->defectHighImpactWheelEnable != preferences.getBool("hiwEn", !cfg->defectHighImpactWheelEnable))
 		preferences.putBool("hiwEn", cfg->defectHighImpactWheelEnable);
 
-	if(cfg->defectHighImpactWheelAxleRate != preferences.getUInt("hiwRate", DEFECT_HIW_RATE_DEFAULT))
+	if(cfg->defectHighImpactWheelAxleRate != preferences.getUInt("hiwRate", ~cfg->defectHighImpactWheelAxleRate))
 		preferences.putUInt("hiwRate", cfg->defectHighImpactWheelAxleRate);
 
-	if(cfg->defectDraggingEquipmentEnable != preferences.getBool("deEn", DEFECT_DE_EN_DEFAULT))
+	if(cfg->defectDraggingEquipmentEnable != preferences.getBool("deEn", !cfg->defectDraggingEquipmentEnable))
 		preferences.putBool("deEn", cfg->defectDraggingEquipmentEnable);
 
-	if(cfg->defectDraggingEquipmentAxleRate != preferences.getUInt("deRate", DEFECT_DE_RATE_DEFAULT))
+	if(cfg->defectDraggingEquipmentAxleRate != preferences.getUInt("deRate", ~cfg->defectDraggingEquipmentAxleRate))
 		preferences.putUInt("deRate", cfg->defectDraggingEquipmentAxleRate);
 
-	if(cfg->defectHighLoadEnable != preferences.getBool("hlEn", DEFECT_HL_EN_DEFAULT))
+	if(cfg->defectHighLoadEnable != preferences.getBool("hlEn", !cfg->defectHighLoadEnable))
 		preferences.putBool("hlEn", cfg->defectHighLoadEnable);
 
-	if(cfg->defectHighLoadAxleRate != preferences.getUInt("hlRate", DEFECT_HL_RATE_DEFAULT))
+	if(cfg->defectHighLoadAxleRate != preferences.getUInt("hlRate", ~cfg->defectHighLoadAxleRate))
 		preferences.putUInt("hlRate", cfg->defectHighLoadAxleRate);
 
-	if(cfg->defectWideLoadEnable != preferences.getBool("wlEn", DEFECT_WL_EN_DEFAULT))
+	if(cfg->defectWideLoadEnable != preferences.getBool("wlEn", !cfg->defectWideLoadEnable))
 		preferences.putBool("wlEn", cfg->defectWideLoadEnable);
 
-	if(cfg->defectWideLoadAxleRate != preferences.getUInt("wlRate", DEFECT_WL_RATE_DEFAULT))
+	if(cfg->defectWideLoadAxleRate != preferences.getUInt("wlRate", ~cfg->defectWideLoadAxleRate))
 		preferences.putUInt("wlRate", cfg->defectWideLoadAxleRate);
 
 	// Messages
-	if(cfg->entranceMessageEnable != preferences.getBool("entMsgEn", ENTRANCE_MSG_EN_DEFAULT))
+	if(cfg->entranceMessageEnable != preferences.getBool("entMsgEn", !cfg->entranceMessageEnable))
 		preferences.putBool("entMsgEn", cfg->entranceMessageEnable);
 
-	if(cfg->alertMessageEnable != preferences.getBool("altMsgEn", ALERT_MSG_EN_DEFAULT))
+	if(cfg->alertMessageEnable != preferences.getBool("altMsgEn", !cfg->alertMessageEnable))
 		preferences.putBool("altMsgEn", cfg->alertMessageEnable);
 
-	if(cfg->talkOnDefectOnly != preferences.getBool("talkDefOnly", TALK_DEFECT_ONLY_DEFAULT))
+	if(cfg->talkOnDefectOnly != preferences.getBool("talkDefOnly", !cfg->talkOnDefectOnly))
 		preferences.putBool("talkDefOnly", cfg->talkOnDefectOnly);
 
 	// Exit Config
-	if(cfg->ordinalTypeId != preferences.getUChar("ordTypeId", ORDINAL_TYPE_ID_DEFAULT))
+	if(cfg->ordinalTypeId != preferences.getUChar("ordTypeId", ~cfg->ordinalTypeId))
 		preferences.putUChar("ordTypeId", cfg->ordinalTypeId);
 
-	if(cfg->maxDefects != preferences.getUChar("maxDef", MAX_DEFECTS_DEFAULT))
+	if(cfg->maxDefects != preferences.getUChar("maxDef", ~cfg->maxDefects))
 		preferences.putUChar("maxDef", cfg->maxDefects);
 
 	// Operation Mode
-	if(cfg->infrastructureMode != preferences.getBool("infra", INFRASTRUCTURE_MODE_DEFAULT))
+	if(cfg->infrastructureMode != preferences.getBool("infra", !cfg->infrastructureMode))
 		preferences.putBool("infra", cfg->infrastructureMode);
 
 	preferences.end();
