@@ -553,7 +553,10 @@ MenuEvent MenuReset::update()
 					pressCount++;
 					if (pressCount >= 5)
 					{
+						// FIXME: Force to non-SD card mode?
 						resetConfiguration();
+						loadConfiguration(&cfg);
+						saveConfiguration(&cfg);
 
 						// Display reset message and clear buttons
 						disp->gotoxy(0, 1);

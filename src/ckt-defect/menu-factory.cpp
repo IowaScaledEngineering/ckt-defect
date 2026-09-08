@@ -676,7 +676,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	// Diagnostic	
 	auto menuDiagnostics = std::make_shared<MenuListSelector>("Diagnostics");
 	auto menuVocabTest = std::make_shared<MenuVocabTest>("Vocab Test");
-	auto menuReset = std::make_shared<MenuReset>("Factory Reset");
+	auto menuReset = std::make_shared<MenuReset>("Factory Reset", cfg);
 
 	// ==========================================
 	// Assign Button Callbacks

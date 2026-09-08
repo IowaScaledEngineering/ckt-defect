@@ -84,10 +84,11 @@ class MenuReset : public Menu
 {
 private:
     uint8_t pressCount = 0;
+    DetectorConfiguration &cfg;
 
 public:
-    MenuReset(const std::string &name)
-        : Menu(name) {}
+    MenuReset(const std::string &name, DetectorConfiguration &c)
+        : Menu(name), cfg(c) {}
 
     void onEnter() override;
     MenuEvent update() override;
