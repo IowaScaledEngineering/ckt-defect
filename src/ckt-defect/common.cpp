@@ -24,6 +24,8 @@ LICENSE:
 #include <algorithm> // Required for std::transform
 #include <cctype>    // Required for std::tolower
 #include <format>
+#include <nvs.h>
+#include <nvs_flash.h>
 #include "bootloader_random.h"
 
 #include "common.h"
@@ -79,6 +81,30 @@ const std::vector<std::string> ordinalString = {   // Corresponds with oridinal 
 void printMemoryUsage(void)
 {
 	Serial.printf("\n[SYS]: stack: %u heap: %u\n\n", uxTaskGetStackHighWaterMark(NULL), xPortGetFreeHeapSize());
+}
+
+void printNVSStats(void)
+{
+	nvs_stats_t nvs_stats;
+	
+	// Get stats for the default "nvs" partition
+	esp_err_t err = nvs_get_stats(NULL, &nvs_stats);
+	
+	if (err == ESP_OK)
+	{
+		Serial.println("--- NVS Preferences Stats ---");
+		Serial.print("Used Entries: ");
+		Serial.println(nvs_stats.used_entries);
+		Serial.print("Free Entries: ");
+		Serial.println(nvs_stats.free_entries);
+		Serial.print("Total Entries: ");
+		Serial.println(nvs_stats.total_entries);
+		Serial.print('\n');
+	}
+	else
+	{
+		Serial.println("Failed to get NVS stats");
+	}
 }
 
 void toLowercase(std::string& str)

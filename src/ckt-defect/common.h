@@ -54,6 +54,7 @@ extern const std::vector<std::string> ordinalTypes;
 extern const std::vector<std::string> ordinalString;
 
 void printMemoryUsage(void);
+void printNVSStats(void);
 void toLowercase(std::string& str);
 std::string centerString(const std::string& text, int width = 20);
 std::string intToString(int32_t intVal, uint32_t integerDigits, uint32_t fractionalDigits);
