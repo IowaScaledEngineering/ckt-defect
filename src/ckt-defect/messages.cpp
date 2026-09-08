@@ -22,6 +22,9 @@ LICENSE:
 #include <Arduino.h>
 #include <cmath>
 #include <cstdlib>
+#include <sstream>
+#include <algorithm>
+#include <cctype>
 
 #include "common.h"
 #include "messages.h"
@@ -42,7 +45,7 @@ void printMessages(MessageBundle* msgs)
 		Serial.print(j);
 		Serial.print(": ");
 		Serial.println(msgs->defects[j].detailMsg.c_str());
-		Serial.print("Summary ");
+		Serial.print("Display ");
 		Serial.print(j);
 		Serial.print(": ");
 		Serial.print(msgs->defects[j].displayMsg.c_str());
@@ -588,3 +591,74 @@ void setDefaultMessages(MessageBundle& trackMessages, const DetectorConfiguratio
 	// Excessive Alarms Message
 	trackMessages.excessAlarmsMsg = "excessive alarms";
 }
+
+// Helper function to insert a unique string into a sorted vector safely on constrained memory
+static void insertUniqueSorted(std::vector<std::string>& vec, const std::string& word)
+{
+	auto it = std::lower_bound(vec.begin(), vec.end(), word);
+	if (it == vec.end() || *it != word)
+	{
+		vec.insert(it, word);
+	}
+}
+
+// Helper function to process words from an individual string field
+static void extractWordsFromString(const std::string& inputStr, std::vector<std::string>& uniqueWords)
+{
+	std::istringstream stream(inputStr);
+	std::string token;
+
+	while (stream >> token)
+	{
+		if (!token.empty() && token[0] == '#')
+		{
+			continue;
+		}
+
+		for (char& c : token)
+		{
+			c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+		}
+
+		insertUniqueSorted(uniqueWords, token);
+	}
+}
+
+std::vector<std::string> getUniqueWords(const MessageBundle& msgs)
+{
+	std::vector<std::string> uniqueWords;
+	uniqueWords.reserve(32);
+
+	// Pre-populate with single digits "0" through "9"
+	for (char c = '0'; c <= '9'; ++c)
+	{
+		insertUniqueSorted(uniqueWords, std::string(1, c));
+	}
+
+	insertUniqueSorted(uniqueWords, "point");
+	insertUniqueSorted(uniqueWords, "minus");
+	
+	extractWordsFromString(msgs.entranceMsg, uniqueWords);
+	extractWordsFromString(msgs.exitCleanMsg, uniqueWords);
+	//extractWordsFromString(msgs.exitCleanDisplayMsg, uniqueWords);
+	extractWordsFromString(msgs.exitDefectMsg, uniqueWords);
+	//extractWordsFromString(msgs.exitDefectDisplayMsg, uniqueWords);
+	extractWordsFromString(msgs.integrityMsg, uniqueWords);
+	//extractWordsFromString(msgs.integrityDisplayMsg, uniqueWords);
+	extractWordsFromString(msgs.tooSlowMsg, uniqueWords);
+	//extractWordsFromString(msgs.tooSlowDisplayMsg, uniqueWords);
+	extractWordsFromString(msgs.detectorBlockedMsg, uniqueWords);
+	//extractWordsFromString(msgs.detectorBlockedDisplayMsg, uniqueWords);
+	extractWordsFromString(msgs.excessAlarmsMsg, uniqueWords);
+
+	for (const auto& defect : msgs.defects)
+	{
+		extractWordsFromString(defect.alertMsg, uniqueWords);
+		extractWordsFromString(defect.detailMsg, uniqueWords);
+		//extractWordsFromString(defect.displayMsg, uniqueWords);
+	}
+
+	uniqueWords.shrink_to_fit();
+	return uniqueWords;
+}
+

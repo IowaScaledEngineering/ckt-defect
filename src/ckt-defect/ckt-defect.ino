@@ -485,6 +485,14 @@ void loop()
 	printConfiguration(&cfg);
 	Serial.print('\n');
 
+	std::vector<std::string> words = getUniqueWords(trackMessages);
+	Serial.println("--- Unique Words Found ---");
+	for (const auto& word : words)
+	{
+		Serial.println(word.c_str());
+	}
+	Serial.println("--------------------------");	
+
 	esp_task_wdt_reset();
 
 	audioInit();
