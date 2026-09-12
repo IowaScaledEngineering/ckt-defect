@@ -52,11 +52,11 @@ class MenuVolume : public Menu
 		           uint32_t maxBoostPercent,
 		           std::function<uint32_t()> getter,
 		           std::function<void(uint32_t)> setter, 
-		           std::function<void()> onSave = nullptr)
-		    : Menu(name), 
-		      stepSize(step > 0 ? step : 5), 
-		      allowOver(allowBoost), 
-		      maxPercent(allowBoost ? maxBoostPercent : 100)
+				   std::function<void()> onSave = nullptr)
+			: Menu(name), 
+			  stepSize(step > 0 ? step : 5), 
+			  allowOver(allowBoost), 
+			  maxPercent(allowBoost ? maxBoostPercent : 100)
 		{
 			getFunc32 = std::move(getter);
 			setFunc32 = std::move(setter);
@@ -70,26 +70,42 @@ class MenuVolume : public Menu
 class MenuVocabTest : public Menu
 {
 private:
-    size_t currentIndex;
+	size_t currentIndex;
 
 public:
-    MenuVocabTest(const std::string &name)
-        : Menu(name), currentIndex(0) {}
+	MenuVocabTest(const std::string &name)
+		: Menu(name), currentIndex(0) {}
 
-    void onEnter() override;
-    MenuEvent update() override;
+	void onEnter() override;
+	MenuEvent update() override;
 };
 
 class MenuReset : public Menu
 {
 private:
-    uint8_t pressCount = 0;
-    DetectorConfiguration &cfg;
+	uint8_t pressCount = 0;
+	DetectorConfiguration &cfg;
 
 public:
-    MenuReset(const std::string &name, DetectorConfiguration &c)
-        : Menu(name), cfg(c) {}
+	MenuReset(const std::string &name, DetectorConfiguration &c)
+		: Menu(name), cfg(c) {}
 
-    void onEnter() override;
-    MenuEvent update() override;
+	void onEnter() override;
+	MenuEvent update() override;
+};
+
+class MenuVocabSelect : public Menu
+{
+private:
+	DetectorConfiguration &cfg;
+	std::vector<std::string> options;
+	uint32_t currentVal = 0;
+	uint32_t topIndex = 0;
+
+public:
+	MenuVocabSelect(const std::string &name, DetectorConfiguration &c)
+		: Menu(name), cfg(c) {}
+
+	void onEnter() override;
+	MenuEvent update() override;
 };

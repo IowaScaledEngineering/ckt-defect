@@ -649,6 +649,8 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		audioSetPopcornStep,
 		[lcd, &cfg]() { cfg.popcornStep = audioGetPopcornStep(); saveConfiguration(&cfg); }
 	);
+
+	auto menuVocabSelect = std::make_shared<MenuVocabSelect>("Vocab Select", cfg);
 	
 	// System	
 	auto menuSysConfig = std::make_shared<MenuListSelector>("System");
@@ -803,6 +805,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	menuAudio->addChild(menuVolume);
 	menuAudio->addChild(menuNoise);
 	menuAudio->addChild(menuPopcorn);
+	menuAudio->addChild(menuVocabSelect);
 
 	mainSel->addChild(menuSysConfig);
 	menuSysConfig->addChild(menuBacklightLevel);

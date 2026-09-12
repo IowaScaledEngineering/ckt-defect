@@ -586,3 +586,128 @@ MenuEvent MenuReset::update()
 
 	return MenuEvent::NOOP;
 }
+
+void MenuVocabSelect::onEnter()
+{
+	Menu::onEnter();
+
+	// Build options list starting with Internal ("")
+	options.clear();
+	options.push_back(""); // Internal
+	options.insert(options.end(), cfg.vocabsAvailable.begin(), cfg.vocabsAvailable.end());
+
+	// Find initial index matching vocabInUse
+	currentVal = 0;
+	for (size_t i = 0; i < options.size(); i++)
+	{
+		if (options[i] == cfg.vocabInUse)
+		{
+			currentVal = static_cast<uint32_t>(i);
+			break;
+		}
+	}
+	originalVal = currentVal;
+	topIndex = 0;
+}
+
+MenuEvent MenuVocabSelect::update()
+{
+	disp->backlightOn();
+	disp->gotoxy(0, 0);
+	disp->print(menuName);
+
+	disp->gotoxy(1, 3);
+	disp->print("UP");
+	disp->gotoxy(6, 3);
+	disp->print("DOWN");
+	disp->gotoxy(11, 3);
+	disp->print("SAVE");
+	disp->gotoxy(16, 3);
+	disp->print("CNCL");
+
+	// Scroll management for 2 visible rows
+	if (currentVal < topIndex)
+	{
+		topIndex = currentVal;
+	}
+	else if (currentVal >= topIndex + 2)
+	{
+		topIndex = currentVal - 1;
+	}
+
+	if (options.size() <= 2)
+	{
+		topIndex = 0;
+	}
+	else if (topIndex > options.size() - 2)
+	{
+		topIndex = static_cast<uint32_t>(options.size() - 2);
+	}
+
+	// Render choices across lines 1 and 2
+	for (uint32_t i = 0; i < 2; i++)
+	{
+		uint32_t optIdx = topIndex + i;
+		disp->gotoxy(0, i + 1);
+
+		if (optIdx < options.size())
+		{
+			disp->print(currentVal == optIdx ? "[*] " : "[ ] ");
+			disp->gotoxy(4, i + 1);
+
+			// Get option name or default to "Internal"
+			std::string optionText = options[optIdx].empty() ? "Internal" : options[optIdx];
+			optionText = optionText.substr(0, 16);
+
+			disp->print(optionText);
+			
+			// Pad remaining characters on the line with spaces
+			int remaining = 16 - static_cast<int>(optionText.length());
+			if (remaining > 0)
+			{
+				disp->print(std::string(remaining, ' '));
+			}
+		}
+		else
+		{
+			disp->print("                    ");
+		}
+	}
+	
+	DisplayEvent ev;
+	if (getMenuInputEvent(&ev))
+	{
+		if (ev.type == DisplayEventType::KEY_PRESS)
+		{
+			switch (ev.keyNum)
+			{
+				case 1: // UP
+					if (currentVal > 0)
+						currentVal--;
+					handleButtonPress(1);
+					break;
+
+				case 2: // DOWN
+					if (currentVal < options.size() - 1)
+						currentVal++;
+					handleButtonPress(2);
+					break;
+
+				case 3: // SAVE
+					cfg.vocabInUse = options[currentVal];
+					saveConfiguration(&cfg);
+					return MenuEvent::BACK;
+
+				case 4: // CNCL
+					return MenuEvent::BACK;
+			}
+		}
+		else if (ev.type == DisplayEventType::KEY_RELEASE)
+		{
+			handleButtonRelease(ev.keyNum);
+		}
+	}
+
+	return MenuEvent::NOOP;
+}
+
