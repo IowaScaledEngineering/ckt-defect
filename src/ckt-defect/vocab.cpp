@@ -111,7 +111,6 @@ Sound* vocabGetWord(const uint32_t index)
 #include "vocab/include/fifth.h"
 #include "vocab/include/first.h"
 #include "vocab/include/fourth.h"
-#include "vocab/include/h.h"
 #include "vocab/include/have.h"
 #include "vocab/include/high.h"
 #include "vocab/include/hot.h"
@@ -119,7 +118,6 @@ Sound* vocabGetWord(const uint32_t index)
 #include "vocab/include/integrity.h"
 #include "vocab/include/journal.h"
 #include "vocab/include/left.h"
-#include "vocab/include/m.h"
 #include "vocab/include/main.h"
 #include "vocab/include/milepost.h"
 #include "vocab/include/minus.h"
@@ -129,7 +127,6 @@ Sound* vocabGetWord(const uint32_t index)
 #include "vocab/include/north.h"
 #include "vocab/include/northbound.h"
 #include "vocab/include/out.h"
-#include "vocab/include/p.h"
 #include "vocab/include/point.h"
 #include "vocab/include/rail.h"
 #include "vocab/include/repeat.h"
@@ -184,7 +181,6 @@ void loadInternalVocab(void)
 	vocab.push_back(new MemSound("fifth", vocab_fifth, vocab_fifth_len, 16000));
 	vocab.push_back(new MemSound("first", vocab_first, vocab_first_len, 16000));
 	vocab.push_back(new MemSound("fourth", vocab_fourth, vocab_fourth_len, 16000));
-	vocab.push_back(new MemSound("h", vocab_h, vocab_h_len, 16000));
 	vocab.push_back(new MemSound("have", vocab_have, vocab_have_len, 16000));
 	vocab.push_back(new MemSound("high", vocab_high, vocab_high_len, 16000));
 	vocab.push_back(new MemSound("hot", vocab_hot, vocab_hot_len, 16000));
@@ -192,7 +188,6 @@ void loadInternalVocab(void)
 	vocab.push_back(new MemSound("integrity", vocab_integrity, vocab_integrity_len, 16000));
 	vocab.push_back(new MemSound("journal", vocab_journal, vocab_journal_len, 16000));
 	vocab.push_back(new MemSound("left", vocab_left, vocab_left_len, 16000));
-	vocab.push_back(new MemSound("m", vocab_m, vocab_m_len, 16000));
 	vocab.push_back(new MemSound("main", vocab_main, vocab_main_len, 16000));
 	vocab.push_back(new MemSound("milepost", vocab_milepost, vocab_milepost_len, 16000));
 	vocab.push_back(new MemSound("minus", vocab_minus, vocab_minus_len, 16000));
@@ -202,7 +197,6 @@ void loadInternalVocab(void)
 	vocab.push_back(new MemSound("north", vocab_north, vocab_north_len, 16000));
 	vocab.push_back(new MemSound("northbound", vocab_northbound, vocab_northbound_len, 16000));
 	vocab.push_back(new MemSound("out", vocab_out, vocab_out_len, 16000));
-	vocab.push_back(new MemSound("p", vocab_p, vocab_p_len, 16000));
 	vocab.push_back(new MemSound("point", vocab_point, vocab_point_len, 16000));
 	vocab.push_back(new MemSound("rail", vocab_rail, vocab_rail_len, 16000));
 	vocab.push_back(new MemSound("repeat", vocab_repeat, vocab_repeat_len, 16000));
