@@ -443,7 +443,7 @@ void setDefaultMessages(MessageBundle& trackMessages, const DetectorConfiguratio
 			alertMsg = "";
 			displayMsg = "";
 		}
-		detailMsg = ordinalString[cfg.ordinalTypeId] + " hot journal " + tmpMessage;
+		detailMsg = ordinalStrings[cfg.ordinalTypeId] + " hot journal " + tmpMessage;
 		trackMessages.defects.emplace_back(alertMsg, displayMsg, detailMsg, cfg.defectHotJournalAxleRate);
 	}
 
@@ -459,7 +459,7 @@ void setDefaultMessages(MessageBundle& trackMessages, const DetectorConfiguratio
 			alertMsg = "";
 			displayMsg = "";
 		}
-		detailMsg = ordinalString[cfg.ordinalTypeId] + " hot wheel " + tmpMessage;
+		detailMsg = ordinalStrings[cfg.ordinalTypeId] + " hot wheel " + tmpMessage;
 		trackMessages.defects.emplace_back(alertMsg, displayMsg, detailMsg, cfg.defectHotWheelAxleRate);
 	}
 
@@ -475,7 +475,7 @@ void setDefaultMessages(MessageBundle& trackMessages, const DetectorConfiguratio
 			alertMsg = "";
 			displayMsg = "";
 		}
-		detailMsg = ordinalString[cfg.ordinalTypeId] + " high impact wheel detected " + tmpMessage;
+		detailMsg = ordinalStrings[cfg.ordinalTypeId] + " high impact wheel detected " + tmpMessage;
 		trackMessages.defects.emplace_back(alertMsg, displayMsg, detailMsg, cfg.defectHighImpactWheelAxleRate);
 	}
 
@@ -491,7 +491,7 @@ void setDefaultMessages(MessageBundle& trackMessages, const DetectorConfiguratio
 			alertMsg = "";
 			displayMsg = "";
 		}
-		detailMsg = ordinalString[cfg.ordinalTypeId] + std::string(" dragging equipment ") + (cfg.axleEnable ? "near " : "") + tmpMessage;
+		detailMsg = ordinalStrings[cfg.ordinalTypeId] + std::string(" dragging equipment ") + (cfg.axleEnable ? "near " : "") + tmpMessage;
 		trackMessages.defects.emplace_back(alertMsg, displayMsg, detailMsg, cfg.defectDraggingEquipmentAxleRate);
 	}
 
@@ -507,7 +507,7 @@ void setDefaultMessages(MessageBundle& trackMessages, const DetectorConfiguratio
 			alertMsg = "";
 			displayMsg = "";
 		}
-		detailMsg = ordinalString[cfg.ordinalTypeId] + " high load " + tmpMessage;
+		detailMsg = ordinalStrings[cfg.ordinalTypeId] + " high load " + tmpMessage;
 		trackMessages.defects.emplace_back(alertMsg, displayMsg, detailMsg, cfg.defectHighLoadAxleRate);
 	}
 
@@ -523,7 +523,7 @@ void setDefaultMessages(MessageBundle& trackMessages, const DetectorConfiguratio
 			alertMsg = "";
 			displayMsg = "";
 		}
-		detailMsg = ordinalString[cfg.ordinalTypeId] + " wide load " + tmpMessage;
+		detailMsg = ordinalStrings[cfg.ordinalTypeId] + " wide load " + tmpMessage;
 		trackMessages.defects.emplace_back(alertMsg, displayMsg, detailMsg, cfg.defectWideLoadAxleRate);
 	}
 
@@ -635,8 +635,17 @@ std::vector<std::string> getUniqueWords(const MessageBundle& msgs)
 		insertUniqueSorted(uniqueWords, std::string(1, c));
 	}
 
+	// Add other words needed by tokens
 	insertUniqueSorted(uniqueWords, "point");
 	insertUniqueSorted(uniqueWords, "minus");
+
+	// Ordinals
+	for (uint32_t i = 1; i < 10; ++i)
+	{
+		insertUniqueSorted(uniqueWords, getOrdinalWord(i));
+	}
+
+	// Track, Direction, Rail
 	
 	extractWordsFromString(msgs.entranceMsg, uniqueWords);
 	extractWordsFromString(msgs.exitCleanMsg, uniqueWords);

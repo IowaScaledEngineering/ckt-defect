@@ -67,7 +67,7 @@ const std::vector<std::string> ordinalTypes = {   // Corresponds with oridinal s
 	"Defect 1",
 };
 
-const std::vector<std::string> ordinalString = {   // Corresponds with oridinal type
+const std::vector<std::string> ordinalStrings = {   // Corresponds with oridinal type
 	"",
 	"#ord",
 	"#ord alarm",

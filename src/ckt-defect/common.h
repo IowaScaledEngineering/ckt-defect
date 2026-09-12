@@ -51,7 +51,7 @@ extern const std::vector<std::string> trackNames;
 extern const std::vector<std::string> directionNames;
 extern const std::vector<std::string> railNames;
 extern const std::vector<std::string> ordinalTypes;
-extern const std::vector<std::string> ordinalString;
+extern const std::vector<std::string> ordinalStrings;
 
 void printMemoryUsage(void);
 void printNVSStats(void);
