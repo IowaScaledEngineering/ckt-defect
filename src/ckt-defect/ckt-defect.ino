@@ -434,10 +434,15 @@ void loop()
 
 
 	// Check for external vocab
-	// FIXME
 	if(sdCardPresent)
 	{
+		// Needed regardless for selection menu
 		vocabFindAvailable(cfg);
+
+		// FIXME
+		// Check if configured vocab is present
+		// If so, load words
+		// Set externalVocabPresent = true if at least one word loaded
 	}
 	
 	
