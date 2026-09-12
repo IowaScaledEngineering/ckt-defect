@@ -22,6 +22,7 @@ LICENSE:
 #include <Arduino.h>
 #include <Preferences.h>
 #include <math.h>
+#include <string>
 
 #include "common.h"
 #include "configuration.h"
@@ -93,7 +94,7 @@ Preferences preferences;
 
 void loadConfiguration(DetectorConfiguration* cfg)
 {
-	String key;
+	std::string key;
 
 	preferences.begin(PREF_NAMESPACE, true);  // Open in read-only mode
 
@@ -110,7 +111,7 @@ void loadConfiguration(DetectorConfiguration* cfg)
 	cfg->trackNameEnable = preferences.getBool("trkNameEn", TRACK_NAME_EN_DEFAULT);
 	for(uint32_t i=0; i<NUM_TRACKS; i++)
 	{
-		key = "trkNameId" + String(i);
+		key = "trkNameId" + std::to_string(i);
 		uint8_t loadedId = preferences.getUChar(key.c_str(), i);
 		
 		// Bounds check protection against trackNames array size
@@ -196,8 +197,8 @@ void loadConfiguration(DetectorConfiguration* cfg)
 	cfg->infrastructureMode = preferences.getBool("infra", INFRASTRUCTURE_MODE_DEFAULT);
 
 	// Vocab
-	String loadedVocab = preferences.getString("vocabInUse", VOCAB_IN_USE_DEFAULT);
-	cfg->vocabInUse = loadedVocab.c_str();
+	String loadedVocab = preferences.getString("vocab", VOCAB_IN_USE_DEFAULT);
+	cfg->vocabSelected = loadedVocab.c_str();
 
 	preferences.end();
 }
@@ -206,7 +207,7 @@ void loadConfiguration(DetectorConfiguration* cfg)
 
 void saveConfiguration(DetectorConfiguration* cfg)
 {
-	String key;
+	std::string key;
 
 	preferences.begin(PREF_NAMESPACE, false);  // Open in read-write mode
 
@@ -243,7 +244,7 @@ void saveConfiguration(DetectorConfiguration* cfg)
 			cfg->trackNameId[i] = 0; 
 		}
 
-		key = "trkNameId" + String(i);
+		key = "trkNameId" + std::to_string(i);
 		if(cfg->trackNameId[i] != preferences.getUChar(key.c_str(), ~cfg->trackNameId[i]))
 			preferences.putUChar(key.c_str(), cfg->trackNameId[i]);
 	}
@@ -383,8 +384,9 @@ void saveConfiguration(DetectorConfiguration* cfg)
 		preferences.putBool("infra", cfg->infrastructureMode);
 
 	// Vocab
-	if(String(cfg->vocabInUse.c_str()) != preferences.getString("vocabInUse", (cfg->vocabInUse + "_").c_str()))
-		preferences.putString("vocabInUse", cfg->vocabInUse.c_str());
+	std::string storedVocab = preferences.getString("vocab", (cfg->vocabSelected + "_").c_str()).c_str();
+	if(cfg->vocabSelected != storedVocab)
+		preferences.putString("vocab", cfg->vocabSelected.c_str());
 
 	preferences.end();
 }
@@ -570,7 +572,7 @@ void printConfiguration(DetectorConfiguration* cfg)
 
 	// Vocab
 	Serial.print("Vocab In Use: ");
-	Serial.println(cfg->vocabInUse.c_str());
+	Serial.println(cfg->vocabSelected.c_str());
 }
 
 

@@ -603,11 +603,11 @@ void MenuVocabSelect::onEnter()
 	options.push_back(""); // Internal
 	options.insert(options.end(), cfg.vocabsAvailable.begin(), cfg.vocabsAvailable.end());
 
-	// Find initial index matching vocabInUse
+	// Find initial index matching vocabSelected
 	currentVal = 0;
 	for (size_t i = 0; i < options.size(); i++)
 	{
-		if (options[i] == cfg.vocabInUse)
+		if (options[i] == cfg.vocabSelected)
 		{
 			currentVal = static_cast<uint32_t>(i);
 			break;
@@ -701,7 +701,7 @@ MenuEvent MenuVocabSelect::update()
 					break;
 
 				case 3: // SAVE
-					cfg.vocabInUse = options[currentVal];
+					cfg.vocabSelected = options[currentVal];
 					saveConfiguration(&cfg);
 					restartWithDelay(2000, disp);
 					break;

@@ -101,7 +101,8 @@ struct DetectorConfiguration {
 	bool infrastructureMode;
 	
 	// Vocab
-	std::string vocabInUse;
+	bool externalVocabPresent;  // Volatile value, not stored in NVM
+	std::string vocabSelected;
 	std::vector<std::string> vocabsAvailable;  // Loaded at runtime, not stored in NVM
 };
 

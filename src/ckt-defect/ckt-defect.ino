@@ -289,7 +289,7 @@ void loop()
 
 	bool sdCardPresent = false;
 	bool configFilePresent = false;
-	bool externalVocabPresent = false;
+	cfg.externalVocabPresent = false;
 
 	TemperatureManager temperatureMgr(&cfg);
 	unsigned long temperatureUpdateTime = millis();
@@ -441,13 +441,28 @@ void loop()
 
 		// FIXME
 		// Check if configured vocab is present
-		// If so, load words
-		// Set externalVocabPresent = true if at least one word loaded
+		std::string vocabPath = "/vocab/" + cfg.vocabSelected;
+
+		File vocabDir = SD.open(vocabPath.c_str());
+		if (vocabDir && vocabDir.isDirectory())
+		{
+			// If so, load words
+			cfg.externalVocabPresent = true;
+		}
+		else
+		{
+			cfg.externalVocabPresent = false;
+		}
+
+		if (vocabDir)
+		{
+			vocabDir.close();
+		}
 	}
 	
 	
 	// If no SD vocab, load the internal ones
-	if(!externalVocabPresent)
+	if(!cfg.externalVocabPresent)
 	{
 		loadInternalVocab();
 	}
@@ -507,6 +522,10 @@ void loop()
 	}
 	Serial.println("--------------------------\n");
 
+	Serial.print("Vocab Selected: ");
+	Serial.println(cfg.vocabSelected.c_str());
+	Serial.print("External Vocab: ");
+	Serial.println(cfg.externalVocabPresent);
 
 	esp_task_wdt_reset();
 
