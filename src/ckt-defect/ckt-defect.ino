@@ -520,12 +520,13 @@ void loop()
 	{
 		Serial.println(v.c_str());
 	}
-	Serial.println("--------------------------\n");
+	Serial.println("--------------------------");
 
 	Serial.print("Vocab Selected: ");
 	Serial.println(cfg.vocabSelected.c_str());
 	Serial.print("External Vocab: ");
 	Serial.println(cfg.externalVocabPresent);
+	Serial.print('\n');
 
 	esp_task_wdt_reset();
 
