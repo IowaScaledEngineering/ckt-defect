@@ -492,15 +492,15 @@ void loop()
 	{
 		Serial.println(word.c_str());
 	}
-	Serial.println("--------------------------");	
+	Serial.println("--------------------------\n");
 
 
-	Serial.println("--- Vocabs Found ---");
+	Serial.println("------ Vocabs Found ------");
 	for (const auto& v : cfg.vocabsAvailable)
 	{
 		Serial.println(v.c_str());
 	}
-	Serial.println("--------------------");	
+	Serial.println("--------------------------\n");
 
 
 	esp_task_wdt_reset();
