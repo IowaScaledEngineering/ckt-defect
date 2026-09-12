@@ -99,6 +99,10 @@ struct DetectorConfiguration {
 
 	// Operation Mode
 	bool infrastructureMode;
+	
+	// Vocab
+	std::string vocabInUse;
+	std::vector<std::string> vocabsAvailable;  // Loaded at runtime, not stored in NVM
 };
 
 void loadConfiguration(DetectorConfiguration* cfg);

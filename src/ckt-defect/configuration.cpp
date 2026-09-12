@@ -85,6 +85,8 @@ LICENSE:
 
 #define INFRASTRUCTURE_MODE_DEFAULT       false
 
+#define VOCAB_IN_USE_DEFAULT              ""
+
 #define PREF_NAMESPACE   "defectdetector"
 
 Preferences preferences;
@@ -192,6 +194,10 @@ void loadConfiguration(DetectorConfiguration* cfg)
 
 	// Operation Mode
 	cfg->infrastructureMode = preferences.getBool("infra", INFRASTRUCTURE_MODE_DEFAULT);
+
+	// Vocab
+	String loadedVocab = preferences.getString("vocabInUse", VOCAB_IN_USE_DEFAULT);
+	cfg->vocabInUse = loadedVocab.c_str();
 
 	preferences.end();
 }
@@ -376,6 +382,10 @@ void saveConfiguration(DetectorConfiguration* cfg)
 	if(cfg->infrastructureMode != preferences.getBool("infra", !cfg->infrastructureMode))
 		preferences.putBool("infra", cfg->infrastructureMode);
 
+	// Vocab
+	if(String(cfg->vocabInUse.c_str()) != preferences.getString("vocabInUse", (cfg->vocabInUse + "_").c_str()))
+		preferences.putString("vocabInUse", cfg->vocabInUse.c_str());
+
 	preferences.end();
 }
 
@@ -551,11 +561,16 @@ void printConfiguration(DetectorConfiguration* cfg)
 	Serial.print("Max Defects: ");
 	Serial.println(cfg->maxDefects);
 
+	// Operation Mode
 	Serial.print("Operation Mode: ");
 	if(cfg->infrastructureMode)
 		Serial.println("Infrastructure");
 	else
 		Serial.println("Defect Detect");
+
+	// Vocab
+	Serial.print("Vocab In Use: ");
+	Serial.println(cfg->vocabInUse.c_str());
 }
 
 
