@@ -605,7 +605,17 @@ static void insertUniqueSorted(std::vector<std::string>& vec, const std::string&
 // Helper function to process words from an individual string field
 static void extractWordsFromString(const std::string& inputStr, std::vector<std::string>& uniqueWords)
 {
-	std::istringstream stream(inputStr);
+	// Convert '/' to spaces in a temporary copy of the input string
+	std::string modifiedStr = inputStr;
+	for (char& c : modifiedStr)
+	{
+		if (c == '/')
+		{
+			c = ' ';
+		}
+	}
+
+	std::istringstream stream(modifiedStr);
 	std::string token;
 
 	while (stream >> token)
@@ -644,9 +654,26 @@ std::vector<std::string> getUniqueWords(const MessageBundle& msgs)
 	{
 		insertUniqueSorted(uniqueWords, getOrdinalWord(i));
 	}
+	for (const auto& str : ordinalStrings)
+	{
+		extractWordsFromString(str, uniqueWords);
+	}
 
-	// Track, Direction, Rail
-	
+	// Track, Direction, Rail strings
+	for (const auto& str : trackNames)
+	{
+		extractWordsFromString(str, uniqueWords);
+	}
+	for (const auto& str : directionNames)
+	{
+		extractWordsFromString(str, uniqueWords);
+	}
+	for (const auto& str : railNames)
+	{
+		extractWordsFromString(str, uniqueWords);
+	}
+
+	// Messages (skip display since those words are never spoken)
 	extractWordsFromString(msgs.entranceMsg, uniqueWords);
 	extractWordsFromString(msgs.exitCleanMsg, uniqueWords);
 	//extractWordsFromString(msgs.exitCleanDisplayMsg, uniqueWords);
@@ -670,4 +697,3 @@ std::vector<std::string> getUniqueWords(const MessageBundle& msgs)
 	uniqueWords.shrink_to_fit();
 	return uniqueWords;
 }
-
