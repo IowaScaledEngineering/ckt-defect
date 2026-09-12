@@ -437,6 +437,7 @@ void loop()
 	// FIXME
 	if(sdCardPresent)
 	{
+		vocabFindAvailable(cfg);
 	}
 	
 	
@@ -492,6 +493,15 @@ void loop()
 		Serial.println(word.c_str());
 	}
 	Serial.println("--------------------------");	
+
+
+	Serial.println("--- Vocabs Found ---");
+	for (const auto& v : cfg.vocabsAvailable)
+	{
+		Serial.println(v.c_str());
+	}
+	Serial.println("--------------------");	
+
 
 	esp_task_wdt_reset();
 

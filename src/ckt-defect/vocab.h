@@ -22,6 +22,7 @@ LICENSE:
 #pragma once
 
 #include "sound.h"
+#include "configuration.h"
 
 void vocabDelete(void);
 size_t vocabGetSize(void);
@@ -30,3 +31,5 @@ Sound* vocabGetWord(const std::string& word);
 Sound* vocabGetWord(const uint32_t index);
 
 void loadInternalVocab(void);
+
+void vocabFindAvailable(DetectorConfiguration& cfg);

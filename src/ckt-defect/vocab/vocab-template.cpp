@@ -19,6 +19,14 @@ LICENSE:
 
 *************************************************************************/
 
+
+/***************  WARNING  ***************/
+/* This file is auto generated           */
+/* Edit vocab/vocab-template.cpp instead */
+/***************  WARNING  ***************/
+
+
+#include <SD.h>
 #include "vocab.h"
 
 std::vector<Sound *> vocab;
@@ -78,5 +86,41 @@ Sound* vocabGetWord(const uint32_t index)
 	{
 		return NULL;
 	}
+}
+
+void vocabFindAvailable(DetectorConfiguration& cfg)
+{
+	cfg.vocabsAvailable.clear();
+
+	File vocabDir = SD.open("/vocab");
+	if (!vocabDir || !vocabDir.isDirectory())
+	{
+		return;
+	}
+
+	File entry = vocabDir.openNextFile();
+	while (entry)
+	{
+		if (entry.isDirectory())
+		{
+			std::string entryName = entry.name();
+			
+			// Strip leading directory path if present
+			size_t lastSlash = entryName.find_last_of("/\\");
+			if (lastSlash != std::string::npos)
+			{
+				entryName = entryName.substr(lastSlash + 1);
+			}
+
+			if (!entryName.empty())
+			{
+				cfg.vocabsAvailable.push_back(entryName);
+			}
+		}
+		entry.close();
+		entry = vocabDir.openNextFile();
+	}
+	
+	vocabDir.close();
 }
 
