@@ -21,7 +21,6 @@ LICENSE:
 
 #include <Arduino.h>
 #include <SPI.h>
-#include <SD.h>
 #include <stdlib.h>
 #include "driver/i2s_std.h"
 #include "driver/gpio.h"
