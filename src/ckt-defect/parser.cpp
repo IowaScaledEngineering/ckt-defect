@@ -20,6 +20,7 @@ LICENSE:
 *************************************************************************/
 
 #include <Arduino.h>
+#include <cstdlib>
 #include <string_view>
 
 #include "common.h"
@@ -163,31 +164,25 @@ clrTestPoint(TP1);
 								}
 
 								// Convert decisecs
-								try
+								if(!str_decisecs.empty())
 								{
-									decisecs = std::stoi(std::string(str_decisecs));
-								}
-								catch (const std::invalid_argument& e)
-								{
-									// Do nothing, use defaults
-								}
-								catch (const std::out_of_range& e)
-								{
-									// Do nothing, use defaults
+									char* endptr = nullptr;
+									long val = std::strtol(std::string(str_decisecs).c_str(), &endptr, 10);
+									if(endptr != std::string(str_decisecs).c_str())
+									{
+										decisecs = static_cast<uint32_t>(val);
+									}
 								}
 
 								// Convert attenuation
-								try
+								if(!str_attenuation.empty())
 								{
-									attenuation = std::stoi(std::string(str_attenuation));
-								}
-								catch (const std::invalid_argument& e)
-								{
-									// Do nothing, use defaults
-								}
-								catch (const std::out_of_range& e)
-								{
-									// Do nothing, use defaults
+									char* endptr = nullptr;
+									long val = std::strtol(std::string(str_attenuation).c_str(), &endptr, 10);
+									if(endptr != std::string(str_attenuation).c_str())
+									{
+										attenuation = static_cast<uint32_t>(val);
+									}
 								}
 							}
 							wavSound.wav = new ToneSound(1600 * decisecs, 16000, attenuation);
@@ -204,17 +199,14 @@ clrTestPoint(TP1);
 								std::string_view str_decisecs = lookup_token.substr(pos + 1);
 
 								// Convert decisecs
-								try
+								if(!str_decisecs.empty())
 								{
-									decisecs = std::stoi(std::string(str_decisecs));
-								}
-								catch (const std::invalid_argument& e)
-								{
-									// Do nothing, use defaults
-								}
-								catch (const std::out_of_range& e)
-								{
-									// Do nothing, use defaults
+									char* endptr = nullptr;
+									long val = std::strtol(std::string(str_decisecs).c_str(), &endptr, 10);
+									if(endptr != std::string(str_decisecs).c_str())
+									{
+										decisecs = static_cast<uint32_t>(val);
+									}
 								}
 							}
 							wavSound.wav = new SilenceSound(1600 * decisecs, 16000);
