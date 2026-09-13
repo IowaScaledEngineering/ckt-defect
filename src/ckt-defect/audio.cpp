@@ -358,7 +358,9 @@ static void audioPump(void *args)
 			case PLAYER_INIT:
 				if(audioQueuePop(&wavSound))  // Should only get here when there is something in the queue, so portMAX_DELAY is fine
 				{
+setTestPoint(TP3);
 					wavSound.wav->open();         // Open the sound
+clrTestPoint(TP3);
 					if(wavSound.wav->getSampleRate() == oldSampleRate)
 						playerState = PLAYER_PLAY;
 					else

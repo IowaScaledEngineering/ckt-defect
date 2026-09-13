@@ -19,6 +19,7 @@ LICENSE:
 
 *************************************************************************/
 
+#include <cstring>
 #include "sound.h"
 
 int16_t sineWave[8] = {0, 12539, 23170, 30273, 32767, 30273, 23170, 12539};
@@ -89,10 +90,41 @@ SdSound::~SdSound()
 
 void SdSound::open(void)
 {
-	if (f_open(&wavFile, fileName.c_str(), FA_READ) == FR_OK)
+	if (startCluster != 0)
 	{
-		// Jump directly to the offset where the PCM data starts
-		f_lseek(&wavFile, dataOffset);
+		FATFS *fs = NULL;
+		DWORD fre_clust;
+
+		// Get the FATFS handle for volume "0:" directly from FatFs
+		if (f_getfree("0:", &fre_clust, &fs) == FR_OK && fs != NULL)
+		{
+			// Populate wavFile directly without directory traversal
+			memset(&wavFile, 0, sizeof(FIL));
+			wavFile.obj.fs = fs;
+			wavFile.obj.id = fs->id;
+			wavFile.obj.sclust = startCluster;
+			wavFile.obj.objsize = dataSize + dataOffset;
+			wavFile.flag = FA_READ;
+
+			// Fast-seek straight to the PCM payload offset
+			f_lseek(&wavFile, dataOffset);
+		}
+		else
+		{
+			// Fallback if filesystem handle query fails
+			if (f_open(&wavFile, fileName.c_str(), FA_READ) == FR_OK)
+			{
+				f_lseek(&wavFile, dataOffset);
+			}
+		}
+	}
+	else
+	{
+		// Fallback for files without a cached start cluster
+		if (f_open(&wavFile, fileName.c_str(), FA_READ) == FR_OK)
+		{
+			f_lseek(&wavFile, dataOffset);
+		}
 	}
 
 	byteCount = 0;
