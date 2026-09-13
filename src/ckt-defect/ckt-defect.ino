@@ -332,18 +332,20 @@ void loop()
 	// Declare a global or static FATFS object
 	static FATFS sd_fatfs;
 
-	// ... inside loop() where SD card is mounted ...
 	esp_err_t mount_err = esp_vfs_fat_sdspi_mount("/sdcard", &host, &slot_config, &mount_config, &card);
 	if (mount_err == ESP_OK)
 	{
-	    // Mount volume "0:" explicitly for direct FatFs (f_*) functions
-	    FRESULT fr = f_mount(&sd_fatfs, "0:", 1);
-	    if (fr == FR_OK) {
-		sdCardPresent = true;
-		Serial.println("SD Card mounted successfully for FatFs\n");
-	    } else {
-		Serial.printf("f_mount failed with code: %d\n", fr);
-	    }
+		// Mount volume "0:" explicitly for direct FatFs (f_*) functions
+		FRESULT fr = f_mount(&sd_fatfs, "0:", 1);
+		if (fr == FR_OK)
+		{
+			sdCardPresent = true;
+			Serial.println("SD Card mounted successfully for FatFs\n");
+		}
+		else
+		{
+			Serial.printf("f_mount failed with code: %d\n", fr);
+		}
 	}
 
 /*
@@ -420,6 +422,7 @@ void loop()
 	menuManager.process();  // Call once here to get things going
 
 
+	Serial.print('\n');
 	Serial.println("ISE Defect Detector");
 	Serial.print("Version: ");
 	Serial.println(VERSION_STRING);
