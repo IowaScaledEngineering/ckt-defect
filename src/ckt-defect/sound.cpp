@@ -19,7 +19,6 @@ LICENSE:
 
 *************************************************************************/
 
-#include <SD.h>
 #include "sound.h"
 
 int16_t sineWave[8] = {0, 12539, 23170, 30273, 32767, 30273, 23170, 12539};
@@ -61,11 +60,11 @@ std::string Sound::getName(void) const
 
 
 
-SdSound::SdSound(const std::string& fname, size_t numBytes, size_t offset, uint16_t sr)
+SdSound::SdSound(const std::string& fname, size_t numBytes, size_t offset, uint16_t sr, DWORD cluster)
 {
-	fileName = "/" + fname;
+	fileName = fname;
 	
-	// Extract just the basename (filename without path or extension) for soundName
+	// Extract just the basename for soundName
 	soundName = fname;
 	size_t lastSlash = soundName.find_last_of("/\\");
 	if (lastSlash != std::string::npos)
@@ -81,6 +80,7 @@ SdSound::SdSound(const std::string& fname, size_t numBytes, size_t offset, uint1
 	dataOffset = offset;
 	dataSize = numBytes;
 	sampleRate = sr;
+	startCluster = cluster;
 }
 
 SdSound::~SdSound()
@@ -89,14 +89,17 @@ SdSound::~SdSound()
 
 void SdSound::open(void)
 {
-	wavFile = SD.open(fileName.c_str());
-	wavFile.seek(dataOffset);
-//	Serial.print("Open: ");
-//	Serial.println(soundName.c_str());
+	if (f_open(&wavFile, fileName.c_str(), FA_READ) == FR_OK)
+	{
+		// Jump directly to the offset where the PCM data starts
+		f_lseek(&wavFile, dataOffset);
+	}
+
 	byteCount = 0;
 	fileBufferLength = 0;
 	fileBufferPosition = 0;
 }
+
 size_t SdSound::fileBufferAvailable(void)
 {
 	if(fileBufferLength > fileBufferPosition)
@@ -104,9 +107,11 @@ size_t SdSound::fileBufferAvailable(void)
 	else
 		return 0;
 }
+
 int16_t SdSound::getNextSample(void)
 {
-	size_t bytesToRead, bytesRead;
+	size_t bytesToRead;
+	UINT bytesRead = 0;
 
 	if( (fileBufferAvailable() < 2) && available() )
 	{
@@ -120,8 +125,15 @@ int16_t SdSound::getNextSample(void)
 		{
 			bytesToRead = FILE_BUFFER_SIZE;
 		}
-		bytesRead = wavFile.read(fileBuffer, bytesToRead);
-		fileBufferLength = bytesRead;
+
+		if (f_read(&wavFile, fileBuffer, bytesToRead, &bytesRead) == FR_OK)
+		{
+			fileBufferLength = bytesRead;
+		}
+		else
+		{
+			fileBufferLength = 0;
+		}
 		fileBufferPosition = 0;
 	}
 
@@ -139,9 +151,10 @@ int16_t SdSound::getNextSample(void)
 		return 0;
 	}
 }
+
 void SdSound::close(void)
 {
-	wavFile.close();
+	f_close(&wavFile);
 }
 
 

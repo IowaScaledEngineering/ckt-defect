@@ -21,7 +21,7 @@ LICENSE:
 
 #include <Arduino.h>
 #include <SPI.h>
-#include <SD.h>
+#include "ff.h"
 #include <vector>
 #include <algorithm>
 #include <string>
@@ -31,6 +31,9 @@ LICENSE:
 #include "driver/i2s_std.h"
 #include "driver/gpio.h"
 #include "esp_task_wdt.h"
+#include "driver/sdspi_host.h"
+#include "esp_vfs_fat.h"
+#include "sdmmc_cmd.h"
 
 #include "common.h"
 #include "configuration.h"
@@ -117,6 +120,36 @@ bool configKeyValueSplit(char* key, uint32_t keySz, char* value, uint32_t valueS
 	return true;
 }
 
+// Custom line reader replacing f_gets to avoid linker dependency on FF_USE_STRFUNC
+static bool fatFsReadLine(FIL *fp, char *buffer, size_t maxLen)
+{
+	size_t idx = 0;
+	UINT bytesRead = 0;
+	char c;
+
+	while (idx < maxLen - 1)
+	{
+		if (f_read(fp, &c, 1, &bytesRead) != FR_OK || bytesRead == 0)
+		{
+			break; // EOF or error
+		}
+
+		if (c == '\r')
+		{
+			continue; // Skip carriage returns
+		}
+
+		if (c == '\n')
+		{
+			break; // End of line
+		}
+
+		buffer[idx++] = c;
+	}
+
+	buffer[idx] = '\0';
+	return (idx > 0 || bytesRead > 0);
+}
 
 hw_timer_t * timer = NULL;
 volatile bool timerTick = false;
@@ -152,8 +185,6 @@ void setup()
 
 void loop()
 {
-	File rootDir;
-	
 	DetectorConfiguration cfg;
 	MessageBundle trackMessages;
 	DataBundle data[NUM_TRACKS];
@@ -258,34 +289,78 @@ void loop()
 	loadSfx();
 
 	// Wait for serial to initialize
-	while(millis() < 2000)
+	while(millis() < 3000)
 	{
 		esp_task_wdt_reset();
 	}
 
-	// Initialize SPI and SD card
-	SPIClass vspi = SPIClass(FSPI);
-	vspi.begin(SDCLK, SDMISO, SDMOSI, SDCS);
-	if(SD.begin(SDCS, vspi))
+	// Direct FatFs Mount via ESP-IDF VFS SDSPI Driver
+	sdmmc_card_t *card = NULL;
+	sdmmc_host_t host = SDSPI_HOST_DEFAULT();
+	host.slot = SPI2_HOST;
+
+	// Ensure pins are correctly defined and reset
+	gpio_reset_pin((gpio_num_t)SDMOSI);
+	gpio_reset_pin((gpio_num_t)SDMISO);
+	gpio_reset_pin((gpio_num_t)SDCLK);
+	gpio_reset_pin((gpio_num_t)SDCS);
+
+	spi_bus_config_t bus_cfg = {};
+	bus_cfg.mosi_io_num = (gpio_num_t)SDMOSI;
+	bus_cfg.miso_io_num = (gpio_num_t)SDMISO;
+	bus_cfg.sclk_io_num = (gpio_num_t)SDCLK;
+	bus_cfg.quadwp_io_num = -1;
+	bus_cfg.quadhd_io_num = -1;
+	bus_cfg.max_transfer_sz = 0; // Let driver calculate default max transfer size
+
+	// Initialize SPI bus using SPI_DMA_CH_AUTO
+	esp_err_t bus_err = spi_bus_initialize(SPI2_HOST, &bus_cfg, SPI_DMA_CH_AUTO);
+	if (bus_err != ESP_OK && bus_err != ESP_ERR_INVALID_STATE)
 	{
-		sdCardPresent = true;
+	    Serial.printf("SPI Bus Init Failed: %s (0x%X)\n", esp_err_to_name(bus_err), bus_err);
 	}
 
-	// Check for config file and load data from it if present
-	// FIXME
+	sdspi_device_config_t slot_config = SDSPI_DEVICE_CONFIG_DEFAULT();
+	slot_config.gpio_cs = (gpio_num_t)SDCS;
+	slot_config.host_id = SPI2_HOST;
+
+	esp_vfs_fat_mount_config_t mount_config = {};
+	mount_config.format_if_mount_failed = false;
+	mount_config.max_files = 5;
+	mount_config.allocation_unit_size = 16 * 1024;
+
+	// Declare a global or static FATFS object
+	static FATFS sd_fatfs;
+
+	// ... inside loop() where SD card is mounted ...
+	esp_err_t mount_err = esp_vfs_fat_sdspi_mount("/sdcard", &host, &slot_config, &mount_config, &card);
+	if (mount_err == ESP_OK)
+	{
+	    // Mount volume "0:" explicitly for direct FatFs (f_*) functions
+	    FRESULT fr = f_mount(&sd_fatfs, "0:", 1);
+	    if (fr == FR_OK) {
+		sdCardPresent = true;
+		Serial.println("SD Card mounted successfully for FatFs\n");
+	    } else {
+		Serial.printf("f_mount failed with code: %d\n", fr);
+	    }
+	}
+
+/*
+	// Read config file using direct FatFs
 	if(sdCardPresent)
 	{
-		// Check for and read config file
-		File f = SD.open("/config.txt");
-		if (f)
+		FIL configFile;
+		if (f_open(&configFile, "config.txt", FA_READ) == FR_OK)
 		{
 			configFilePresent = true;
-			// FIXME: Somewhere in here overwrite trackName[i] from config file
-			while(f.available())
+			char lineBuffer[256];
+
+			while (fatFsReadLine(&configFile, lineBuffer, sizeof(lineBuffer)))
 			{
 				char keyStr[128];
 				char valueStr[128];
-				bool kvFound = configKeyValueSplit(keyStr, sizeof(keyStr), valueStr, sizeof(valueStr), f.readStringUntil('\n').c_str());
+				bool kvFound = configKeyValueSplit(keyStr, sizeof(keyStr), valueStr, sizeof(valueStr), lineBuffer);
 				if (!kvFound)
 					continue;
 
@@ -299,12 +374,12 @@ void loop()
 					audioSetVolumeDownCoef(atoi(valueStr));
 				}
 			}
+			f_close(&configFile);
 		}
-		f.close();
 
 		esp_task_wdt_reset();
 	}
-
+*/
 
 	// If no config file, set defaults
 	if(!configFilePresent)
@@ -319,27 +394,8 @@ void loop()
 	{
 		// Needed regardless for selection menu
 		vocabFindAvailable(cfg.vocabsAvailable);
-
-		// FIXME
-		// Check if configured vocab is present
-		std::string vocabPath = "/vocab/" + cfg.vocabSelected;
-
-		File vocabDir = SD.open(vocabPath.c_str());
-		if (vocabDir && vocabDir.isDirectory())
-		{
-			cfg.externalVocabPresent = loadExternalVocab(cfg.vocabSelected, words);
-		}
-		else
-		{
-			cfg.externalVocabPresent = false;
-		}
-
-		if (vocabDir)
-		{
-			vocabDir.close();
-		}
+		cfg.externalVocabPresent = loadExternalVocab(cfg.vocabSelected, words);
 	}
-	
 	
 	// If no SD vocab, load the internal ones
 	if(!cfg.externalVocabPresent)
@@ -359,12 +415,6 @@ void loop()
 	temperatureMgr.begin();
 
 
-
-	// Wait for splash screen timeout
-	while(millis() < 3000)
-	{
-		esp_task_wdt_reset();
-	}
 
 	menuManager.begin();
 	menuManager.process();  // Call once here to get things going
@@ -392,7 +442,6 @@ void loop()
 		Serial.println(word.c_str());
 	}
 	Serial.println("--------------------------\n");
-
 
 	Serial.println("------ Vocabs Found ------");
 	for (const auto& v : cfg.vocabsAvailable)

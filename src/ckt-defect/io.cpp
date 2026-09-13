@@ -40,10 +40,10 @@ void ioInit(void)
 	io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
 
 	// SDCS: output
-	io_conf.pin_bit_mask = (1ULL << SDCS);
-	io_conf.mode = GPIO_MODE_OUTPUT;
-	io_conf.pull_up_en = GPIO_PULLUP_DISABLE;
-	gpio_config(&io_conf);
+//	io_conf.pin_bit_mask = (1ULL << SDCS);
+//	io_conf.mode = GPIO_MODE_OUTPUT;
+//	io_conf.pull_up_en = GPIO_PULLUP_DISABLE;
+//	gpio_config(&io_conf);
 
 	// SDDET: input with pullup
 	io_conf.pin_bit_mask = (1ULL << SDDET);

@@ -21,8 +21,15 @@ LICENSE:
 
 #pragma once
 
+#include "ff.h"
 #include "sound.h"
 #include "configuration.h"
+
+struct WavData {
+	uint32_t sampleRate;
+	uint32_t wavDataSize;
+	size_t dataStartPosition;
+};
 
 void vocabDelete(void);
 size_t vocabGetSize(void);
@@ -30,6 +37,7 @@ std::string vocabGetName(uint32_t index);
 Sound* vocabGetWord(const std::string& word);
 Sound* vocabGetWord(const uint32_t index);
 
+bool validateWavFileFatFs(FIL *wavFile, const char* fileName, struct WavData *wavData);
 void vocabFindAvailable(std::vector<std::string>& vocabsAvailable);
 bool loadExternalVocab(const std::string& vocabSelected, const std::vector<std::string>& words);
 

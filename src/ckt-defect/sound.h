@@ -21,7 +21,7 @@ LICENSE:
 
 #pragma once
 
-#include <SD.h>
+#include "ff.h"
 #include <string>
 
 #define FILE_BUFFER_SIZE 2048
@@ -48,14 +48,15 @@ class SdSound : public Sound
 {
 	std::string fileName;
 	size_t dataOffset;
-	File wavFile;
+	FIL wavFile;
+	DWORD startCluster;
 	uint8_t fileBuffer[FILE_BUFFER_SIZE];
 	size_t fileBufferLength;  // might be less than actual buffer size
 	size_t fileBufferPosition;
 	int16_t sampleValue;
 
 	public:
-		SdSound(const std::string& fname, size_t numBytes, size_t offset, uint16_t sr);
+		SdSound(const std::string& fname, size_t numBytes, size_t offset, uint16_t sr, DWORD cluster = 0);
 		~SdSound();
 		void open(void);
 		size_t fileBufferAvailable(void);

@@ -19,6 +19,8 @@ LICENSE:
 
 *************************************************************************/
 
+#include <algorithm>
+#include <vector>
 #include "sfx.h"
 
 std::vector<Sound *> sfx;

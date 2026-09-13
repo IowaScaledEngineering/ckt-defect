@@ -26,7 +26,10 @@ LICENSE:
 /***************  WARNING  ***************/
 
 
-#include <SD.h>
+#include <algorithm>
+#include <cstring>
+#include <Arduino.h>
+#include "ff.h"
 #include "esp_task_wdt.h"
 #include "vocab.h"
 
@@ -93,74 +96,103 @@ void vocabFindAvailable(std::vector<std::string>& vocabsAvailable)
 {
 	vocabsAvailable.clear();
 
-	File vocabDir = SD.open("/vocab");
-	if (!vocabDir || !vocabDir.isDirectory())
+	FF_DIR *dir = (FF_DIR *)malloc(sizeof(FF_DIR));
+	FILINFO *fno = (FILINFO *)malloc(sizeof(FILINFO));
+
+	if (!dir || !fno)
 	{
+		if (dir) free(dir);
+		if (fno) free(fno);
 		return;
 	}
 
-	File entry = vocabDir.openNextFile();
-	while (entry)
+	FRESULT res = f_opendir(dir, "0:vocab");
+	if (res != FR_OK)
 	{
-		if (entry.isDirectory())
-		{
-			std::string entryName = entry.name();
-			
-			// Strip leading directory path if present
-			size_t lastSlash = entryName.find_last_of("/\\");
-			if (lastSlash != std::string::npos)
-			{
-				entryName = entryName.substr(lastSlash + 1);
-			}
+		res = f_opendir(dir, "vocab");
+	}
 
-			if (!entryName.empty())
+	if (res != FR_OK)
+	{
+		free(dir);
+		free(fno);
+		return;
+	}
+
+	for (;;)
+	{
+		esp_task_wdt_reset();
+
+		if (f_readdir(dir, fno) != FR_OK || fno->fname[0] == 0)
+		{
+			break;
+		}
+
+		if (fno->fattrib & AM_DIR)
+		{
+			if (strcmp(fno->fname, ".") != 0 && strcmp(fno->fname, "..") != 0)
 			{
-				vocabsAvailable.push_back(entryName);
+				vocabsAvailable.push_back(fno->fname);
 			}
 		}
-		entry.close();
-		entry = vocabDir.openNextFile();
 	}
-	
-	vocabDir.close();
+
+	f_closedir(dir);
+	free(dir);
+	free(fno);
 }
 
-struct WavData {
-	uint32_t sampleRate;
-	uint32_t wavDataSize;
-	size_t dataStartPosition;
-};
-
-bool validateWavFile(File *wavFile, struct WavData *wavData)
+// Helper function to perform pattern matching for WAV chunk headers using raw FatFs
+static bool fatFsFindChunk(FIL *wavFile, const char* chunkId)
 {
-	const char *fileName;
-	size_t fileNameLength;
+	char buffer[4];
+	UINT bytesRead;
+	
+	// Scan through file looking for 4-byte chunk identifier
+	while (f_read(wavFile, buffer, 4, &bytesRead) == FR_OK && bytesRead == 4)
+	{
+		esp_task_wdt_reset();
+
+		if (memcmp(buffer, chunkId, 4) == 0)
+		{
+			return true;
+		}
+		// Step back 3 bytes to handle non-aligned pattern matches
+		f_lseek(wavFile, f_tell(wavFile) - 3);
+	}
+	return false;
+}
+
+bool validateWavFileFatFs(FIL *wavFile, const char* fileName, struct WavData *wavData)
+{
+	size_t fileNameLength = strlen(fileName);
+	if(fileNameLength < 5)
+		return false;
+
+	const char *extension = &fileName[fileNameLength - 4];
+	if(strcasecmp(extension, ".wav"))
+	{
+		return false;
+	}
+
+	UINT bytesRead;
 	uint16_t channels;
 	uint16_t bitsPerSample;
 	uint32_t sampleRate;
 	uint32_t wavDataSize;
 
-	fileName = wavFile->name();
-	fileNameLength = strlen(fileName);
-	if(fileNameLength < 5)
-		return false;  // Filename too short (x.wav = min 5 chars)
-	const char *extension = &fileName[strlen(fileName)-4];
-	if(strcasecmp(extension, ".wav"))
-	{
-		Serial.print("	Ignoring: ");
-		Serial.println(fileName);
-		return false;  // Not a wav file (by extension anyway)
-	}
-	
-	if(!wavFile->find("fmt "))  // Includes trailing space
+	f_lseek(wavFile, 0);
+
+	if(!fatFsFindChunk(wavFile, "fmt "))
 	{
 		Serial.print("! No fmt section: ");
 		Serial.println(fileName);
 		return false;
 	}
 
-	wavFile->seek(wavFile->position() + 6);  // Seek to number of channels
-	wavFile->read((uint8_t*)&channels, 2);  // Read channels - WAV is little endian, only works if uC is also little endian
+	// Seek to number of channels offset (skip 4 bytes chunk size + 2 bytes format tag)
+	f_lseek(wavFile, f_tell(wavFile) + 6);
+	f_read(wavFile, &channels, 2, &bytesRead);
 
 	if(channels > 1)
 	{
@@ -169,7 +201,7 @@ bool validateWavFile(File *wavFile, struct WavData *wavData)
 		return false;
 	}
 
-	wavFile->read((uint8_t*)&sampleRate, 4);  // Read sample rate - WAV is little endian, only works if uC is also little endian
+	f_read(wavFile, &sampleRate, 4, &bytesRead);
 	wavData->sampleRate = sampleRate;
 
 	if((8000 != sampleRate) && (16000 != sampleRate) && (32000 != sampleRate) && (44100 != sampleRate))
@@ -179,8 +211,9 @@ bool validateWavFile(File *wavFile, struct WavData *wavData)
 		return false;
 	}
 
-	wavFile->seek(wavFile->position() + 6);  // Seek to bits per sample
-	wavFile->read((uint8_t*)&bitsPerSample, 2);	// Read bits per sample - WAV is little endian, only works if uC is also little endian
+	// Seek to bits per sample (skip 6 bytes: ByteRate [4], BlockAlign [2])
+	f_lseek(wavFile, f_tell(wavFile) + 6);
+	f_read(wavFile, &bitsPerSample, 2, &bytesRead);
 
 	if(16 != bitsPerSample)
 	{
@@ -189,128 +222,111 @@ bool validateWavFile(File *wavFile, struct WavData *wavData)
 		return false;
 	}
 
-	if(!wavFile->find("data"))
+	if(!fatFsFindChunk(wavFile, "data"))
 	{
 		Serial.print("! No data section: ");
 		Serial.println(fileName);
 		return false;
 	}
 
-	wavFile->read((uint8_t*)&wavDataSize, 4);	// Read data size - WAV is little endian, only works if uC is also little endian
+	f_read(wavFile, &wavDataSize, 4, &bytesRead);
 	wavData->wavDataSize = wavDataSize;
-	// Actual data is now the current position
-	
-	wavData->dataStartPosition = wavFile->position();
+	wavData->dataStartPosition = f_tell(wavFile);
+
 	return true;
 }
 
 bool loadExternalVocab(const std::string& vocabSelected, const std::vector<std::string>& words)
 {
-	std::string vocabDirName = "/vocab/" + vocabSelected;
+	std::string vocabDirName = "0:vocab/" + vocabSelected;
 	Serial.print("Attempting to load external vocabulary from: ");
 	Serial.println(vocabDirName.c_str());
 
-	File vocabDir = SD.open(vocabDirName.c_str());
-	if (!vocabDir || !vocabDir.isDirectory())
+	FF_DIR *dir = (FF_DIR *)malloc(sizeof(FF_DIR));
+	FILINFO *fno = (FILINFO *)malloc(sizeof(FILINFO));
+	FIL *wavFile = (FIL *)malloc(sizeof(FIL));
+
+	if (!dir || !fno || !wavFile)
 	{
-		Serial.print("! Failed to open vocabulary directory or it is not a directory: ");
-		Serial.println(vocabDirName.c_str());
-		if (vocabDir)
-		{
-			vocabDir.close();
-		}
+		Serial.println("! Failed to allocate FatFs buffer memory");
+		if (dir) free(dir);
+		if (fno) free(fno);
+		if (wavFile) free(wavFile);
+		return false;
+	}
+
+	FRESULT res = f_opendir(dir, vocabDirName.c_str());
+	if (res != FR_OK)
+	{
+		vocabDirName = "vocab/" + vocabSelected;
+		res = f_opendir(dir, vocabDirName.c_str());
+	}
+
+	if (res != FR_OK)
+	{
+		Serial.print("! Failed to open vocabulary directory: ");
+		Serial.print(vocabDirName.c_str());
+		Serial.printf(" (FatFs error code: %d)\n", res);
+		free(dir);
+		free(fno);
+		free(wavFile);
 		return false;
 	}
 
 	uint32_t loadedCount = 0;
-	File entry = vocabDir.openNextFile();
 
-	while (entry)
+	for (;;)
 	{
 		esp_task_wdt_reset();
 
-		if (entry.isDirectory())
+		if (f_readdir(dir, fno) != FR_OK || fno->fname[0] == 0)
 		{
-			Serial.print("  Skipping subdirectory: ");
-			Serial.println(entry.name());
+			break;
 		}
-		else
+
+		if (fno->fattrib & AM_DIR)
 		{
-			std::string entryName = entry.name();
+			continue;
+		}
 
-			// Strip leading path components if returned by the SD library
-			size_t lastSlash = entryName.find_last_of("/\\");
-			if (lastSlash != std::string::npos)
+		std::string entryName = fno->fname;
+
+		if (entryName.length() >= 5 && 
+		    0 == strcasecmp(entryName.substr(entryName.length() - 4).c_str(), ".wav"))
+		{
+			std::string wordName = entryName.substr(0, entryName.length() - 4);
+
+			auto it = std::find(words.begin(), words.end(), wordName);
+			if (it != words.end())
 			{
-				entryName = entryName.substr(lastSlash + 1);
-			}
+				std::string fullPath = vocabDirName + "/" + entryName;
 
-			// Validate .wav extension (case-insensitive)
-			if (entryName.length() >= 5 && 
-			    0 == strcasecmp(entryName.substr(entryName.length() - 4).c_str(), ".wav"))
-			{
-				// Extract basename (word name without directory or extension)
-				std::string wordName = entryName.substr(0, entryName.length() - 4);
-				
-				Serial.print("Processing ");
-				Serial.println(wordName.c_str());
-
-				// Verify word exists in the unique words vector
-				auto it = std::find(words.begin(), words.end(), wordName);
-				if (it != words.end())
+				if (f_open(wavFile, fullPath.c_str(), FA_READ) == FR_OK)
 				{
 					WavData wavData;
-
-					// Validate WAV format standard properties
-					if (validateWavFile(&entry, &wavData))
+					if (validateWavFileFatFs(wavFile, entryName.c_str(), &wavData))
 					{
-						// Enforce 16kHz sample rate requirement
 						if (wavData.sampleRate == 16000)
 						{
-							// Form full path relative to SD root (excluding leading slash since SdSound adds it)
-							// Path format passed: "vocab/<vocabSelected>/<wordName>.wav"
-							std::string relativePath = "vocab/" + vocabSelected + "/" + wordName + ".wav";
+							DWORD startCluster = wavFile->obj.sclust;
 
-							Serial.print("+ Adding external WAV: /");
-							Serial.print(relativePath.c_str());
-							Serial.print(" [Word: '");
-							Serial.print(wordName.c_str());
-							Serial.println("']");
+							Serial.print("+ Adding external WAV: ");
+							Serial.println(fullPath.c_str());
 
-							// SdSound constructor formats:
-							// - fileName  -> "/" + relativePath (Full path for SD.open)
-							// - soundName -> wordName (Basename stripped at '.' for lookup)
-							vocab.push_back(new SdSound(relativePath, wavData.wavDataSize, wavData.dataStartPosition, wavData.sampleRate));
+							vocab.push_back(new SdSound(fullPath, wavData.wavDataSize, wavData.dataStartPosition, wavData.sampleRate, startCluster));
 							loadedCount++;
 						}
-						else
-						{
-							Serial.print("! Sample rate mismatch (must be 16000 Hz): ");
-							Serial.print(entryName.c_str());
-							Serial.print(" (Found: ");
-							Serial.print(wavData.sampleRate);
-							Serial.println(")");
-						}
 					}
+					f_close(wavFile);
 				}
-				else
-				{
-					Serial.print("  Skipping unneeded word file: ");
-					Serial.println(entryName.c_str());
-				}
-			}
-			else
-			{
-				Serial.print("  Ignoring non-WAV file: ");
-				Serial.println(entryName.c_str());
 			}
 		}
-
-		entry.close();
-		entry = vocabDir.openNextFile();
 	}
 
-	vocabDir.close();
+	f_closedir(dir);
+	free(dir);
+	free(fno);
+	free(wavFile);
 
 	Serial.print("External vocabulary load finished. Total valid words loaded: ");
 	Serial.println(loadedCount);
