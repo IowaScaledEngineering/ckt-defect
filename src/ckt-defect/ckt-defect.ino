@@ -53,12 +53,6 @@ LICENSE:
 // 3 sec watchdog 
 #define TWDT_TIMEOUT_MS    3000
 
-struct WavData {
-	uint32_t sampleRate;
-	uint32_t wavDataSize;
-	size_t dataStartPosition;
-};
-
 char* rtrim(char* in)
 {
 	char* endPtr = in + strlen(in) - 1;
@@ -130,124 +124,6 @@ volatile bool timerTick = false;
 void IRAM_ATTR tickTimer(void)
 {
 	timerTick = true;
-}
-
-bool validateWavFile(File *wavFile, struct WavData *wavData)
-{
-	const char *fileName;
-	size_t fileNameLength;
-	uint16_t channels;
-	uint16_t bitsPerSample;
-	uint32_t sampleRate;
-	uint32_t wavDataSize;
-
-	fileName = wavFile->name();
-	fileNameLength = strlen(fileName);
-	if(fileNameLength < 5)
-		return false;  // Filename too short (x.wav = min 5 chars)
-	const char *extension = &fileName[strlen(fileName)-4];
-	if(strcasecmp(extension, ".wav"))
-	{
-		Serial.print("	Ignoring: ");
-		Serial.println(fileName);
-		return false;  // Not a wav file (by extension anyway)
-	}
-	
-	if(!wavFile->find("fmt "))  // Includes trailing space
-	{
-		Serial.print("! No fmt section: ");
-		Serial.println(fileName);
-		return false;
-	}
-
-	wavFile->seek(wavFile->position() + 6);  // Seek to number of channels
-	wavFile->read((uint8_t*)&channels, 2);  // Read channels - WAV is little endian, only works if uC is also little endian
-
-	if(channels > 1)
-	{
-		Serial.print("! Not mono: ");
-		Serial.println(fileName);
-		return false;
-	}
-
-	wavFile->read((uint8_t*)&sampleRate, 4);  // Read sample rate - WAV is little endian, only works if uC is also little endian
-	wavData->sampleRate = sampleRate;
-
-	if((8000 != sampleRate) && (16000 != sampleRate) && (32000 != sampleRate) && (44100 != sampleRate))
-	{
-		Serial.print("! Incorrect sample rate: ");
-		Serial.println(fileName);
-		return false;
-	}
-
-	wavFile->seek(wavFile->position() + 6);  // Seek to bits per sample
-	wavFile->read((uint8_t*)&bitsPerSample, 2);	// Read bits per sample - WAV is little endian, only works if uC is also little endian
-
-	if(16 != bitsPerSample)
-	{
-		Serial.print("! Not 16-bit: ");
-		Serial.println(fileName);
-		return false;
-	}
-
-	if(!wavFile->find("data"))
-	{
-		Serial.print("! No data section: ");
-		Serial.println(fileName);
-		return false;
-	}
-
-	wavFile->read((uint8_t*)&wavDataSize, 4);	// Read data size - WAV is little endian, only works if uC is also little endian
-	wavData->wavDataSize = wavDataSize;
-	// Actual data is now the current position
-	
-	wavData->dataStartPosition = wavFile->position();
-	return true;
-}
-
-void findWavFiles(File *rootDir, String dirName, std::vector<Sound *> *soundsVector)
-{
-	File wavFile;
-	WavData wavData;
-
-	while(true)
-	{
-		esp_task_wdt_reset();
-		wavFile = rootDir->openNextFile();
-
-		if (!wavFile)
-		{
-			break;	// No more files
-		}
-		if(wavFile.isDirectory())
-		{
-			Serial.print("	Skipping directory: ");
-			Serial.println(wavFile.name());
-		}
-		else
-		{
-			if(validateWavFile(&wavFile, &wavData))
-			{
-				// If we got here, then it looks like a valid wav file
-				String fullFileName = dirName + wavFile.name();
-
-				Serial.print("+ Adding ");
-				Serial.print(fullFileName);
-				Serial.print(" (");
-				Serial.print(wavData.sampleRate);
-				Serial.print(",");
-				Serial.print(wavData.wavDataSize);
-				Serial.print(",");
-				Serial.print(wavData.dataStartPosition);
-				Serial.print(")");
-
-				Serial.println("");
-
-				soundsVector->push_back(new SdSound(fullFileName.c_str(), wavData.wavDataSize, wavData.dataStartPosition, wavData.sampleRate));
-			}
-		}
-		wavFile.close();
-	}
 }
 
 
@@ -381,6 +257,11 @@ void loop()
 	// Load sound effects
 	loadSfx();
 
+	// Wait for serial to initialize
+	while(millis() < 2000)
+	{
+		esp_task_wdt_reset();
+	}
 
 	// Initialize SPI and SD card
 	SPIClass vspi = SPIClass(FSPI);
@@ -390,7 +271,6 @@ void loop()
 		sdCardPresent = true;
 	}
 
-	
 	// Check for config file and load data from it if present
 	// FIXME
 	if(sdCardPresent)
@@ -432,12 +312,13 @@ void loop()
 		setDefaultMessages(trackMessages, cfg);
 	}
 
+	std::vector<std::string> words = getUniqueWords(trackMessages);
 
 	// Check for external vocab
 	if(sdCardPresent)
 	{
 		// Needed regardless for selection menu
-		vocabFindAvailable(cfg);
+		vocabFindAvailable(cfg.vocabsAvailable);
 
 		// FIXME
 		// Check if configured vocab is present
@@ -446,8 +327,7 @@ void loop()
 		File vocabDir = SD.open(vocabPath.c_str());
 		if (vocabDir && vocabDir.isDirectory())
 		{
-			// If so, load words
-			cfg.externalVocabPresent = true;
+			cfg.externalVocabPresent = loadExternalVocab(cfg.vocabSelected, words);
 		}
 		else
 		{
@@ -506,7 +386,6 @@ void loop()
 	printConfiguration(&cfg);
 	Serial.print('\n');
 
-	std::vector<std::string> words = getUniqueWords(trackMessages);
 	Serial.println("--- Unique Words Found ---");
 	for (const auto& word : words)
 	{

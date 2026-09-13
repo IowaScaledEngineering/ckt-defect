@@ -64,15 +64,29 @@ std::string Sound::getName(void) const
 SdSound::SdSound(const std::string& fname, size_t numBytes, size_t offset, uint16_t sr)
 {
 	fileName = "/" + fname;
+	
+	// Extract just the basename (filename without path or extension) for soundName
 	soundName = fname;
-	soundName.erase(soundName.find('.'));   // Find the . and remove it and everything after
+	size_t lastSlash = soundName.find_last_of("/\\");
+	if (lastSlash != std::string::npos)
+	{
+		soundName = soundName.substr(lastSlash + 1);
+	}
+	size_t dotPos = soundName.find('.');
+	if (dotPos != std::string::npos)
+	{
+		soundName.erase(dotPos);
+	}
+
 	dataOffset = offset;
 	dataSize = numBytes;
 	sampleRate = sr;
 }
+
 SdSound::~SdSound()
 {
 }
+
 void SdSound::open(void)
 {
 	wavFile = SD.open(fileName.c_str());

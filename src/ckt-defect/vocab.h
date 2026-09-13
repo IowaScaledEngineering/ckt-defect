@@ -30,6 +30,8 @@ std::string vocabGetName(uint32_t index);
 Sound* vocabGetWord(const std::string& word);
 Sound* vocabGetWord(const uint32_t index);
 
+void vocabFindAvailable(std::vector<std::string>& vocabsAvailable);
+bool loadExternalVocab(const std::string& vocabSelected, const std::vector<std::string>& words);
+
 void loadInternalVocab(void);
 
-void vocabFindAvailable(DetectorConfiguration& cfg);

@@ -27,6 +27,7 @@ LICENSE:
 
 
 #include <SD.h>
+#include "esp_task_wdt.h"
 #include "vocab.h"
 
 std::vector<Sound *> vocab;
@@ -88,9 +89,9 @@ Sound* vocabGetWord(const uint32_t index)
 	}
 }
 
-void vocabFindAvailable(DetectorConfiguration& cfg)
+void vocabFindAvailable(std::vector<std::string>& vocabsAvailable)
 {
-	cfg.vocabsAvailable.clear();
+	vocabsAvailable.clear();
 
 	File vocabDir = SD.open("/vocab");
 	if (!vocabDir || !vocabDir.isDirectory())
@@ -114,7 +115,7 @@ void vocabFindAvailable(DetectorConfiguration& cfg)
 
 			if (!entryName.empty())
 			{
-				cfg.vocabsAvailable.push_back(entryName);
+				vocabsAvailable.push_back(entryName);
 			}
 		}
 		entry.close();
@@ -122,6 +123,199 @@ void vocabFindAvailable(DetectorConfiguration& cfg)
 	}
 	
 	vocabDir.close();
+}
+
+struct WavData {
+	uint32_t sampleRate;
+	uint32_t wavDataSize;
+	size_t dataStartPosition;
+};
+
+bool validateWavFile(File *wavFile, struct WavData *wavData)
+{
+	const char *fileName;
+	size_t fileNameLength;
+	uint16_t channels;
+	uint16_t bitsPerSample;
+	uint32_t sampleRate;
+	uint32_t wavDataSize;
+
+	fileName = wavFile->name();
+	fileNameLength = strlen(fileName);
+	if(fileNameLength < 5)
+		return false;  // Filename too short (x.wav = min 5 chars)
+	const char *extension = &fileName[strlen(fileName)-4];
+	if(strcasecmp(extension, ".wav"))
+	{
+		Serial.print("	Ignoring: ");
+		Serial.println(fileName);
+		return false;  // Not a wav file (by extension anyway)
+	}
+	
+	if(!wavFile->find("fmt "))  // Includes trailing space
+	{
+		Serial.print("! No fmt section: ");
+		Serial.println(fileName);
+		return false;
+	}
+
+	wavFile->seek(wavFile->position() + 6);  // Seek to number of channels
+	wavFile->read((uint8_t*)&channels, 2);  // Read channels - WAV is little endian, only works if uC is also little endian
+
+	if(channels > 1)
+	{
+		Serial.print("! Not mono: ");
+		Serial.println(fileName);
+		return false;
+	}
+
+	wavFile->read((uint8_t*)&sampleRate, 4);  // Read sample rate - WAV is little endian, only works if uC is also little endian
+	wavData->sampleRate = sampleRate;
+
+	if((8000 != sampleRate) && (16000 != sampleRate) && (32000 != sampleRate) && (44100 != sampleRate))
+	{
+		Serial.print("! Incorrect sample rate: ");
+		Serial.println(fileName);
+		return false;
+	}
+
+	wavFile->seek(wavFile->position() + 6);  // Seek to bits per sample
+	wavFile->read((uint8_t*)&bitsPerSample, 2);	// Read bits per sample - WAV is little endian, only works if uC is also little endian
+
+	if(16 != bitsPerSample)
+	{
+		Serial.print("! Not 16-bit: ");
+		Serial.println(fileName);
+		return false;
+	}
+
+	if(!wavFile->find("data"))
+	{
+		Serial.print("! No data section: ");
+		Serial.println(fileName);
+		return false;
+	}
+
+	wavFile->read((uint8_t*)&wavDataSize, 4);	// Read data size - WAV is little endian, only works if uC is also little endian
+	wavData->wavDataSize = wavDataSize;
+	// Actual data is now the current position
+	
+	wavData->dataStartPosition = wavFile->position();
+	return true;
+}
+
+bool loadExternalVocab(const std::string& vocabSelected, const std::vector<std::string>& words)
+{
+	std::string vocabDirName = "/vocab/" + vocabSelected;
+	Serial.print("Attempting to load external vocabulary from: ");
+	Serial.println(vocabDirName.c_str());
+
+	File vocabDir = SD.open(vocabDirName.c_str());
+	if (!vocabDir || !vocabDir.isDirectory())
+	{
+		Serial.print("! Failed to open vocabulary directory or it is not a directory: ");
+		Serial.println(vocabDirName.c_str());
+		if (vocabDir)
+		{
+			vocabDir.close();
+		}
+		return false;
+	}
+
+	uint32_t loadedCount = 0;
+	File entry = vocabDir.openNextFile();
+
+	while (entry)
+	{
+		esp_task_wdt_reset();
+
+		if (entry.isDirectory())
+		{
+			Serial.print("  Skipping subdirectory: ");
+			Serial.println(entry.name());
+		}
+		else
+		{
+			std::string entryName = entry.name();
+
+			// Strip leading path components if returned by the SD library
+			size_t lastSlash = entryName.find_last_of("/\\");
+			if (lastSlash != std::string::npos)
+			{
+				entryName = entryName.substr(lastSlash + 1);
+			}
+
+			// Validate .wav extension (case-insensitive)
+			if (entryName.length() >= 5 && 
+			    0 == strcasecmp(entryName.substr(entryName.length() - 4).c_str(), ".wav"))
+			{
+				// Extract basename (word name without directory or extension)
+				std::string wordName = entryName.substr(0, entryName.length() - 4);
+				
+				Serial.print("Processing ");
+				Serial.println(wordName.c_str());
+
+				// Verify word exists in the unique words vector
+				auto it = std::find(words.begin(), words.end(), wordName);
+				if (it != words.end())
+				{
+					WavData wavData;
+
+					// Validate WAV format standard properties
+					if (validateWavFile(&entry, &wavData))
+					{
+						// Enforce 16kHz sample rate requirement
+						if (wavData.sampleRate == 16000)
+						{
+							// Form full path relative to SD root (excluding leading slash since SdSound adds it)
+							// Path format passed: "vocab/<vocabSelected>/<wordName>.wav"
+							std::string relativePath = "vocab/" + vocabSelected + "/" + wordName + ".wav";
+
+							Serial.print("+ Adding external WAV: /");
+							Serial.print(relativePath.c_str());
+							Serial.print(" [Word: '");
+							Serial.print(wordName.c_str());
+							Serial.println("']");
+
+							// SdSound constructor formats:
+							// - fileName  -> "/" + relativePath (Full path for SD.open)
+							// - soundName -> wordName (Basename stripped at '.' for lookup)
+							vocab.push_back(new SdSound(relativePath, wavData.wavDataSize, wavData.dataStartPosition, wavData.sampleRate));
+							loadedCount++;
+						}
+						else
+						{
+							Serial.print("! Sample rate mismatch (must be 16000 Hz): ");
+							Serial.print(entryName.c_str());
+							Serial.print(" (Found: ");
+							Serial.print(wavData.sampleRate);
+							Serial.println(")");
+						}
+					}
+				}
+				else
+				{
+					Serial.print("  Skipping unneeded word file: ");
+					Serial.println(entryName.c_str());
+				}
+			}
+			else
+			{
+				Serial.print("  Ignoring non-WAV file: ");
+				Serial.println(entryName.c_str());
+			}
+		}
+
+		entry.close();
+		entry = vocabDir.openNextFile();
+	}
+
+	vocabDir.close();
+
+	Serial.print("External vocabulary load finished. Total valid words loaded: ");
+	Serial.println(loadedCount);
+
+	return (loadedCount > 0);
 }
 
 #include "vocab/include/0.h"
