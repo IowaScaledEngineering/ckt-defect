@@ -422,7 +422,13 @@ void loop()
 		}
 		Serial.println("--------------------------");
 
-		cfg.externalVocabPresent = loadExternalVocab(cfg.vocabSelected, words);
+		cfg.externalVocabPresent = loadExternalVocab(lcd, cfg.vocabSelected, words);
+
+		unsigned long startMillis = millis();
+		while(millis() - startMillis < 2000)
+		{
+			esp_task_wdt_reset();
+		}
 	}
 	
 	Serial.print("Vocab Selected: ");

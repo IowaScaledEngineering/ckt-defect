@@ -25,6 +25,8 @@ LICENSE:
 #include "sound.h"
 #include "configuration.h"
 
+class DisplayLcd;
+
 struct WavData {
 	uint32_t sampleRate;
 	uint32_t wavDataSize;
@@ -39,7 +41,7 @@ Sound* vocabGetWord(const uint32_t index);
 
 bool validateWavFile(FIL *wavFile, const char* fileName, struct WavData *wavData);
 void vocabFindAvailable(std::vector<std::string>& vocabsAvailable);
-bool loadExternalVocab(const std::string& vocabSelected, const std::vector<std::string>& words);
+bool loadExternalVocab(DisplayLcd *lcd, const std::string& vocabSelected, const std::vector<std::string>& words);
 
 void loadInternalVocab(void);
 

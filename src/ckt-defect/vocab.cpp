@@ -32,6 +32,7 @@ LICENSE:
 #include "ff.h"
 #include "esp_task_wdt.h"
 #include "vocab.h"
+#include "display-lcd.h"
 
 std::vector<Sound *> vocab;
 
@@ -236,8 +237,10 @@ bool validateWavFile(FIL *wavFile, const char* fileName, struct WavData *wavData
 	return true;
 }
 
-bool loadExternalVocab(const std::string& vocabSelected, const std::vector<std::string>& words)
+bool loadExternalVocab(DisplayLcd *lcd, const std::string& vocabSelected, const std::vector<std::string>& words)
 {
+	lcd->clear();
+
 	uint32_t totalStartTime = millis();
 	std::string vocabDirName = "0:vocab/" + vocabSelected;
 	Serial.print("Attempting to load external vocabulary from: ");
@@ -278,6 +281,9 @@ bool loadExternalVocab(const std::string& vocabSelected, const std::vector<std::
 	uint32_t validateTime = 0;
 	uint32_t pushTime = 0;
 
+	int totalWords = (int)words.size();
+	int width = std::to_string(totalWords).length();
+	
 	for (const auto& word : words)
 	{
 		esp_task_wdt_reset();
@@ -289,6 +295,8 @@ bool loadExternalVocab(const std::string& vocabSelected, const std::vector<std::
 		FRESULT fopen_res = f_open(wavFile, fullPath.c_str(), FA_READ);
 		openTime += (micros() - t1);
 
+		bool justLoaded = false;
+		
 		if (fopen_res == FR_OK)
 		{
 			WavData wavData;
@@ -309,13 +317,36 @@ bool loadExternalVocab(const std::string& vocabSelected, const std::vector<std::
 					vocab.push_back(new SdSound(fullPath, wavData.wavDataSize, wavData.dataStartPosition, wavData.sampleRate, startCluster));
 					pushTime += (micros() - t3);
 					loadedCount++;
+					justLoaded = true;
 				}
 			}
 			f_close(wavFile);
 		}
+
+		char szBuf[32];
+		snprintf(szBuf, sizeof(szBuf), "Loading WAV %*u/%u", width, (unsigned int)(loadedCount), (unsigned int)totalWords);
+		lcd->gotoxy(0, 0);
+		lcd->print(szBuf);
+		lcd->gotoxy(0, 1);
+		if (justLoaded)
+		{
+			lcd->print(centerString(word, 20));
+		}
 	}
 
 	free(wavFile);
+
+	lcd->gotoxy(0, 1);
+	lcd->print(std::string(20, ' '));
+	lcd->gotoxy(0, 2);
+	if (loadedCount > 0)
+	{
+		lcd->print("Using " + vocabSelected);
+	}
+	else
+	{
+		lcd->print("Using Internal Vocab");
+	}
 
 	uint32_t totalDuration = millis() - totalStartTime;
 	Serial.println("--- Profiling Results for loadExternalVocab ---");
