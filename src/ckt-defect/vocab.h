@@ -37,7 +37,7 @@ std::string vocabGetName(uint32_t index);
 Sound* vocabGetWord(const std::string& word);
 Sound* vocabGetWord(const uint32_t index);
 
-bool validateWavFileFatFs(FIL *wavFile, const char* fileName, struct WavData *wavData);
+bool validateWavFile(FIL *wavFile, const char* fileName, struct WavData *wavData);
 void vocabFindAvailable(std::vector<std::string>& vocabsAvailable);
 bool loadExternalVocab(const std::string& vocabSelected, const std::vector<std::string>& words);
 

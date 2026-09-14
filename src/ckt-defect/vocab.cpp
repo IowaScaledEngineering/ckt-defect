@@ -163,7 +163,7 @@ static bool fatFsFindChunk(FIL *wavFile, const char* chunkId)
 	return false;
 }
 
-bool validateWavFileFatFs(FIL *wavFile, const char* fileName, struct WavData *wavData)
+bool validateWavFile(FIL *wavFile, const char* fileName, struct WavData *wavData)
 {
 	size_t fileNameLength = strlen(fileName);
 	if(fileNameLength < 5)
@@ -304,7 +304,7 @@ bool loadExternalVocab(const std::string& vocabSelected, const std::vector<std::
 				if (f_open(wavFile, fullPath.c_str(), FA_READ) == FR_OK)
 				{
 					WavData wavData;
-					if (validateWavFileFatFs(wavFile, entryName.c_str(), &wavData))
+					if (validateWavFile(wavFile, entryName.c_str(), &wavData))
 					{
 						if (wavData.sampleRate == 16000)
 						{
