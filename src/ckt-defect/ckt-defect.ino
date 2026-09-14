@@ -467,6 +467,8 @@ void loop()
 
 	audioUnmute();
 
+	printMemoryUsage();
+
 	while(1)
 	{
 		esp_task_wdt_reset();

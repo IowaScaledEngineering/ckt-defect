@@ -80,7 +80,12 @@ const std::vector<std::string> ordinalStrings = {   // Corresponds with oridinal
 
 void printMemoryUsage(void)
 {
-	Serial.printf("\n[SYS]: stack: %u heap: %u\n\n", uxTaskGetStackHighWaterMark(NULL), xPortGetFreeHeapSize());
+	Serial.printf(
+		"\n[SYS]: free stack(min): %lu bytes | free heap(min): %lu bytes | used heap(cur): %lu bytes\n\n", 
+		(unsigned long)(uxTaskGetStackHighWaterMark(NULL) * 4), 
+		(unsigned long)xPortGetMinimumEverFreeHeapSize(), 
+		(unsigned long)(ESP.getHeapSize() - ESP.getFreeHeap())
+	);
 }
 
 void printNVSStats(void)
