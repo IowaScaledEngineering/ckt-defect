@@ -121,7 +121,7 @@ bool configKeyValueSplit(char* key, uint32_t keySz, char* value, uint32_t valueS
 }
 
 // Custom line reader replacing f_gets to avoid linker dependency on FF_USE_STRFUNC
-static bool fatFsReadLine(FIL *fp, char *buffer, size_t maxLen)
+static bool readLine(FIL *fp, char *buffer, size_t maxLen)
 {
 	size_t idx = 0;
 	UINT bytesRead = 0;
@@ -294,6 +294,16 @@ void loop()
 		esp_task_wdt_reset();
 	}
 
+	Serial.print('\n');
+	Serial.println("ISE Defect Detector");
+	Serial.print("Version: ");
+	Serial.println(VERSION_STRING);
+	Serial.print("Git Rev: ");
+	Serial.println(GIT_REV);
+
+	printMemoryUsage();
+	printNVSStats();
+
 	// Direct FatFs Mount via ESP-IDF VFS SDSPI Driver
 	sdmmc_card_t *card = NULL;
 	sdmmc_host_t host = SDSPI_HOST_DEFAULT();
@@ -358,7 +368,7 @@ void loop()
 			configFilePresent = true;
 			char lineBuffer[256];
 
-			while (fatFsReadLine(&configFile, lineBuffer, sizeof(lineBuffer)))
+			while (readLine(&configFile, lineBuffer, sizeof(lineBuffer)))
 			{
 				char keyStr[128];
 				char valueStr[128];
@@ -389,16 +399,38 @@ void loop()
 		setDefaultMessages(trackMessages, cfg);
 	}
 
+	// Get unique words required
 	std::vector<std::string> words = getUniqueWords(trackMessages);
+
+	Serial.println("--- Unique Words Found ---");
+	for (const auto& word : words)
+	{
+		Serial.println(word.c_str());
+	}
+	Serial.println("--------------------------\n");
 
 	// Check for external vocab
 	if(sdCardPresent)
 	{
 		// Needed regardless for selection menu
 		vocabFindAvailable(cfg.vocabsAvailable);
+
+		Serial.println("------ Vocabs Found ------");
+		for (const auto& v : cfg.vocabsAvailable)
+		{
+			Serial.println(v.c_str());
+		}
+		Serial.println("--------------------------");
+
 		cfg.externalVocabPresent = loadExternalVocab(cfg.vocabSelected, words);
 	}
 	
+	Serial.print("Vocab Selected: ");
+	Serial.println(cfg.vocabSelected.c_str());
+	Serial.print("External Vocab: ");
+	Serial.println(cfg.externalVocabPresent);
+	Serial.print('\n');
+
 	// If no SD vocab, load the internal ones
 	if(!cfg.externalVocabPresent)
 	{
@@ -422,41 +454,14 @@ void loop()
 	menuManager.process();  // Call once here to get things going
 
 
-	Serial.print('\n');
-	Serial.println("ISE Defect Detector");
-	Serial.print("Version: ");
-	Serial.println(VERSION_STRING);
-	Serial.print("Git Rev: ");
-	Serial.println(GIT_REV);
-
-	printMemoryUsage();
-	printNVSStats();
-
 	// Print configuration values
-	Serial.print('\n');
+	Serial.println("Messages:");
+	Serial.println("---------");
 	printMessages(&trackMessages);
 	Serial.print('\n');
+	Serial.println("Configuration:");
+	Serial.println("--------------");
 	printConfiguration(&cfg);
-	Serial.print('\n');
-
-	Serial.println("--- Unique Words Found ---");
-	for (const auto& word : words)
-	{
-		Serial.println(word.c_str());
-	}
-	Serial.println("--------------------------\n");
-
-	Serial.println("------ Vocabs Found ------");
-	for (const auto& v : cfg.vocabsAvailable)
-	{
-		Serial.println(v.c_str());
-	}
-	Serial.println("--------------------------");
-
-	Serial.print("Vocab Selected: ");
-	Serial.println(cfg.vocabSelected.c_str());
-	Serial.print("External Vocab: ");
-	Serial.println(cfg.externalVocabPresent);
 	Serial.print('\n');
 
 	esp_task_wdt_reset();

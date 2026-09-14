@@ -238,19 +238,18 @@ bool validateWavFile(FIL *wavFile, const char* fileName, struct WavData *wavData
 
 bool loadExternalVocab(const std::string& vocabSelected, const std::vector<std::string>& words)
 {
+	uint32_t totalStartTime = millis();
 	std::string vocabDirName = "0:vocab/" + vocabSelected;
 	Serial.print("Attempting to load external vocabulary from: ");
 	Serial.println(vocabDirName.c_str());
 
 	FF_DIR *dir = (FF_DIR *)malloc(sizeof(FF_DIR));
-	FILINFO *fno = (FILINFO *)malloc(sizeof(FILINFO));
 	FIL *wavFile = (FIL *)malloc(sizeof(FIL));
 
-	if (!dir || !fno || !wavFile)
+	if (!dir || !wavFile)
 	{
 		Serial.println("! Failed to allocate FatFs buffer memory");
 		if (dir) free(dir);
-		if (fno) free(fno);
 		if (wavFile) free(wavFile);
 		return false;
 	}
@@ -268,66 +267,62 @@ bool loadExternalVocab(const std::string& vocabSelected, const std::vector<std::
 		Serial.print(vocabDirName.c_str());
 		Serial.printf(" (FatFs error code: %d)\n", res);
 		free(dir);
-		free(fno);
 		free(wavFile);
 		return false;
 	}
+	f_closedir(dir);
+	free(dir);
 
 	uint32_t loadedCount = 0;
+	uint32_t openTime = 0;
+	uint32_t validateTime = 0;
+	uint32_t pushTime = 0;
 
-	for (;;)
+	for (const auto& word : words)
 	{
 		esp_task_wdt_reset();
 
-		if (f_readdir(dir, fno) != FR_OK || fno->fname[0] == 0)
+		std::string fileName = word + ".wav";
+		std::string fullPath = vocabDirName + "/" + fileName;
+
+		uint32_t t1 = micros();
+		FRESULT fopen_res = f_open(wavFile, fullPath.c_str(), FA_READ);
+		openTime += (micros() - t1);
+
+		if (fopen_res == FR_OK)
 		{
-			break;
-		}
+			WavData wavData;
+			uint32_t t2 = micros();
+			bool isValid = validateWavFile(wavFile, fileName.c_str(), &wavData);
+			validateTime += (micros() - t2);
 
-		if (fno->fattrib & AM_DIR)
-		{
-			continue;
-		}
-
-		std::string entryName = fno->fname;
-
-		if (entryName.length() >= 5 && 
-		    0 == strcasecmp(entryName.substr(entryName.length() - 4).c_str(), ".wav"))
-		{
-			std::string wordName = entryName.substr(0, entryName.length() - 4);
-
-			auto it = std::find(words.begin(), words.end(), wordName);
-			if (it != words.end())
+			if (isValid)
 			{
-				std::string fullPath = vocabDirName + "/" + entryName;
-
-				if (f_open(wavFile, fullPath.c_str(), FA_READ) == FR_OK)
+				if (wavData.sampleRate == 16000)
 				{
-					WavData wavData;
-					if (validateWavFile(wavFile, entryName.c_str(), &wavData))
-					{
-						if (wavData.sampleRate == 16000)
-						{
-							DWORD startCluster = wavFile->obj.sclust;
+					DWORD startCluster = wavFile->obj.sclust;
 
-							Serial.print("+ Adding external WAV: ");
-							Serial.println(fullPath.c_str());
+					Serial.print("+ Adding external WAV: ");
+					Serial.println(fullPath.c_str());
 
-							vocab.push_back(new SdSound(fullPath, wavData.wavDataSize, wavData.dataStartPosition, wavData.sampleRate, startCluster));
-							loadedCount++;
-						}
-					}
-					f_close(wavFile);
+					uint32_t t3 = micros();
+					vocab.push_back(new SdSound(fullPath, wavData.wavDataSize, wavData.dataStartPosition, wavData.sampleRate, startCluster));
+					pushTime += (micros() - t3);
+					loadedCount++;
 				}
 			}
+			f_close(wavFile);
 		}
 	}
 
-	f_closedir(dir);
-	free(dir);
-	free(fno);
 	free(wavFile);
 
+	uint32_t totalDuration = millis() - totalStartTime;
+	Serial.println("--- Profiling Results for loadExternalVocab ---");
+	Serial.printf("Total Time: %lu ms\n", totalDuration);
+	Serial.printf("File Open Time: %lu us (%lu ms)\n", openTime, openTime / 1000);
+	Serial.printf("Validation Time: %lu us (%lu ms)\n", validateTime, validateTime / 1000);
+	Serial.printf("Vector Push Time: %lu us (%lu ms)\n", pushTime, pushTime / 1000);
 	Serial.print("External vocabulary load finished. Total valid words loaded: ");
 	Serial.println(loadedCount);
 
