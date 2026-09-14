@@ -719,3 +719,52 @@ MenuEvent MenuVocabSelect::update()
 	return MenuEvent::NOOP;
 }
 
+MenuEvent MenuMemoryStatus::update()
+{
+	disp->backlightOn();
+
+	// Line 0 (Row 0): Menu Name
+	disp->gotoxy(0, 0);
+	disp->print(menuName);
+
+	// Line 1 (Row 1): Stack High Water Mark
+	std::string stackStr = std::format("STACK: {}", (unsigned long)(uxTaskGetStackHighWaterMark(NULL) * 4));
+	if (stackStr.length() < 20) {
+		stackStr.append(20 - stackStr.length(), ' ');
+	}
+	disp->gotoxy(0, 1);
+	disp->print(stackStr.c_str());
+
+	// Line 2 (Row 2): Heap Min Free & Current Used
+	std::string heapStr = std::format("HEAP: {} ({})", 
+		(unsigned long)xPortGetMinimumEverFreeHeapSize(), 
+		(unsigned long)(ESP.getHeapSize() - ESP.getFreeHeap()));
+	if (heapStr.length() < 20) {
+		heapStr.append(20 - heapStr.length(), ' ');
+	}
+	disp->gotoxy(0, 2);
+	disp->print(heapStr.c_str());
+
+	// Line 3 (Row 3): BACK button
+	disp->gotoxy(16, 3);
+	disp->print("BACK");
+
+	DisplayEvent ev;
+	if (getMenuInputEvent(&ev))
+	{
+		if (ev.type == DisplayEventType::KEY_PRESS)
+		{
+			switch (ev.keyNum)
+			{
+				case 4: // BACK
+					return MenuEvent::BACK;
+			}
+		}
+		else if (ev.type == DisplayEventType::KEY_RELEASE)
+		{
+			handleButtonRelease(ev.keyNum);
+		}
+	}
+
+	return MenuEvent::NOOP;
+}

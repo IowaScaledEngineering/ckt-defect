@@ -109,3 +109,13 @@ public:
 	void onEnter() override;
 	MenuEvent update() override;
 };
+
+class MenuMemoryStatus : public Menu
+{
+public:
+	MenuMemoryStatus(const std::string &name)
+		: Menu(name) {}
+
+	void onEnter() override { Menu::onEnter(); }
+	MenuEvent update() override;
+};
