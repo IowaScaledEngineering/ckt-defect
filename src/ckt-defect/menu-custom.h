@@ -1,12 +1,14 @@
 #pragma once
 
+#include <Arduino.h>
+#include <vector>
 #include "src/menu/menu.h"
 #include "configuration.h"
 #include "data.h"
-#include <Arduino.h>
 #include "sound.h"
 #include "audio.h"
-#include <vector>
+#include "messages.h"
+
 
 enum class MenuHomeState {
         STANDBY,
@@ -65,6 +67,20 @@ class MenuVolume : public Menu
 		
 		void onEnter() override;
 		MenuEvent update() override;
+};
+
+class MenuVocabStatus : public Menu
+{
+private:
+	const DetectorConfiguration &cfg;
+	const MessageBundle &trackMessages;
+
+public:
+	MenuVocabStatus(const std::string &name, const DetectorConfiguration &c, const MessageBundle &msgs)
+		: Menu(name), cfg(c), trackMessages(msgs) {}
+
+	void onEnter() override { Menu::onEnter(); }
+	MenuEvent update() override;
 };
 
 class MenuVocabTest : public Menu

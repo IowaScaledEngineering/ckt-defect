@@ -677,6 +677,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 
 	// Diagnostic	
 	auto menuDiagnostics = std::make_shared<MenuListSelector>("Diagnostics");
+	auto menuVocabStatus = std::make_shared<MenuVocabStatus>("Vocab Status", cfg, trackMessages);
 	auto menuVocabTest = std::make_shared<MenuVocabTest>("Vocab Test");
 	auto menuMemoryStatus = std::make_shared<MenuMemoryStatus>("Memory Status");
 	auto menuReset = std::make_shared<MenuReset>("Factory Reset", cfg);
@@ -813,6 +814,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	menuSysConfig->addChild(menuPttDelay);
 
 	mainSel->addChild(menuDiagnostics);
+	menuDiagnostics->addChild(menuVocabStatus);
 	menuDiagnostics->addChild(menuVocabTest);
 	menuDiagnostics->addChild(menuMemoryStatus);
 	menuDiagnostics->addChild(menuReset);

@@ -447,6 +447,57 @@ MenuEvent MenuVolume::update()
 	return MenuEvent::NOOP;
 }
 
+MenuEvent MenuVocabStatus::update()
+{
+	disp->backlightOn();
+
+	// Line 0 (Row 0): Menu Name
+	disp->gotoxy(0, 0);
+	disp->print(menuName);
+
+	// Line 1 (Row 1): Vocab currently in use
+	std::string vocabStr = cfg.externalVocabPresent ? cfg.vocabSelected : "Internal";
+	if (vocabStr.length() < 20) {
+		vocabStr.append(20 - vocabStr.length(), ' ');
+	}
+	disp->gotoxy(0, 1);
+	disp->print(vocabStr.c_str());
+
+	// Line 2 (Row 2): Words: N/M
+	size_t n = vocabGetSize();
+	size_t m = getUniqueWords(trackMessages).size();
+	std::string loadedStr = "Words: " + std::to_string(n) + "/" + std::to_string(m);
+	
+	if (loadedStr.length() < 20) {
+		loadedStr.append(20 - loadedStr.length(), ' ');
+	}
+	disp->gotoxy(0, 2);
+	disp->print(loadedStr.c_str());
+	
+	// Line 3 (Row 3): BACK button
+	disp->gotoxy(16, 3);
+	disp->print("BACK");
+
+	DisplayEvent ev;
+	if (getMenuInputEvent(&ev))
+	{
+		if (ev.type == DisplayEventType::KEY_PRESS)
+		{
+			switch (ev.keyNum)
+			{
+				case 4: // BACK
+					return MenuEvent::BACK;
+			}
+		}
+		else if (ev.type == DisplayEventType::KEY_RELEASE)
+		{
+			handleButtonRelease(ev.keyNum);
+		}
+	}
+
+	return MenuEvent::NOOP;
+}
+
 void MenuVocabTest::onEnter()
 {
 	Menu::onEnter(); // Clear display and reset button states
