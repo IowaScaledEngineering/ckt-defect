@@ -75,8 +75,11 @@ void IRAM_ATTR axle_A1_isr(void *arg)
 		case AxleIsrState::SPEED_1:
 		case AxleIsrState::COUNT_1:
 		#pragma GCC diagnostic pop
-			axleCount[0] = axleCount[0] + 1;
-			currentAxleTime[0] = time;
+			if((time-currentAxleTime[0]) > 5000)
+			{
+				axleCount[0] = axleCount[0] + 1;
+				currentAxleTime[0] = time;
+			}
 			break;
 		case AxleIsrState::SPEED_2:
 			entranceDeltaMicros[0] = time - firstAxleTime[0];
@@ -107,8 +110,11 @@ void IRAM_ATTR axle_A2_isr(void *arg)
 		case AxleIsrState::SPEED_2:
 		case AxleIsrState::COUNT_2:
 		#pragma GCC diagnostic pop
-			axleCount[0] = axleCount[0] + 1;
-			currentAxleTime[0] = time;
+			if((time-currentAxleTime[0]) > 5000)
+			{
+				axleCount[0] = axleCount[0] + 1;
+				currentAxleTime[0] = time;
+			}
 			break;
 		case AxleIsrState::SPEED_1:
 			entranceDeltaMicros[0] = time - firstAxleTime[0];

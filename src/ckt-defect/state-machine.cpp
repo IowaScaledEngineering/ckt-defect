@@ -359,7 +359,9 @@ void DetectorStateMachine::update()
 			if( data->newAxle )
 			{
 				Serial.print("Axle Count: ");
-				Serial.println(data->axleCount);
+				Serial.print(data->axleCount);
+				Serial.print(" - ");
+				Serial.println(data->axleTime);
 				transitionTo(DetectorState::AXLE_DEFECT);
 			}
 			else if(!data->axleDetect && !data->irDetect)

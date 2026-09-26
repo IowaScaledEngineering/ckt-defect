@@ -44,6 +44,7 @@ struct DataBundle {
 
 	//  Loaded by main loop, consumed by state machine(s)
 	uint16_t axleCountLive = 0;
+	uint32_t axleTime = 0;
 	bool irInput = false;
 	bool axleInput1 = false;
 	bool axleInput2 = false;

@@ -552,7 +552,9 @@ clrTestPoint(TP2);
 		
 		// Update the axle counts
 		data[0].axleCountLive = axleGetCount(0);
+		data[0].axleTime = axleGetLatestAxleTime(0);
 		data[1].axleCountLive = axleGetCount(1);
+		data[1].axleTime = axleGetLatestAxleTime(1);
 
 		// Update State Machines
 		for(uint32_t i = 0; i<NUM_TRACKS; i++)
