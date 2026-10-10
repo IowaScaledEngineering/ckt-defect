@@ -31,6 +31,7 @@ static volatile unsigned long currentAxleTime[NUM_TRACKS];
 static volatile unsigned long entranceDeltaMicros[NUM_TRACKS];
 static volatile unsigned long exitDeltaMicros[NUM_TRACKS];
 static volatile uint8_t direction[NUM_TRACKS];  // 1 = 1->2, 2 = 2->1, 0 (or anything else) = unknown
+static volatile uint32_t minAxleTimeMicroseconds = 5000;
 
 enum class AxleIsrState
 {
@@ -75,7 +76,7 @@ void IRAM_ATTR axle_A1_isr(void *arg)
 		case AxleIsrState::SPEED_1:
 		case AxleIsrState::COUNT_1:
 		#pragma GCC diagnostic pop
-			if((time-currentAxleTime[0]) > 5000)
+			if((time-currentAxleTime[0]) > minAxleTimeMicroseconds)
 			{
 				axleCount[0] = axleCount[0] + 1;
 				currentAxleTime[0] = time;
@@ -110,7 +111,7 @@ void IRAM_ATTR axle_A2_isr(void *arg)
 		case AxleIsrState::SPEED_2:
 		case AxleIsrState::COUNT_2:
 		#pragma GCC diagnostic pop
-			if((time-currentAxleTime[0]) > 5000)
+			if((time-currentAxleTime[0]) > minAxleTimeMicroseconds)
 			{
 				axleCount[0] = axleCount[0] + 1;
 				currentAxleTime[0] = time;
@@ -145,8 +146,11 @@ void IRAM_ATTR axle_B1_isr(void *arg)
 		case AxleIsrState::SPEED_1:
 		case AxleIsrState::COUNT_1:
 		#pragma GCC diagnostic pop
-			axleCount[1] = axleCount[1] + 1;
-			currentAxleTime[1] = time;
+			if((time-currentAxleTime[1]) > minAxleTimeMicroseconds)
+			{
+				axleCount[1] = axleCount[1] + 1;
+				currentAxleTime[1] = time;
+			}
 			break;
 		case AxleIsrState::SPEED_2:
 			entranceDeltaMicros[1] = time - firstAxleTime[1];
@@ -177,8 +181,11 @@ void IRAM_ATTR axle_B2_isr(void *arg)
 		case AxleIsrState::SPEED_2:
 		case AxleIsrState::COUNT_2:
 		#pragma GCC diagnostic pop
-			axleCount[1] = axleCount[1] + 1;
-			currentAxleTime[1] = time;
+			if((time-currentAxleTime[1]) > minAxleTimeMicroseconds)
+			{
+				axleCount[1] = axleCount[1] + 1;
+				currentAxleTime[1] = time;
+			}
 			break;
 		case AxleIsrState::SPEED_1:
 			entranceDeltaMicros[1] = time - firstAxleTime[1];
@@ -204,6 +211,11 @@ void axleInit()
 	gpio_isr_handler_add(AXLE_A2, axle_A2_isr, NULL);
 	gpio_isr_handler_add(AXLE_B1, axle_B1_isr, NULL);
 	gpio_isr_handler_add(AXLE_B2, axle_B2_isr, NULL);
+}
+
+void axleSetMinAxleTime(uint32_t timeMicroseconds)
+{
+	minAxleTimeMicroseconds = timeMicroseconds;
 }
 
 uint32_t axleGetCount(uint32_t track)

@@ -6,6 +6,7 @@
 #include "src/menu/menu-mgr.h"
 #include "menu-custom.h"
 #include "audio.h"
+#include "axle.h"
 
 namespace {
 // File-scoped menu references restricted to this translation unit
@@ -677,6 +678,20 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		"ms",
 		[&cfg]() { cfg.pttDelay = audioGetPttDelay()/100; saveConfiguration(&cfg); }
 	);
+	auto menuMinAxleTime = std::make_shared<MenuNumberDial>(
+		"Min Axle Time",
+		[&cfg]() { return cfg.minAxleTime * 100; },
+		[&cfg](int16_t val) { cfg.minAxleTime = val / 100; },
+		false,
+		0,       // min (0 us)
+		25000,   // max (25 ms = 25000 us)
+		100,     // step (100 us)
+		"us",
+		[&cfg]() { 
+			axleSetMinAxleTime(cfg.minAxleTime * 100); 
+			saveConfiguration(&cfg); 
+		}
+	);
 
 	// Diagnostic	
 	auto menuDiagnostics = std::make_shared<MenuListSelector>("Diagnostics");
@@ -815,6 +830,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	mainSel->addChild(menuSysConfig);
 	menuSysConfig->addChild(menuBacklightLevel);
 	menuSysConfig->addChild(menuPttDelay);
+	menuSysConfig->addChild(menuMinAxleTime);
 
 	mainSel->addChild(menuDiagnostics);
 	menuDiagnostics->addChild(menuVocabStatus);

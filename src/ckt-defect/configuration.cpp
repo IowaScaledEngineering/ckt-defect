@@ -88,6 +88,8 @@ LICENSE:
 
 #define VOCAB_IN_USE_DEFAULT              ""
 
+#define MIN_AXLE_TIME_DEFAULT             50
+
 #define PREF_NAMESPACE   "defectdetector"
 
 Preferences preferences;
@@ -199,6 +201,9 @@ void loadConfiguration(DetectorConfiguration* cfg)
 	// Vocab
 	String loadedVocab = preferences.getString("vocab", VOCAB_IN_USE_DEFAULT);
 	cfg->vocabSelected = loadedVocab.c_str();
+
+	// Misc. Stuff
+	cfg->minAxleTime = preferences.getUChar("minAxTime", MIN_AXLE_TIME_DEFAULT);
 
 	preferences.end();
 }
@@ -388,6 +393,10 @@ void saveConfiguration(DetectorConfiguration* cfg)
 	if(cfg->vocabSelected != storedVocab)
 		preferences.putString("vocab", cfg->vocabSelected.c_str());
 
+	// Misc. Stuff
+	if(cfg->minAxleTime != preferences.getUChar("minAxTime", ~cfg->minAxleTime))
+		preferences.putUChar("minAxTime", cfg->minAxleTime);
+
 	preferences.end();
 }
 
@@ -573,6 +582,10 @@ void printConfiguration(DetectorConfiguration* cfg)
 	// Vocab
 	Serial.print("Vocab In Use: ");
 	Serial.println(cfg->vocabSelected.c_str());
+
+	// Misc. Stuff
+	Serial.print("Minimum Axle Time: ");
+	Serial.println(cfg->minAxleTime);
 }
 
 

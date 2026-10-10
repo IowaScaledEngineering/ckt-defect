@@ -228,6 +228,7 @@ void loop()
 
 	// Read NVM configuration
 	loadConfiguration(&cfg);
+	axleSetMinAxleTime(cfg.minAxleTime * 100);
 	// Preload the track name based on loaded configuration.  Might be overwritten below by SD card.
 	updateTrackNames(&cfg);
 	updateDirectionNames(&cfg);

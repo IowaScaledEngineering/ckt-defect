@@ -74,7 +74,7 @@ struct DetectorConfiguration {
 	float minTemperatureC;   // Float so conversion to/from F works cleanly
 	float maxTemperatureC;
 
-	// Defects
+	// Built-In Defects
 	bool defectHotJournalEnable;
 	uint32_t defectHotJournalAxleRate;
 	bool defectHotWheelEnable;
@@ -104,6 +104,9 @@ struct DetectorConfiguration {
 	bool externalVocabPresent;  // Volatile value, not stored in NVM
 	std::string vocabSelected;
 	std::vector<std::string> vocabsAvailable;  // Loaded at runtime, not stored in NVM
+	
+	// Misc. Stuff
+	uint8_t minAxleTime;   // 100us increments
 };
 
 void loadConfiguration(DetectorConfiguration* cfg);

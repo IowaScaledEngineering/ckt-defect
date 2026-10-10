@@ -22,6 +22,7 @@ LICENSE:
 #pragma once
 
 void axleInit();
+void axleSetMinAxleTime(uint32_t timeMicroseconds);
 uint32_t axleGetCount(uint32_t track);
 unsigned long axleGetEntranceDeltaMicros(uint32_t track);
 unsigned long axleGetExitDeltaMicros(uint32_t track);
