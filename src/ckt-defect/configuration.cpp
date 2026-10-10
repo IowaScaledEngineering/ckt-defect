@@ -596,7 +596,7 @@ void printConfiguration(DetectorConfiguration* cfg)
 		Serial.println("Defect Detect");
 
 	// Vocab
-	Serial.print("Vocab In Use: ");
+	Serial.print("Vocab Selected: ");
 	Serial.println(cfg->vocabSelected.c_str());
 
 	// Misc. Stuff
