@@ -135,7 +135,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	);
 
 	// Track
-	auto menuTrackConfig = std::make_shared<MenuListSelector>("Track Name");
+	auto menuTrackConfig = std::make_shared<MenuListSelector>("Track");
 	auto menuTrackNameEn = std::make_shared<MenuBoolSelector>(
 		"Track Name Enable",
 		&cfg.trackNameEnable, 
@@ -160,7 +160,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	);
 	
 	// Axle
-	auto menuAxleConfig = std::make_shared<MenuListSelector>("Axle Count");
+	auto menuAxleConfig = std::make_shared<MenuListSelector>("Axle");
 	auto menuAxleEn = std::make_shared<MenuBoolSelector>(
 		"Axle Count Enable",
 		&cfg.axleEnable, 
@@ -273,7 +273,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	);
 
 	// Rail Name
-	auto menuRailConfig = std::make_shared<MenuListSelector>("Rail Name");
+	auto menuRailConfig = std::make_shared<MenuListSelector>("Rail");
 	auto menuRailNameEn = std::make_shared<MenuBoolSelector>(
 		"Rail Name Enable",
 		&cfg.railNameEnable, 
@@ -337,7 +337,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	);
 
 	// Defect
-	auto menuDefects = std::make_shared<MenuListSelector>("Defect Config");
+	auto menuDefects = std::make_shared<MenuListSelector>("Defects");
 
 	// Hot Journal
 	auto menuHotJournal = std::make_shared<MenuListSelector>("Hot Journal");
@@ -490,7 +490,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	);
 
 	// Messages
-	auto menuMessages = std::make_shared<MenuListSelector>("Message Config");
+	auto menuMessages = std::make_shared<MenuListSelector>("Messages");
 	auto menuMilepostEn = std::make_shared<MenuBoolSelector>(
 		"Milepost",
 		&cfg.milepostEnable, 
