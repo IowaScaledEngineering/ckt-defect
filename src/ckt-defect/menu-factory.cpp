@@ -15,6 +15,7 @@ std::shared_ptr<Menu> menuTrackNameB;
 std::shared_ptr<Menu> menuMinAxles;
 std::shared_ptr<Menu> menuEntranceAxles;
 std::shared_ptr<Menu> menuSpeedUnits;
+std::shared_ptr<Menu> menuSpeedScale;
 std::shared_ptr<Menu> menuSpeedType;
 std::shared_ptr<Menu> menuMinSpeed;
 std::shared_ptr<Menu> menuTemperatureUnits;
@@ -59,10 +60,12 @@ void updateAllMenuVisibility(const DetectorConfiguration &cfg)
 	// Individual Speed Item Visibilities 
 	if (cfg.speedEnable) {
 		if (menuSpeedUnits)   menuSpeedUnits->unhide();
+		if (menuSpeedScale)   menuSpeedScale->unhide();
 		if (menuSpeedType)    menuSpeedType->unhide();
 		if (menuMinSpeed)     menuMinSpeed->unhide();      
 	} else {
 		if (menuSpeedUnits)   menuSpeedUnits->hide();
+		if (menuSpeedScale)   menuSpeedScale->hide();
 		if (menuSpeedType)    menuSpeedType->hide();
 		if (menuMinSpeed)     menuMinSpeed->hide();
 	}
@@ -261,7 +264,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		"Kilometers/Hour", "KPH", 
 		[&cfg]() { saveConfiguration(&cfg); std::static_pointer_cast<MenuNumberDial>(menuMinSpeed)->setUnits(cfg.speedUnitsMph ? "mph" : "kph"); }
 	);
-	auto menuSpeedScale = std::make_shared<MenuDigitThumbwheel>(
+	menuSpeedScale = std::make_shared<MenuDigitThumbwheel>(
 		"Speed Scale",
 		&cfg.speedScale,
 		false,
