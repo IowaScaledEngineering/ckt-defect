@@ -26,6 +26,7 @@ COMPILE   = $(ARDUINO) compile -b $(BOARD) --build-path $(BUILD_DIR) $(OPTIONS) 
 define ESP_TOUCH_RESET
 	@echo "Putting ESP32-S2 into bootloader mode..."
 	@python3 -c "import serial; s = serial.Serial('$(PORT)', 1200); s.close()"
+	@bash -c 'sleep 0.2'
 	@echo "Waiting for port $(PORT) to reappear..."
 	@bash -c 'for i in {1..10}; do [ -e $(PORT) ] && exit 0; sleep 0.3; done; echo "Port $(PORT) did not reappear!"; exit 1'
 	@bash -c 'sleep 0.5; echo "Done!"'
