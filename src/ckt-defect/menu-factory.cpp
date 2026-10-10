@@ -473,7 +473,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	// Messages
 	auto menuMessages = std::make_shared<MenuListSelector>("Message Config");
 	auto menuMilepostEn = std::make_shared<MenuBoolSelector>(
-		"Milepost Enable",
+		"Milepost",
 		&cfg.milepostEnable, 
 		false, 
 		"On", "ON", 
