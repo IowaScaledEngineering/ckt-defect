@@ -491,20 +491,6 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 
 	// Messages
 	auto menuMessages = std::make_shared<MenuListSelector>("Messages");
-	auto menuMilepostEn = std::make_shared<MenuBoolSelector>(
-		"Milepost",
-		&cfg.milepostEnable, 
-		false, 
-		"On", "ON", 
-		"Off", "OFF"
-	);
-	auto menuTemperatureEn = std::make_shared<MenuBoolSelector>(
-		"Temperature",
-		&cfg.temperatureEnable, 
-		false, 
-		"On", "ON", 
-		"Off", "OFF"
-	);
 	auto menuEntranceMessage = std::make_shared<MenuBoolSelector>(
 		"Entrance Message",
 		&cfg.entranceMessageEnable,
@@ -546,6 +532,22 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		false,
 		ordinalTypes,
 		[&cfg, &trackMessages]() { saveConfiguration(&cfg); updateMessages(trackMessages, cfg); }
+	);
+
+	// Message Bits
+	auto menuMilepostEn = std::make_shared<MenuBoolSelector>(
+		"Milepost Msg",
+		&cfg.milepostEnable, 
+		false, 
+		"On", "ON", 
+		"Off", "OFF"
+	);
+	auto menuTemperatureEn = std::make_shared<MenuBoolSelector>(
+		"Temperature Msg",
+		&cfg.temperatureEnable, 
+		false, 
+		"On", "ON", 
+		"Off", "OFF"
 	);
 
 	// Operation Mode
@@ -785,15 +787,14 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	menuWideLoad->addChild(menuWideLoadRate);
 
 	mainSel->addChild(menuMessages);
-	menuMessages->addChild(menuMilepostEn);
-	menuMessages->addChild(menuTemperatureEn);
 	menuMessages->addChild(menuEntranceMessage);
 	menuMessages->addChild(menuAlertMessage);
-
 	menuMessages->addChild(menuExitMessage);
 	menuExitMessage->addChild(menuTalkDefectOnly);
 	menuExitMessage->addChild(menuMaxDefects);
 	menuExitMessage->addChild(menuOrdinalType);
+	menuMessages->addChild(menuMilepostEn);
+	menuMessages->addChild(menuTemperatureEn);
 
 	mainSel->addChild(menuOperationMode);
 
