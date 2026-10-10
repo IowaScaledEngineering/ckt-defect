@@ -536,14 +536,14 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 
 	// Message Bits
 	auto menuMilepostEn = std::make_shared<MenuBoolSelector>(
-		"Milepost Msg",
+		"Include Milepost",
 		&cfg.milepostEnable, 
 		false, 
 		"On", "ON", 
 		"Off", "OFF"
 	);
 	auto menuTemperatureEn = std::make_shared<MenuBoolSelector>(
-		"Temperature Msg",
+		"Include Temp.",
 		&cfg.temperatureEnable, 
 		false, 
 		"On", "ON", 
