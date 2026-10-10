@@ -563,11 +563,15 @@ clrTestPoint(TP2);
 			if(AxleState::RESET == axleStateMachines[i].getCurrentState())
 				axleReset(i);
 
-			else if(AxleState::TIMEOUT == axleStateMachines[i].getCurrentState() && !cfg.speedTypeEnter)
+			else if(AxleState::TIMEOUT == axleStateMachines[i].getCurrentState())
 			{
 				// Calculate exit speed
-				data[i].speedFloat = (cfg.speedScale / 10.0) * SPEED_COEF / (axleGetExitDeltaMicros(i));
-				data[i].speed = data[i].speedFloat + 0.5;
+				data[i].speedFloatExit = (cfg.speedScale / 10.0) * SPEED_COEF / (axleGetExitDeltaMicros(i));
+				if(!cfg.speedTypeEnter)
+				{
+					// Overwrite speed with exit speed
+					data[i].speed = data[i].speedFloatExit + 0.5;
+				}
 			}
 
 			if((axleGetDirection(i) > 0) && (0 == data[i].direction))
@@ -576,11 +580,11 @@ clrTestPoint(TP2);
 				data[i].direction = axleGetDirection(i);
 			}
 
-			if((axleGetEntranceDeltaMicros(i) > 0) && cfg.speedTypeEnter && (0 == data[i].speed))
+			if((axleGetEntranceDeltaMicros(i) > 0) && (0 == data[i].speed))
 			{
 				// Calculate entrance speed
-				data[i].speedFloat = (cfg.speedScale / 10.0) * SPEED_COEF / (axleGetEntranceDeltaMicros(i));
-				data[i].speed = data[i].speedFloat + 0.5;
+				data[i].speedFloatEnter = (cfg.speedScale / 10.0) * SPEED_COEF / (axleGetEntranceDeltaMicros(i));
+				data[i].speed = data[i].speedFloatEnter + 0.5;
 			}
 			
 			if(AxleState::TIMEOUT == axleStateMachines[i].getCurrentState())
@@ -593,7 +597,9 @@ clrTestPoint(TP2);
 				Serial.print("Speed: ");
 				Serial.print(data[i].speed);
 				Serial.print(" (");
-				Serial.print(data[i].speedFloat);
+				Serial.print(data[i].speedFloatEnter);
+				Serial.print(" --> ");
+				Serial.print(data[i].speedFloatExit);
 				Serial.println(")");
 			}
 

@@ -30,7 +30,8 @@ struct DataBundle {
 	uint16_t axleCount = 0;
 	uint16_t totalAxles = 0;
 	uint16_t speed = 0;
-	float speedFloat = 0;
+	float speedFloatEnter = 0;
+	float speedFloatExit = 0;
 	uint8_t direction;
 
 	// Saved pre-transformed spoken message for RPT button playback
