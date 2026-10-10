@@ -56,6 +56,7 @@ LICENSE:
 #define MSG_REPEAT_TIMEOUT_DEFAULT        30
 
 #define TEMPERATURE_EN_DEFAULT            true
+#define TEMPERATURE_DISP_DEFAULT          true
 #define TEMPERATURE_REAL_DEFAULT          true
 #define TEMPERATURE_UNITS_F_DEFAULT       true
 #define MIN_TEMPERATURE_DEFAULT           50
@@ -164,6 +165,7 @@ void loadConfiguration(DetectorConfiguration* cfg)
 
 	// Temperature
 	cfg->temperatureEnable = preferences.getBool("tmpEn", TEMPERATURE_EN_DEFAULT);
+	cfg->temperatureDisplay = preferences.getBool("tmpDisp", TEMPERATURE_DISP_DEFAULT);
 	cfg->temperatureReal = preferences.getBool("tmpReal", TEMPERATURE_REAL_DEFAULT);
 	cfg->temperatureUnitsF = preferences.getBool("tmpUnitF", TEMPERATURE_UNITS_F_DEFAULT);
 	cfg->minTemperatureC = preferences.getFloat("tmpMin", MIN_TEMPERATURE_DEFAULT);
@@ -322,6 +324,9 @@ void saveConfiguration(DetectorConfiguration* cfg)
 	// Temperature
 	if(cfg->temperatureEnable != preferences.getBool("tmpEn", !cfg->temperatureEnable))
 		preferences.putBool("tmpEn", cfg->temperatureEnable);
+
+	if(cfg->temperatureDisplay != preferences.getBool("tmpDisp", !cfg->temperatureDisplay))
+		preferences.putBool("tmpDisp", cfg->temperatureDisplay);
 
 	if(cfg->temperatureReal != preferences.getBool("tmpReal", !cfg->temperatureReal))
 		preferences.putBool("tmpReal", cfg->temperatureReal);
@@ -514,6 +519,9 @@ void printConfiguration(DetectorConfiguration* cfg)
 
 	Serial.print("Temperature Enable: ");
 	Serial.println(cfg->temperatureEnable);
+
+	Serial.print("Temperature Display: ");
+	Serial.println(cfg->temperatureDisplay);
 
 	Serial.print("Temperature Mode: ");
 	if(cfg->temperatureReal)

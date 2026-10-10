@@ -18,10 +18,6 @@ std::shared_ptr<Menu> menuSpeedUnits;
 std::shared_ptr<Menu> menuSpeedScale;
 std::shared_ptr<Menu> menuSpeedType;
 std::shared_ptr<Menu> menuMinSpeed;
-std::shared_ptr<Menu> menuTemperatureUnits;
-std::shared_ptr<Menu> menuTemperatureType;
-std::shared_ptr<Menu> menuMinTemperature;
-std::shared_ptr<Menu> menuMaxTemperature;
 std::shared_ptr<Menu> menuDirectionName1;
 std::shared_ptr<Menu> menuDirectionName2;
 std::shared_ptr<Menu> menuRailName;
@@ -64,30 +60,6 @@ void updateAllMenuVisibility(const DetectorConfiguration &cfg)
 		if (menuSpeedScale)   menuSpeedScale->hide();
 		if (menuSpeedType)    menuSpeedType->hide();
 		if (menuMinSpeed)     menuMinSpeed->hide();
-	}
-
-	// Temperature
-	if (cfg.temperatureEnable)
-	{
-		if (menuTemperatureUnits) menuTemperatureUnits->unhide();
-		if (menuTemperatureType)  menuTemperatureType->unhide();
-		if (!cfg.temperatureReal)
-		{
-			if (menuMinTemperature) menuMinTemperature->unhide();
-			if (menuMaxTemperature) menuMaxTemperature->unhide();
-		}
-		else
-		{
-			if (menuMinTemperature) menuMinTemperature->hide();
-			if (menuMaxTemperature) menuMaxTemperature->hide();
-		}
-	}
-	else
-	{
-		if (menuTemperatureUnits) menuTemperatureUnits->hide();
-		if (menuTemperatureType)  menuTemperatureType->hide();
-		if (menuMinTemperature)   menuMinTemperature->hide();
-		if (menuMaxTemperature)   menuMaxTemperature->hide();
 	}
 
 	// Direction Visibility
@@ -317,6 +289,53 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		[&cfg]() { saveConfiguration(&cfg); updateRailNames(&cfg); }
 	);
 
+	// Temperature
+	auto menuTemperatureConfig = std::make_shared<MenuListSelector>("Temperature");
+	auto menuTemperatureType = std::make_shared<MenuBoolSelector>(
+		"Real/Simulated",
+		&cfg.temperatureReal,
+		false, 
+		"Real", "REAL",
+		"Simulated", "SIM",
+		[&cfg]() { saveConfiguration(&cfg); }
+	);
+	std::string degF("\xDF" "F", 2);
+	std::string degC("\xDF" "C", 2);
+	auto menuMinTemperature = std::make_shared<MenuNumberDial>(
+		"Minimum Temp",
+		[&cfg]() { return getMinTemperature(&cfg); },
+		[&cfg](int16_t val) { setMinTemperature(&cfg, val); },
+		false,
+		-99,   // min
+		150,  // max
+		1,    // step
+		cfg.temperatureUnitsF ? degF : degC,
+		[&cfg]() { saveConfiguration(&cfg); }
+	);
+	auto menuMaxTemperature = std::make_shared<MenuNumberDial>(
+		"Maximum Temp",
+		[&cfg]() { return getMaxTemperature(&cfg); },
+		[&cfg](int16_t val) { setMaxTemperature(&cfg, val); },
+		false,
+		-99,   // min
+		150,  // max
+		1,    // step
+		cfg.temperatureUnitsF ? degF : degC,
+		[&cfg]() { saveConfiguration(&cfg); }
+	);
+	auto menuTemperatureUnits = std::make_shared<MenuBoolSelector>(
+		"Units",
+		&cfg.temperatureUnitsF,
+		false, 
+		"Fahrenheit", degF,
+		"Celsius", degC, 
+		[&cfg, degF, degC, menuMinTemperature, menuMaxTemperature]() {
+			saveConfiguration(&cfg);
+			std::static_pointer_cast<MenuNumberDial>(menuMinTemperature)->setUnits(cfg.temperatureUnitsF ? degF : degC);
+			std::static_pointer_cast<MenuNumberDial>(menuMaxTemperature)->setUnits(cfg.temperatureUnitsF ? degF : degC);
+		}
+	);
+
 	// Defect
 	auto menuDefects = std::make_shared<MenuListSelector>("Defect Config");
 
@@ -479,6 +498,13 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		"On", "ON", 
 		"Off", "OFF"
 	);
+	auto menuTemperatureEn = std::make_shared<MenuBoolSelector>(
+		"Temperature",
+		&cfg.temperatureEnable, 
+		false, 
+		"On", "ON", 
+		"Off", "OFF"
+	);
 	auto menuEntranceMessage = std::make_shared<MenuBoolSelector>(
 		"Entrance Message",
 		&cfg.entranceMessageEnable,
@@ -520,59 +546,6 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		false,
 		ordinalTypes,
 		[&cfg, &trackMessages]() { saveConfiguration(&cfg); updateMessages(trackMessages, cfg); }
-	);
-
-	// Temperature
-	auto menuTemperatureConfig = std::make_shared<MenuListSelector>("Temperature");
-	auto menuTemperatureEn = std::make_shared<MenuBoolSelector>(
-		"Temperature Enable",
-		&cfg.temperatureEnable, 
-		false, 
-		"On", "ON", 
-		"Off", "OFF"
-	);
-	menuTemperatureType = std::make_shared<MenuBoolSelector>(
-		"Real/Simulated",
-		&cfg.temperatureReal,
-		false, 
-		"Real", "REAL",
-		"Simulated", "SIM" 
-	);
-	std::string degF("\xDF" "F", 2);
-	std::string degC("\xDF" "C", 2);
-	menuMinTemperature = std::make_shared<MenuNumberDial>(
-		"Minimum Temp",
-		[&cfg]() { return getMinTemperature(&cfg); },
-		[&cfg](int16_t val) { setMinTemperature(&cfg, val); },
-		false,
-		-99,   // min
-		150,  // max
-		1,    // step
-		cfg.temperatureUnitsF ? degF : degC,
-		[&cfg]() { saveConfiguration(&cfg); }
-	);
-	menuMaxTemperature = std::make_shared<MenuNumberDial>(
-		"Maximum Temp",
-		[&cfg]() { return getMaxTemperature(&cfg); },
-		[&cfg](int16_t val) { setMaxTemperature(&cfg, val); },
-		false,
-		-99,   // min
-		150,  // max
-		1,    // step
-		cfg.temperatureUnitsF ? degF : degC,
-		[&cfg]() { saveConfiguration(&cfg); }
-	);
-	menuTemperatureUnits = std::make_shared<MenuBoolSelector>(
-		"Units",
-		&cfg.temperatureUnitsF,
-		false, 
-		"Fahrenheit", degF,
-		"Celsius", degC, 
-		[&cfg, degF, degC]() {
-			saveConfiguration(&cfg);
-			std::static_pointer_cast<MenuNumberDial>(menuMinTemperature)->setUnits(cfg.temperatureUnitsF ? degF : degC);
-			std::static_pointer_cast<MenuNumberDial>(menuMaxTemperature)->setUnits(cfg.temperatureUnitsF ? degF : degC);
-		}
 	);
 
 	// Operation Mode
@@ -660,6 +633,14 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		"Off", "OFF",
 		[&cfg]() { saveConfiguration(&cfg); }
 	);
+	auto menuTemperatureDisplay = std::make_shared<MenuBoolSelector>(
+		"Temp. Display",
+		&cfg.temperatureDisplay,
+		false,
+		"On", "ON",
+		"Off", "OFF",
+		[&cfg]() { saveConfiguration(&cfg); }
+	);
 	auto menuBacklightLevel = std::make_shared<MenuPercentageBar>(
 		"Backlight Level", 
 		[lcd]() { return lcd->getBrightness(); },
@@ -709,8 +690,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	menuTrackNameEn->setSaveCallback([&cfg]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg); updateTrackNames(&cfg); });
 	menuAxleEn->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg); updateMessages(trackMessages, cfg); });
 	menuSpeedEn->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg); updateMessages(trackMessages, cfg); });
-	menuTemperatureEn->setSaveCallback([&cfg]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg); });
-	menuTemperatureType->setSaveCallback([&cfg]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg); });
+	menuTemperatureEn->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); updateMessages(trackMessages, cfg); });
 	menuDirectionEn->setSaveCallback([&cfg]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg); updateDirectionNames(&cfg); });
 	menuRailNameEn->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg); updateRailNames(&cfg); updateMessages(trackMessages, cfg); });
 	menuEntranceMessage->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); updateMessages(trackMessages, cfg); });
@@ -773,6 +753,12 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	menuRailConfig->addChild(menuRailNameEn);
 	menuRailConfig->addChild(menuRailName);
 
+	mainSel->addChild(menuTemperatureConfig);
+	menuTemperatureConfig->addChild(menuTemperatureUnits);
+	menuTemperatureConfig->addChild(menuTemperatureType);
+	menuTemperatureConfig->addChild(menuMinTemperature);
+	menuTemperatureConfig->addChild(menuMaxTemperature);
+
 	mainSel->addChild(menuDefects);
 	menuDefects->addChild(menuHotJournal);
 	menuHotJournal->addChild(menuHotJournalEn);
@@ -800,6 +786,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 
 	mainSel->addChild(menuMessages);
 	menuMessages->addChild(menuMilepostEn);
+	menuMessages->addChild(menuTemperatureEn);
 	menuMessages->addChild(menuEntranceMessage);
 	menuMessages->addChild(menuAlertMessage);
 
@@ -807,13 +794,6 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	menuExitMessage->addChild(menuTalkDefectOnly);
 	menuExitMessage->addChild(menuMaxDefects);
 	menuExitMessage->addChild(menuOrdinalType);
-
-	mainSel->addChild(menuTemperatureConfig);
-	menuTemperatureConfig->addChild(menuTemperatureEn);
-	menuTemperatureConfig->addChild(menuTemperatureUnits);
-	menuTemperatureConfig->addChild(menuTemperatureType);
-	menuTemperatureConfig->addChild(menuMinTemperature);
-	menuTemperatureConfig->addChild(menuMaxTemperature);
 
 	mainSel->addChild(menuOperationMode);
 
@@ -830,6 +810,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 
 	mainSel->addChild(menuSysConfig);
 	menuSysConfig->addChild(menuMilepostDisplay);
+	menuSysConfig->addChild(menuTemperatureDisplay);
 	menuSysConfig->addChild(menuBacklightLevel);
 	menuSysConfig->addChild(menuPttDelay);
 	menuSysConfig->addChild(menuMinAxleTime);

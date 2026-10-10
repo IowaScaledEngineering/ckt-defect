@@ -32,7 +32,7 @@ bool TemperatureManager::begin() {
 }
 
 void TemperatureManager::update() {
-	if (!_isInitialized || !_config || !_config->temperatureEnable) return;
+	if (!_isInitialized || !_config) return;
 
 	if (_config->temperatureReal) {
 		// Mode: Real Chip Reading

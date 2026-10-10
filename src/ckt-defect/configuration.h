@@ -69,7 +69,8 @@ struct DetectorConfiguration {
 	uint8_t msgRepeatTimeout;     // Units = seconds
 
 	// Temperature
-	bool temperatureEnable;
+	bool temperatureEnable;   // Enable for built-in messages
+	bool temperatureDisplay;  // Enable for hoomescreen display
 	bool temperatureReal;
 	bool temperatureUnitsF;
 	float minTemperatureC;   // Float so conversion to/from F works cleanly

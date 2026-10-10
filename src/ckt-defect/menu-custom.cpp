@@ -77,11 +77,18 @@ void MenuHome::renderHomeUI(const std::string& statusText, bool showLightButton,
 
 	// 3. Temperature
 	disp->gotoxy(0, 2);
-	tmpString1 = intToString(tempMgr->getTemperature() + 0.5, 3, 0);
-	tmpString1 += 0xDF;
-	tmpString1 += cfg.temperatureUnitsF ? 'F' : 'C';
-	tmpString2 = centerString(tmpString1, 20);
-	disp->print(tmpString2.c_str());
+	if (cfg.temperatureDisplay)
+	{
+		tmpString1 = intToString(tempMgr->getTemperature() + 0.5, 3, 0);
+		tmpString1 += 0xDF;
+		tmpString1 += cfg.temperatureUnitsF ? 'F' : 'C';
+		tmpString2 = centerString(tmpString1, 20);
+		disp->print(tmpString2.c_str());
+	}
+	else
+	{
+		disp->print("                    ");
+	}
 
 	// 4. Light button
 	disp->gotoxy(0, 3);
