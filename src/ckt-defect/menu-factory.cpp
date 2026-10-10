@@ -10,8 +10,6 @@
 
 namespace {
 // File-scoped menu references restricted to this translation unit
-std::shared_ptr<Menu> menuMinAxles;
-std::shared_ptr<Menu> menuEntranceAxles;
 std::shared_ptr<Menu> menuSpeedUnits;
 std::shared_ptr<Menu> menuSpeedScale;
 std::shared_ptr<Menu> menuSpeedType;
@@ -29,15 +27,6 @@ std::shared_ptr<Menu> menuWideLoadRate;
 
 void updateAllMenuVisibility(const DetectorConfiguration &cfg)
 {
-	// Axle Config Visibility & Child Menu Item Visibility
-	if (cfg.axleEnable) {
-		if (menuMinAxles)      menuMinAxles->unhide();      
-		if (menuEntranceAxles) menuEntranceAxles->unhide();
-	} else {
-		if (menuMinAxles)      menuMinAxles->hide();        
-		if (menuEntranceAxles) menuEntranceAxles->hide();
-	}
-
 	// Individual Speed Item Visibilities 
 	if (cfg.speedEnable) {
 		if (menuSpeedUnits)   menuSpeedUnits->unhide();
@@ -142,15 +131,8 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	);
 	
 	// Axle
-	auto menuAxleConfig = std::make_shared<MenuListSelector>("Axle");
-	auto menuAxleEn = std::make_shared<MenuBoolSelector>(
-		"Axle Count Enable",
-		&cfg.axleEnable, 
-		false, 
-		"On", "ON", 
-		"Off", "OFF"
-	);
-	menuEntranceAxles = std::make_shared<MenuNumberDial>(
+	auto menuAxleConfig = std::make_shared<MenuListSelector>("Axles");
+	auto menuEntranceAxles = std::make_shared<MenuNumberDial>(
 		"Entrance Axles",
 		&cfg.entranceAxles,
 		false,
@@ -160,7 +142,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		"",
 		[&cfg]() { saveConfiguration(&cfg); }
 	);
-	menuMinAxles = std::make_shared<MenuNumberDial>(
+	auto menuMinAxles = std::make_shared<MenuNumberDial>(
 		"Minimum Axles",
 		&cfg.minAxles,
 		false,
@@ -531,6 +513,13 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		"On", "ON", 
 		"Off", "OFF"
 	);
+	auto menuAxleEn = std::make_shared<MenuBoolSelector>(
+		"Include Axle Count",
+		&cfg.axleEnable, 
+		false, 
+		"On", "ON", 
+		"Off", "OFF"
+	);
 	auto menuTemperatureEn = std::make_shared<MenuBoolSelector>(
 		"Include Temp.",
 		&cfg.temperatureEnable, 
@@ -680,7 +669,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	menuMilepostEn->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); updateMessages(trackMessages, cfg); });
 	menuTemperatureEn->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); updateMessages(trackMessages, cfg); });
 	menuTrackNameEn->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); updateMessages(trackMessages, cfg); });
-	menuAxleEn->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg); updateMessages(trackMessages, cfg); });
+	menuAxleEn->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); updateMessages(trackMessages, cfg); });
 	menuSpeedEn->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg); updateMessages(trackMessages, cfg); });
 	menuDirectionEn->setSaveCallback([&cfg]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg); updateDirectionNames(&cfg); });
 	menuRailNameEn->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg); updateRailNames(&cfg); updateMessages(trackMessages, cfg); });
@@ -721,7 +710,6 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	menuTrackConfig->addChild(menuTrackNameB);
 
 	mainSel->addChild(menuAxleConfig);
-	menuAxleConfig->addChild(menuAxleEn);
 	menuAxleConfig->addChild(menuMinAxles);
 	menuAxleConfig->addChild(menuEntranceAxles);
 
@@ -783,6 +771,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	menuExitMessage->addChild(menuOrdinalType);
 	menuMessages->addChild(menuMilepostEn);
 	menuMessages->addChild(menuTrackNameEn);
+	menuMessages->addChild(menuAxleEn);
 	menuMessages->addChild(menuTemperatureEn);
 
 	mainSel->addChild(menuOperationMode);

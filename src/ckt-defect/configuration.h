@@ -35,7 +35,7 @@ struct DetectorConfiguration {
 	bool milepostDisplay;  // Enable for hoomescreen display
 	uint16_t milepost;     // Units = decimiles
 
-	bool trackNameEnable;
+	bool trackNameEnable;   // Enable for built-in messages
 	uint8_t trackNameId[NUM_TRACKS];
 	std::string trackName[NUM_TRACKS];  // Volatile value, not stored in NVM
 
@@ -52,7 +52,7 @@ struct DetectorConfiguration {
 	std::string railName;  // Volatile value, not stored in NVM
 
 	// Axles	
-	bool axleEnable;
+	bool axleEnable;   // Enable for built-in messages
 	uint16_t entranceAxles;
 	uint16_t minAxles;
 	
