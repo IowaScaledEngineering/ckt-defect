@@ -58,10 +58,17 @@ void MenuHome::renderHomeUI(const std::string& statusText, bool showLightButton,
 
 	// 1. Milepost
 	disp->gotoxy(0, 0);
-	tmpString1 = "Milepost ";
-	tmpString1 += intToString(cfg.milepost, 4, 1);
-	tmpString2 = centerString(tmpString1, 20);
-	disp->print(tmpString2.c_str());
+	if (cfg.milepostDisplay)
+	{
+		tmpString1 = "Milepost ";
+		tmpString1 += intToString(cfg.milepost, 4, 1);
+		tmpString2 = centerString(tmpString1, 20);
+		disp->print(tmpString2.c_str());
+	}
+	else
+	{
+		disp->print("                    ");
+	}
 
 	// 2. Status Text
 	disp->gotoxy(0, 1);

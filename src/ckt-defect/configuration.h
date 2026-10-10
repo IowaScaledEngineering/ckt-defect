@@ -31,7 +31,8 @@ struct DetectorConfiguration {
 	
 	uint8_t lcdBrightness;
 
-	bool milepostEnable;
+	bool milepostEnable;   // Enable for built-in messages
+	bool milepostDisplay;  // Enable for hoomescreen display
 	uint16_t milepost;     // Units = decimiles
 
 	bool trackNameEnable;

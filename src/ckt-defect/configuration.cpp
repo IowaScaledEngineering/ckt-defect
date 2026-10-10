@@ -35,6 +35,7 @@ LICENSE:
 #define LCD_BRIGHT_DEFAULT                128
 
 #define MILEPOST_EN_DEFAULT               true
+#define MILEPOST_DISP_DEFAULT             true
 #define MILEPOST_DEFAULT                  3469
 
 #define TRACK_NAME_EN_DEFAULT             true
@@ -108,6 +109,7 @@ void loadConfiguration(DetectorConfiguration* cfg)
 	cfg->lcdBrightness = preferences.getUChar("lcd", LCD_BRIGHT_DEFAULT);
 
 	cfg->milepostEnable = preferences.getBool("mpEn", MILEPOST_EN_DEFAULT);
+	cfg->milepostDisplay = preferences.getBool("mpDisp", MILEPOST_DISP_DEFAULT);
 	cfg->milepost = preferences.getUShort("mp", MILEPOST_DEFAULT);
 
 	cfg->trackNameEnable = preferences.getBool("trkNameEn", TRACK_NAME_EN_DEFAULT);
@@ -236,6 +238,9 @@ void saveConfiguration(DetectorConfiguration* cfg)
 
 	if(cfg->milepostEnable != preferences.getBool("mpEn", !cfg->milepostEnable))
 		preferences.putBool("mpEn", cfg->milepostEnable);
+
+	if(cfg->milepostDisplay != preferences.getBool("mpDisp", !cfg->milepostDisplay))
+		preferences.putBool("mpDisp", cfg->milepostDisplay);
 
 	if(cfg->milepost != preferences.getUShort("mp", ~cfg->milepost))
 		preferences.putUShort("mp", cfg->milepost);
@@ -421,6 +426,9 @@ void printConfiguration(DetectorConfiguration* cfg)
 
 	Serial.print("Milepost Enable: ");
 	Serial.println(cfg->milepostEnable);
+
+	Serial.print("Milepost Display: ");
+	Serial.println(cfg->milepostDisplay);
 
 	Serial.print("Milepost: ");
 	Serial.println(cfg->milepost / 10.0);

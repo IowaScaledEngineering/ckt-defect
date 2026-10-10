@@ -10,7 +10,6 @@
 
 namespace {
 // File-scoped menu references restricted to this translation unit
-std::shared_ptr<Menu> menuMilepost;
 std::shared_ptr<Menu> menuTrackNameA;
 std::shared_ptr<Menu> menuTrackNameB;
 std::shared_ptr<Menu> menuMinAxles;
@@ -36,10 +35,6 @@ std::shared_ptr<Menu> menuWideLoadRate;
 
 void updateAllMenuVisibility(const DetectorConfiguration &cfg)
 {
-	// Milepost Visibility
-	if (cfg.milepostEnable) { if (menuMilepost) menuMilepost->unhide(); }
-	else                    { if (menuMilepost) menuMilepost->hide(); }
-
 	// Track Name Visibility
 	if (cfg.trackNameEnable) {
 		if (menuTrackNameA) menuTrackNameA->unhide();
@@ -157,15 +152,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	home->addChild(mainSel);
 
 	// Milepost
-	auto menuMilepostConfig = std::make_shared<MenuListSelector>("Milepost");
-	auto menuMilepostEn = std::make_shared<MenuBoolSelector>(
-		"Milepost Enable",
-		&cfg.milepostEnable, 
-		false, 
-		"On", "ON", 
-		"Off", "OFF"
-	);
-	menuMilepost = std::make_shared<MenuDigitThumbwheel>(
+	auto menuMilepost = std::make_shared<MenuDigitThumbwheel>(
 		"Milepost",
 		&cfg.milepost,
 		false,
@@ -331,7 +318,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	);
 
 	// Defect
-	auto menuDefects = std::make_shared<MenuListSelector>("Defects");
+	auto menuDefects = std::make_shared<MenuListSelector>("Defect Config");
 
 	// Hot Journal
 	auto menuHotJournal = std::make_shared<MenuListSelector>("Hot Journal");
@@ -484,7 +471,14 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	);
 
 	// Messages
-	auto menuMessages = std::make_shared<MenuListSelector>("Messages");
+	auto menuMessages = std::make_shared<MenuListSelector>("Message Config");
+	auto menuMilepostEn = std::make_shared<MenuBoolSelector>(
+		"Milepost Enable",
+		&cfg.milepostEnable, 
+		false, 
+		"On", "ON", 
+		"Off", "OFF"
+	);
 	auto menuEntranceMessage = std::make_shared<MenuBoolSelector>(
 		"Entrance Message",
 		&cfg.entranceMessageEnable,
@@ -658,6 +652,14 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	
 	// System	
 	auto menuSysConfig = std::make_shared<MenuListSelector>("System");
+	auto menuMilepostDisplay = std::make_shared<MenuBoolSelector>(
+		"Milepost Display",
+		&cfg.milepostDisplay,
+		false,
+		"On", "ON",
+		"Off", "OFF",
+		[&cfg]() { saveConfiguration(&cfg); }
+	);
 	auto menuBacklightLevel = std::make_shared<MenuPercentageBar>(
 		"Backlight Level", 
 		[lcd]() { return lcd->getBrightness(); },
@@ -703,7 +705,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	// ==========================================
 	// Assign Button Callbacks
 	// ==========================================
-	menuMilepostEn->setSaveCallback([&cfg]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg); });
+	menuMilepostEn->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); updateMessages(trackMessages, cfg); });
 	menuTrackNameEn->setSaveCallback([&cfg]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg); updateTrackNames(&cfg); });
 	menuAxleEn->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg); updateMessages(trackMessages, cfg); });
 	menuSpeedEn->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg); updateMessages(trackMessages, cfg); });
@@ -741,9 +743,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	// ==========================================
 	// Assemble Menus
 	// ==========================================
-	mainSel->addChild(menuMilepostConfig);
-	menuMilepostConfig->addChild(menuMilepostEn);
-	menuMilepostConfig->addChild(menuMilepost);
+	mainSel->addChild(menuMilepost);
 
 	mainSel->addChild(menuTrackConfig);
 	menuTrackConfig->addChild(menuTrackNameEn);
@@ -799,6 +799,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	menuWideLoad->addChild(menuWideLoadRate);
 
 	mainSel->addChild(menuMessages);
+	menuMessages->addChild(menuMilepostEn);
 	menuMessages->addChild(menuEntranceMessage);
 	menuMessages->addChild(menuAlertMessage);
 
@@ -828,6 +829,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	menuAudio->addChild(menuVocabSelect);
 
 	mainSel->addChild(menuSysConfig);
+	menuSysConfig->addChild(menuMilepostDisplay);
 	menuSysConfig->addChild(menuBacklightLevel);
 	menuSysConfig->addChild(menuPttDelay);
 	menuSysConfig->addChild(menuMinAxleTime);
