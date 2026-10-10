@@ -393,6 +393,15 @@ void transformMessage(const std::string& inputMessage, std::string& outputMessag
 	}
 }
 
+void updateMessages(MessageBundle& trackMessages, const DetectorConfiguration& cfg)
+{
+	// FIXME: Check if using SD card.  If not, then set default.
+	if(true)
+	{
+		setDefaultMessages(trackMessages, cfg);
+	}
+}
+
 void setDefaultMessages(MessageBundle& trackMessages, const DetectorConfiguration& cfg)
 {
 	std::string tmpEntranceMessage;

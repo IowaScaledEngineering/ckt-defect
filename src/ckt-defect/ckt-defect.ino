@@ -393,11 +393,8 @@ void loop()
 	}
 */
 
-	// If no config file, set defaults
-	if(!configFilePresent)
-	{
-		setDefaultMessages(trackMessages, cfg);
-	}
+	// Update messages (sets default if no config file present, otherwise skips)
+	updateMessages(trackMessages, cfg);
 
 	// Get unique words required
 	std::vector<std::string> words = getUniqueWords(trackMessages);

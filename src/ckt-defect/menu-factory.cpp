@@ -353,7 +353,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 				cfg.defectHotJournalAxleRate = 1;
 			}
 			saveConfiguration(&cfg);
-			setDefaultMessages(trackMessages, cfg);
+			updateMessages(trackMessages, cfg);
 		}
 	);
 
@@ -378,7 +378,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 				cfg.defectHotWheelAxleRate = 1;
 			}
 			saveConfiguration(&cfg);
-			setDefaultMessages(trackMessages, cfg);
+			updateMessages(trackMessages, cfg);
 		}
 	);
 
@@ -403,7 +403,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 				cfg.defectHighImpactWheelAxleRate = 1;
 			}
 			saveConfiguration(&cfg);
-			setDefaultMessages(trackMessages, cfg);
+			updateMessages(trackMessages, cfg);
 		}
 	);
 
@@ -428,7 +428,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 				cfg.defectDraggingEquipmentAxleRate = 1;
 			}
 			saveConfiguration(&cfg);
-			setDefaultMessages(trackMessages, cfg);
+			updateMessages(trackMessages, cfg);
 		}
 	);
 
@@ -453,7 +453,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 				cfg.defectHighLoadAxleRate = 1;
 			}
 			saveConfiguration(&cfg);
-			setDefaultMessages(trackMessages, cfg);
+			updateMessages(trackMessages, cfg);
 		}
 	);
 
@@ -478,7 +478,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 				cfg.defectWideLoadAxleRate = 1;
 			}
 			saveConfiguration(&cfg);
-			setDefaultMessages(trackMessages, cfg);
+			updateMessages(trackMessages, cfg);
 		}
 	);
 
@@ -524,7 +524,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		&cfg.ordinalTypeId,
 		false,
 		ordinalTypes,
-		[&cfg, &trackMessages]() { saveConfiguration(&cfg); setDefaultMessages(trackMessages, cfg); }
+		[&cfg, &trackMessages]() { saveConfiguration(&cfg); updateMessages(trackMessages, cfg); }
 	);
 
 	// Temperature
@@ -690,23 +690,23 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	// ==========================================
 	menuMilepostEn->setSaveCallback([&cfg]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg); });
 	menuTrackNameEn->setSaveCallback([&cfg]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg); updateTrackNames(&cfg); });
-	menuAxleEn->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg); setDefaultMessages(trackMessages, cfg); });
-	menuSpeedEn->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg); setDefaultMessages(trackMessages, cfg); });
+	menuAxleEn->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg); updateMessages(trackMessages, cfg); });
+	menuSpeedEn->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg); updateMessages(trackMessages, cfg); });
 	menuTemperatureEn->setSaveCallback([&cfg]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg); });
 	menuTemperatureType->setSaveCallback([&cfg]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg); });
 	menuDirectionEn->setSaveCallback([&cfg]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg); updateDirectionNames(&cfg); });
-	menuRailNameEn->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg); updateRailNames(&cfg); setDefaultMessages(trackMessages, cfg); });
-	menuEntranceMessage->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); setDefaultMessages(trackMessages, cfg); });
-	menuAlertMessage->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); setDefaultMessages(trackMessages, cfg); });
-	menuTalkDefectOnly->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); setDefaultMessages(trackMessages, cfg); });
+	menuRailNameEn->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg); updateRailNames(&cfg); updateMessages(trackMessages, cfg); });
+	menuEntranceMessage->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); updateMessages(trackMessages, cfg); });
+	menuAlertMessage->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); updateMessages(trackMessages, cfg); });
+	menuTalkDefectOnly->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); updateMessages(trackMessages, cfg); });
 
 	// Defect Enable Callbacks
-	menuHotJournalEn->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg); setDefaultMessages(trackMessages, cfg); });
-	menuHotWheelEn->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg); setDefaultMessages(trackMessages, cfg); });
-	menuHighImpactWheelEn->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg); setDefaultMessages(trackMessages, cfg); });
-	menuDraggingEquipmentEn->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg); setDefaultMessages(trackMessages, cfg); });
-	menuHighLoadEn->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg); setDefaultMessages(trackMessages, cfg); });
-	menuWideLoadEn->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg); setDefaultMessages(trackMessages, cfg); });
+	menuHotJournalEn->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg); updateMessages(trackMessages, cfg); });
+	menuHotWheelEn->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg); updateMessages(trackMessages, cfg); });
+	menuHighImpactWheelEn->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg); updateMessages(trackMessages, cfg); });
+	menuDraggingEquipmentEn->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg); updateMessages(trackMessages, cfg); });
+	menuHighLoadEn->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg); updateMessages(trackMessages, cfg); });
+	menuWideLoadEn->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg); updateMessages(trackMessages, cfg); });
 
 	// Trigger 1 and Trigger 2 mutual-exclusion callbacks
 	menuTriggerDir1->setSaveCallback([&cfg]() {
