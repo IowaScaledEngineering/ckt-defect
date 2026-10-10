@@ -10,8 +10,6 @@
 
 namespace {
 // File-scoped menu references restricted to this translation unit
-std::shared_ptr<Menu> menuTrackNameA;
-std::shared_ptr<Menu> menuTrackNameB;
 std::shared_ptr<Menu> menuMinAxles;
 std::shared_ptr<Menu> menuEntranceAxles;
 std::shared_ptr<Menu> menuSpeedUnits;
@@ -31,15 +29,6 @@ std::shared_ptr<Menu> menuWideLoadRate;
 
 void updateAllMenuVisibility(const DetectorConfiguration &cfg)
 {
-	// Track Name Visibility
-	if (cfg.trackNameEnable) {
-		if (menuTrackNameA) menuTrackNameA->unhide();
-		if (menuTrackNameB) menuTrackNameB->unhide();
-	} else {
-		if (menuTrackNameA) menuTrackNameA->hide();
-		if (menuTrackNameB) menuTrackNameB->hide();
-	}
-
 	// Axle Config Visibility & Child Menu Item Visibility
 	if (cfg.axleEnable) {
 		if (menuMinAxles)      menuMinAxles->unhide();      
@@ -136,14 +125,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 
 	// Track
 	auto menuTrackConfig = std::make_shared<MenuListSelector>("Track");
-	auto menuTrackNameEn = std::make_shared<MenuBoolSelector>(
-		"Track Name Enable",
-		&cfg.trackNameEnable, 
-		false, 
-		"On", "ON", 
-		"Off", "OFF"
-	);
-	menuTrackNameA = std::make_shared<MenuOptionSelector>(
+	auto menuTrackNameA = std::make_shared<MenuOptionSelector>(
 		"Track A Name", 
 		&cfg.trackNameId[0],
 		false,
@@ -151,7 +133,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		[&cfg]() { saveConfiguration(&cfg); updateTrackNames(&cfg); }
 	);
 
-	menuTrackNameB = std::make_shared<MenuOptionSelector>(
+	auto menuTrackNameB = std::make_shared<MenuOptionSelector>(
 		"Track B Name", 
 		&cfg.trackNameId[1],
 		false,
@@ -542,6 +524,13 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		"On", "ON", 
 		"Off", "OFF"
 	);
+	auto menuTrackNameEn = std::make_shared<MenuBoolSelector>(
+		"Include Track Name",
+		&cfg.trackNameEnable, 
+		false, 
+		"On", "ON", 
+		"Off", "OFF"
+	);
 	auto menuTemperatureEn = std::make_shared<MenuBoolSelector>(
 		"Include Temp.",
 		&cfg.temperatureEnable, 
@@ -689,10 +678,10 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	// Assign Button Callbacks
 	// ==========================================
 	menuMilepostEn->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); updateMessages(trackMessages, cfg); });
-	menuTrackNameEn->setSaveCallback([&cfg]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg); updateTrackNames(&cfg); });
+	menuTemperatureEn->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); updateMessages(trackMessages, cfg); });
+	menuTrackNameEn->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); updateMessages(trackMessages, cfg); });
 	menuAxleEn->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg); updateMessages(trackMessages, cfg); });
 	menuSpeedEn->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg); updateMessages(trackMessages, cfg); });
-	menuTemperatureEn->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); updateMessages(trackMessages, cfg); });
 	menuDirectionEn->setSaveCallback([&cfg]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg); updateDirectionNames(&cfg); });
 	menuRailNameEn->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg); updateRailNames(&cfg); updateMessages(trackMessages, cfg); });
 	menuEntranceMessage->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); updateMessages(trackMessages, cfg); });
@@ -728,7 +717,6 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	mainSel->addChild(menuMilepost);
 
 	mainSel->addChild(menuTrackConfig);
-	menuTrackConfig->addChild(menuTrackNameEn);
 	menuTrackConfig->addChild(menuTrackNameA);
 	menuTrackConfig->addChild(menuTrackNameB);
 
@@ -794,6 +782,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	menuExitMessage->addChild(menuMaxDefects);
 	menuExitMessage->addChild(menuOrdinalType);
 	menuMessages->addChild(menuMilepostEn);
+	menuMessages->addChild(menuTrackNameEn);
 	menuMessages->addChild(menuTemperatureEn);
 
 	mainSel->addChild(menuOperationMode);

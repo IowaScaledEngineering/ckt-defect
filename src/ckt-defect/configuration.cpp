@@ -619,7 +619,7 @@ void updateTrackNames(DetectorConfiguration* cfg)
 {
 	for(uint32_t i=0; i<NUM_TRACKS; i++)
 	{
-		cfg->trackName[i] = cfg->trackNameEnable ? trackNames[cfg->trackNameId[i]] : "";
+		cfg->trackName[i] = trackNames[cfg->trackNameId[i]];
 	}
 }
 
