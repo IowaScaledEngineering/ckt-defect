@@ -424,7 +424,10 @@ void setDefaultMessages(MessageBundle& trackMessages, const DetectorConfiguratio
 		tmpTrack = "#track";
 	}
 
-	tmpEntranceMessage += " #direction";
+	if(cfg.directionEnable)
+	{
+		tmpEntranceMessage += " #direction";
+	}
 
 	if(cfg.entranceMessageEnable)
 	{

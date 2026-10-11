@@ -39,7 +39,7 @@ struct DetectorConfiguration {
 	uint8_t                  trackNameId[NUM_TRACKS];
 	std::string              trackName[NUM_TRACKS];               // Volatile value, not stored in NVM
 
-	bool                     directionEnable;
+	bool                     directionEnable;                     // Enable for built-in messages
 	uint8_t                  direction1NameId;
 	uint8_t                  direction2NameId;
 	std::string              direction1Name;                      // Volatile value, not stored in NVM

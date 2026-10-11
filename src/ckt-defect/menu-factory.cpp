@@ -10,8 +10,6 @@
 
 namespace {
 // File-scoped menu references restricted to this translation unit
-std::shared_ptr<Menu> menuDirectionName1;
-std::shared_ptr<Menu> menuDirectionName2;
 std::shared_ptr<Menu> menuRailName;
 std::shared_ptr<Menu> menuHotJournalRate;
 std::shared_ptr<Menu> menuHotWheelRate;
@@ -23,15 +21,6 @@ std::shared_ptr<Menu> menuWideLoadRate;
 
 void updateAllMenuVisibility(const DetectorConfiguration &cfg)
 {
-	// Direction Visibility
-	if (cfg.directionEnable) {
-		if (menuDirectionName1) menuDirectionName1->unhide();
-		if (menuDirectionName2) menuDirectionName2->unhide();
-	} else {
-		if (menuDirectionName1) menuDirectionName1->hide();
-		if (menuDirectionName2) menuDirectionName2->hide();
-	}
-
 	// Rail Name Visibility
 	if (cfg.railNameEnable) {
 		if (menuRailName) menuRailName->unhide();
@@ -176,21 +165,14 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 
 	// Direction
 	auto menuDirectionConfig = std::make_shared<MenuListSelector>("Direction");
-	auto menuDirectionEn = std::make_shared<MenuBoolSelector>(
-		"Direction Enable",
-		&cfg.directionEnable, 
-		false, 
-		"On", "ON", 
-		"Off", "OFF"
-	);
-	menuDirectionName1 = std::make_shared<MenuOptionSelector>(
+	auto menuDirectionName1 = std::make_shared<MenuOptionSelector>(
 		"Direction 1 Name", 
 		&cfg.direction1NameId,
 		false,
 		directionNames,
 		[&cfg]() { saveConfiguration(&cfg); updateDirectionNames(&cfg); }
 	);
-	menuDirectionName2 = std::make_shared<MenuOptionSelector>(
+	auto menuDirectionName2 = std::make_shared<MenuOptionSelector>(
 		"Direction 2 Name", 
 		&cfg.direction2NameId,
 		false,
@@ -503,6 +485,13 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		"On", "ON", 
 		"Off", "OFF"
 	);
+	auto menuDirectionEn = std::make_shared<MenuBoolSelector>(
+		"Include Direction",
+		&cfg.directionEnable, 
+		false, 
+		"On", "ON", 
+		"Off", "OFF"
+	);
 	auto menuTemperatureEn = std::make_shared<MenuBoolSelector>(
 		"Include Temp.",
 		&cfg.temperatureEnable, 
@@ -654,7 +643,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	menuTrackNameEn->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); updateMessages(trackMessages, cfg); });
 	menuAxleEn->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); updateMessages(trackMessages, cfg); });
 	menuSpeedEn->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); updateMessages(trackMessages, cfg); });
-	menuDirectionEn->setSaveCallback([&cfg]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg); updateDirectionNames(&cfg); });
+	menuDirectionEn->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); updateMessages(trackMessages, cfg); });
 	menuRailNameEn->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg); updateRailNames(&cfg); updateMessages(trackMessages, cfg); });
 	menuEntranceMessage->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); updateMessages(trackMessages, cfg); });
 	menuAlertMessage->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); updateMessages(trackMessages, cfg); });
@@ -703,7 +692,6 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	menuSpeedConfig->addChild(menuMinSpeed);
 
 	mainSel->addChild(menuDirectionConfig);
-	menuDirectionConfig->addChild(menuDirectionEn);
 	menuDirectionConfig->addChild(menuDirectionName1);
 	menuDirectionConfig->addChild(menuDirectionName2);
 	menuDirectionConfig->addChild(menuTriggerDir1);
@@ -755,6 +743,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	menuMessages->addChild(menuTrackNameEn);
 	menuMessages->addChild(menuAxleEn);
 	menuMessages->addChild(menuSpeedEn);
+	menuMessages->addChild(menuDirectionEn);
 	menuMessages->addChild(menuTemperatureEn);
 
 	mainSel->addChild(menuOperationMode);
