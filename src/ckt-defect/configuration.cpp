@@ -643,7 +643,7 @@ void updateDirectionNames(DetectorConfiguration* cfg, std::string dir1, std::str
 
 void updateRailNames(DetectorConfiguration* cfg)
 {
-	cfg->railName = cfg->railNameEnable ? railNames[cfg->railNameId] : "";
+	cfg->railName = railNames[cfg->railNameId];
 }
 
 void updateRailNames(DetectorConfiguration* cfg, std::string rail)

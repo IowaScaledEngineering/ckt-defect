@@ -47,7 +47,7 @@ struct DetectorConfiguration {
 	bool                     triggerDirection1Only;
 	bool                     triggerDirection2Only;
 
-	bool                     railNameEnable;
+	bool                     railNameEnable;                      // Enable for built-in messages
 	uint8_t                  railNameId;
 	std::string              railName;                            // Volatile value, not stored in NVM
 
