@@ -280,7 +280,7 @@ void DetectorStateMachine::update()
 			else
 			{
 				// No defect
-				if(!cfg->infrastructureMode && (cfg->speedEnable && cfg->speedTypeEnter))
+				if(!cfg->infrastructureMode && (cfg->speedTypeEnter))
 				{
 					// Not infrastructure mode and entrance speed enabled
 					transitionTo(DetectorState::ENTRANCE_SPEED);
@@ -372,7 +372,7 @@ void DetectorStateMachine::update()
 					// Something is blocking one of the axle counters
 					transitionTo(DetectorState::BLOCKED_DEFECT_QUEUE);
 				}
-				else if(cfg->speedEnable && !cfg->speedTypeEnter)
+				else if(!cfg->speedTypeEnter)
 				{
 					// Exit speed enabled
 					transitionTo(DetectorState::EXIT_SPEED);

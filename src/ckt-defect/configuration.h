@@ -57,7 +57,7 @@ struct DetectorConfiguration {
 	uint16_t minAxles;
 	
 	// Speed
-	bool speedEnable;
+	bool speedEnable;   // Enable for built-in messages
 	bool speedUnitsMph;        // True = mph, False = kph
 	bool speedTypeEnter;       // True = entrance speed, False = exit speed
 	uint8_t minSpeed;

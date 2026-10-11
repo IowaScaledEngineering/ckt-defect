@@ -10,10 +10,6 @@
 
 namespace {
 // File-scoped menu references restricted to this translation unit
-std::shared_ptr<Menu> menuSpeedUnits;
-std::shared_ptr<Menu> menuSpeedScale;
-std::shared_ptr<Menu> menuSpeedType;
-std::shared_ptr<Menu> menuMinSpeed;
 std::shared_ptr<Menu> menuDirectionName1;
 std::shared_ptr<Menu> menuDirectionName2;
 std::shared_ptr<Menu> menuRailName;
@@ -27,19 +23,6 @@ std::shared_ptr<Menu> menuWideLoadRate;
 
 void updateAllMenuVisibility(const DetectorConfiguration &cfg)
 {
-	// Individual Speed Item Visibilities 
-	if (cfg.speedEnable) {
-		if (menuSpeedUnits)   menuSpeedUnits->unhide();
-		if (menuSpeedScale)   menuSpeedScale->unhide();
-		if (menuSpeedType)    menuSpeedType->unhide();
-		if (menuMinSpeed)     menuMinSpeed->unhide();      
-	} else {
-		if (menuSpeedUnits)   menuSpeedUnits->hide();
-		if (menuSpeedScale)   menuSpeedScale->hide();
-		if (menuSpeedType)    menuSpeedType->hide();
-		if (menuMinSpeed)     menuMinSpeed->hide();
-	}
-
 	// Direction Visibility
 	if (cfg.directionEnable) {
 		if (menuDirectionName1) menuDirectionName1->unhide();
@@ -155,14 +138,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 
 	// Speed
 	auto menuSpeedConfig = std::make_shared<MenuListSelector>("Speed");
-	auto menuSpeedEn = std::make_shared<MenuBoolSelector>(
-		"Speed Enable",
-		&cfg.speedEnable, 
-		false, 
-		"On", "ON", 
-		"Off", "OFF"
-	);
-	menuSpeedType = std::make_shared<MenuBoolSelector>(
+	auto menuSpeedType = std::make_shared<MenuBoolSelector>(
 		"Enter/Exit",
 		&cfg.speedTypeEnter,
 		false, 
@@ -170,7 +146,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		"Exit Speed", "EXIT", 
 		[&cfg]() { saveConfiguration(&cfg); }
 	);
-	menuMinSpeed = std::make_shared<MenuNumberDial>(
+	auto menuMinSpeed = std::make_shared<MenuNumberDial>(
 		"Minimum Speed",
 		&cfg.minSpeed,
 		false,
@@ -180,15 +156,15 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		cfg.speedUnitsMph ? "mph" : "kph",
 		[&cfg]() { saveConfiguration(&cfg); }
 	);
-	menuSpeedUnits = std::make_shared<MenuBoolSelector>(
+	auto menuSpeedUnits = std::make_shared<MenuBoolSelector>(
 		"Units",
 		&cfg.speedUnitsMph,
 		false, 
 		"Miles/Hour", "MPH",
 		"Kilometers/Hour", "KPH", 
-		[&cfg]() { saveConfiguration(&cfg); std::static_pointer_cast<MenuNumberDial>(menuMinSpeed)->setUnits(cfg.speedUnitsMph ? "mph" : "kph"); }
+		[&cfg, menuMinSpeed]() { saveConfiguration(&cfg); std::static_pointer_cast<MenuNumberDial>(menuMinSpeed)->setUnits(cfg.speedUnitsMph ? "mph" : "kph"); }
 	);
-	menuSpeedScale = std::make_shared<MenuDigitThumbwheel>(
+	auto menuSpeedScale = std::make_shared<MenuDigitThumbwheel>(
 		"Speed Scale",
 		&cfg.speedScale,
 		false,
@@ -520,6 +496,13 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		"On", "ON", 
 		"Off", "OFF"
 	);
+	auto menuSpeedEn = std::make_shared<MenuBoolSelector>(
+		"Include Speed",
+		&cfg.speedEnable, 
+		false, 
+		"On", "ON", 
+		"Off", "OFF"
+	);
 	auto menuTemperatureEn = std::make_shared<MenuBoolSelector>(
 		"Include Temp.",
 		&cfg.temperatureEnable, 
@@ -670,7 +653,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	menuTemperatureEn->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); updateMessages(trackMessages, cfg); });
 	menuTrackNameEn->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); updateMessages(trackMessages, cfg); });
 	menuAxleEn->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); updateMessages(trackMessages, cfg); });
-	menuSpeedEn->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg); updateMessages(trackMessages, cfg); });
+	menuSpeedEn->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); updateMessages(trackMessages, cfg); });
 	menuDirectionEn->setSaveCallback([&cfg]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg); updateDirectionNames(&cfg); });
 	menuRailNameEn->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg); updateRailNames(&cfg); updateMessages(trackMessages, cfg); });
 	menuEntranceMessage->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); updateMessages(trackMessages, cfg); });
@@ -714,7 +697,6 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	menuAxleConfig->addChild(menuEntranceAxles);
 
 	mainSel->addChild(menuSpeedConfig);
-	menuSpeedConfig->addChild(menuSpeedEn);
 	menuSpeedConfig->addChild(menuSpeedUnits);
 	menuSpeedConfig->addChild(menuSpeedScale);
 	menuSpeedConfig->addChild(menuSpeedType);
@@ -772,6 +754,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	menuMessages->addChild(menuMilepostEn);
 	menuMessages->addChild(menuTrackNameEn);
 	menuMessages->addChild(menuAxleEn);
+	menuMessages->addChild(menuSpeedEn);
 	menuMessages->addChild(menuTemperatureEn);
 
 	mainSel->addChild(menuOperationMode);
