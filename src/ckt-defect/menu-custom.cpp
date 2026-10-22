@@ -61,6 +61,34 @@ void MenuHome::onEnter()
 	};
 
 	disp->createCustomChar(1, speaker);
+
+/*
+	byte upArrow[8] = {
+	  0b00100,
+	  0b01110,
+	  0b10101,
+	  0b00100,
+	  0b00100,
+	  0b00100,
+	  0b00100,
+	  0b00000
+	};
+
+	disp->createCustomChar(2, upArrow);
+
+	byte downArrow[8] = {
+	  0b00100,
+	  0b00100,
+	  0b00100,
+	  0b00100,
+	  0b10101,
+	  0b01110,
+	  0b00100,
+	  0b00000
+	};
+
+	disp->createCustomChar(3, downArrow);
+*/
 }
 
 void MenuHome::renderHomeUI(const std::string& statusText, bool showLightButton, bool showRepeatButton)
@@ -108,7 +136,7 @@ void MenuHome::renderHomeUI(const std::string& statusText, bool showLightButton,
 	if (showLightButton && !muteState)
 	{
 		disp->print((char)0);  // bulb icon
-		disp->print(disp->getBacklight() ? "OFF" : "ON ");
+		disp->print(disp->getBacklight() ? "off" : "on ");
 	}
 	else
 	{
@@ -291,8 +319,9 @@ MenuEvent MenuHome::update()
 
 	// Draw mute button
 	disp->gotoxy(5, 3);
+	disp->print(' ');
 	disp->print((char)1);  // speaker icon
-	disp->print(muteState ? "UNMT" : "MUTE");
+	disp->print(muteState ? "on " : "off");  // up arrow (unmute) / down arrow (mute)
 
 	// Draw menu button
 	disp->gotoxy(16,3);
