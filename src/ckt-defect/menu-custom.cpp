@@ -136,7 +136,7 @@ void MenuHome::renderHomeUI(const std::string& statusText, bool showLightButton,
 	if (showLightButton && !muteState)
 	{
 		disp->print((char)0);  // bulb icon
-		disp->print(disp->getBacklight() ? "off" : "on ");
+		disp->print(disp->getBacklight() ? "OFF" : "ON ");
 	}
 	else
 	{
@@ -320,7 +320,7 @@ MenuEvent MenuHome::update()
 	// Draw mute button
 	disp->gotoxy(6, 3);
 	disp->print((char)1);  // speaker icon
-	disp->print(muteState ? "on " : "off");  // up arrow (unmute) / down arrow (mute)
+	disp->print(muteState ? "ON " : "OFF");  // up arrow (unmute) / down arrow (mute)
 
 	// Draw menu button
 	disp->gotoxy(16,3);
