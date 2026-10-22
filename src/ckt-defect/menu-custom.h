@@ -22,6 +22,8 @@ class MenuHome : public Menu
 	private:
 		bool backlightState = false;
 		bool delayBacklightOff = false;
+		bool muteState = false;
+		bool savedBacklightState = false;
 		unsigned long backlightDelayStartTime;
 		unsigned long waitStartTime;
 		const DetectorConfiguration &cfg;

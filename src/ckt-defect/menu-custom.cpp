@@ -48,6 +48,19 @@ void MenuHome::onEnter()
 	};
 	
 	disp->createCustomChar(0, bulb);
+
+	byte speaker[8] = {
+	  0b00001,
+	  0b00011,
+	  0b11101,
+	  0b11001,
+	  0b11101,
+	  0b00011,
+	  0b00001,
+	  0b00000
+	};
+
+	disp->createCustomChar(1, speaker);
 }
 
 void MenuHome::renderHomeUI(const std::string& statusText, bool showLightButton, bool showRepeatButton)
@@ -92,7 +105,7 @@ void MenuHome::renderHomeUI(const std::string& statusText, bool showLightButton,
 
 	// 4. Light button
 	disp->gotoxy(0, 3);
-	if (showLightButton)
+	if (showLightButton && !muteState)
 	{
 		disp->print((char)0);  // bulb icon
 		disp->print(disp->getBacklight() ? "OFF" : "ON ");
@@ -103,7 +116,7 @@ void MenuHome::renderHomeUI(const std::string& statusText, bool showLightButton,
 	}
 
 	// 5. Repeat button prompt (ONLY shown if message exists and timeout has not expired)
-	disp->gotoxy(6, 3);
+	disp->gotoxy(11, 3);
 	bool repeatValid = !data->lastSpokenMsg.empty();
 	if (cfg.msgRepeatTimeout > 0 && (millis() - data->lastSpokenMsgTime) >= (cfg.msgRepeatTimeout * 1000U))
 	{
@@ -172,7 +185,7 @@ MenuEvent MenuHome::update()
 	std::string tmpString;
 	bool active = data[0].active || data[1].active;
 
-	if(backlightState)
+	if(backlightState || muteState)
 	{
 		disp->backlightOn();
 	}
@@ -245,9 +258,9 @@ MenuEvent MenuHome::update()
 		case MenuHomeState::WAIT:
 			renderMessage(lastDisplayedMessage);
 
-			// Draw RPT button prompt at coords (6, 3) for button 2 during WAIT
+			// Draw RPT button prompt at coords (11, 3) for button 3 during WAIT
 			// Timeout does not apply during WAIT; only check if message exists
-			disp->gotoxy(6, 3);
+			disp->gotoxy(11, 3);
 			if (!data->lastSpokenMsg.empty())
 			{
 				disp->print("RPT ");
@@ -276,6 +289,11 @@ MenuEvent MenuHome::update()
 	}
 
 
+	// Draw mute button
+	disp->gotoxy(5, 3);
+	disp->print((char)1);  // speaker icon
+	disp->print(muteState ? "UNMT" : "MUTE");
+
 	// Draw menu button
 	disp->gotoxy(16,3);
 	disp->print("MENU");
@@ -288,7 +306,7 @@ MenuEvent MenuHome::update()
 			switch(ev.keyNum)
 			{
 				case 1: // Toggle Backlight (STANDBY)
-					if(MenuHomeState::STANDBY == state)
+					if(MenuHomeState::STANDBY == state && !muteState)
 					{
 						if(delayBacklightOff)
 							backlightState = false;
@@ -298,7 +316,33 @@ MenuEvent MenuHome::update()
 					}
 					break;
 
-				case 2: // Repeat Message (STANDBY or WAIT)
+				case 2: // Toggle Audio Mute (all states)
+					if(!muteState)
+					{
+						savedBacklightState = backlightState;
+						delayBacklightOff = false;
+						muteState = true;
+						audioMute();
+						disp->backlightOn();
+					}
+					else
+					{
+						muteState = false;
+						audioUnmute();
+						backlightState = savedBacklightState;
+						if(!backlightState)
+						{
+							delayBacklightOff = false;
+							disp->backlightOff();
+						}
+						else
+						{
+							disp->backlightOn();
+						}
+					}
+					break;
+
+				case 3: // Repeat Message (STANDBY or WAIT)
 					if(MenuHomeState::STANDBY == state || MenuHomeState::WAIT == state)
 					{
 						bool repeatValid = !data->lastSpokenMsg.empty();
