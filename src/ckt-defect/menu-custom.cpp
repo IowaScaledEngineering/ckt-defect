@@ -318,8 +318,7 @@ MenuEvent MenuHome::update()
 
 
 	// Draw mute button
-	disp->gotoxy(5, 3);
-	disp->print(' ');
+	disp->gotoxy(6, 3);
 	disp->print((char)1);  // speaker icon
 	disp->print(muteState ? "on " : "off");  // up arrow (unmute) / down arrow (mute)
 
