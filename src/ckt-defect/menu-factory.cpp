@@ -484,7 +484,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		"Off", "OFF"
 	);
 	auto menuTemperatureEn = std::make_shared<MenuBoolSelector>(
-		"Include Temp.",
+		"Include Temp",
 		&cfg.temperatureEnable, 
 		false, 
 		"On", "ON", 
@@ -577,7 +577,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		[&cfg]() { saveConfiguration(&cfg); }
 	);
 	auto menuTemperatureDisplay = std::make_shared<MenuBoolSelector>(
-		"Temp. Display",
+		"Temp Display",
 		&cfg.temperatureDisplay,
 		false,
 		"On", "ON",
