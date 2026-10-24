@@ -59,8 +59,8 @@ LICENSE:
 #define TEMPERATURE_DISP_DEFAULT          true
 #define TEMPERATURE_REAL_DEFAULT          true
 #define TEMPERATURE_UNITS_F_DEFAULT       true
-#define MIN_TEMPERATURE_DEFAULT           50
-#define MAX_TEMPERATURE_DEFAULT           70
+#define MIN_TEMPERATURE_F_DEFAULT         50.0f
+#define MAX_TEMPERATURE_F_DEFAULT         70.0f
 
 #define DIRECTION_EN_DEFAULT              true
 #define TRIGGER_DIR1_ONLY_DEFAULT         false
@@ -168,8 +168,8 @@ void loadConfiguration(DetectorConfiguration* cfg)
 	cfg->temperatureDisplay = preferences.getBool("tmpDisp", TEMPERATURE_DISP_DEFAULT);
 	cfg->temperatureReal = preferences.getBool("tmpReal", TEMPERATURE_REAL_DEFAULT);
 	cfg->temperatureUnitsF = preferences.getBool("tmpUnitF", TEMPERATURE_UNITS_F_DEFAULT);
-	cfg->minTemperatureC = preferences.getFloat("tmpMin", MIN_TEMPERATURE_DEFAULT);
-	cfg->maxTemperatureC = preferences.getFloat("tmpMax", MAX_TEMPERATURE_DEFAULT);
+	cfg->minTemperatureC = preferences.getFloat("tmpMin", (MIN_TEMPERATURE_F_DEFAULT - 32.0f) / 1.8f);
+	cfg->maxTemperatureC = preferences.getFloat("tmpMax", (MAX_TEMPERATURE_F_DEFAULT - 32.0f) / 1.8f);
 
 	// Defects
 	cfg->defectHotJournalEnable = preferences.getBool("hjEn", DEFECT_HJ_EN_DEFAULT);
