@@ -173,6 +173,7 @@ const char* DetectorStateMachine::getStateName(DetectorState state) const
 		case DetectorState::EXIT_SPEED:              return "EXIT_SPEED";
 		case DetectorState::EXIT_QUEUE:              return "EXIT_QUEUE";
 		case DetectorState::TOO_SLOW_QUEUE:          return "TOO_SLOW_QUEUE";
+		case DetectorState::MIN_AXLE_QUEUE:          return "MIN_AXLE_QUEUE";
 		case DetectorState::INTEGRITY_DEFECT_QUEUE:  return "INTEGRITY_DEFECT_QUEUE";
 		case DetectorState::BLOCKED_DEFECT_QUEUE:    return "BLOCKED_DEFECT_QUEUE";
 		case DetectorState::WAIT_NO_EXIT:            return "WAIT_NO_EXIT";
@@ -350,7 +351,7 @@ void DetectorStateMachine::update()
 				}
 				else
 				{
-					transitionTo(DetectorState::INTEGRITY_DEFECT_QUEUE);
+					transitionTo(DetectorState::MIN_AXLE_QUEUE);
 				}
 			}
 			break;
@@ -453,6 +454,11 @@ void DetectorStateMachine::update()
 			
 		case DetectorState::TOO_SLOW_QUEUE:
 			enqueueMessage(msgs->tooSlowMsg, msgs->tooSlowDisplayMsg);
+			transitionTo(DetectorState::WAIT_NO_EXIT);
+			break;
+			
+		case DetectorState::MIN_AXLE_QUEUE:
+			enqueueMessage(msgs->minAxleMsg, msgs->minAxleDisplayMsg);
 			transitionTo(DetectorState::WAIT_NO_EXIT);
 			break;
 			

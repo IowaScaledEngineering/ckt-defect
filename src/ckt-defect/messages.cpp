@@ -600,6 +600,10 @@ void setDefaultMessages(MessageBundle& trackMessages, const DetectorConfiguratio
 	trackMessages.integrityDisplayMsg = tmpTrack + "\\INTEGRITY FAILURE\\";
 	trackMessages.integrityTrainRate = cfg.defectIntegrityTrainRate;
 
+	// Min Axle Message
+	trackMessages.minAxleMsg = tmpEntranceMessage + " integrity failure" + tmpMessage;
+	trackMessages.minAxleDisplayMsg = tmpTrack + "\\INTEGRITY FAILURE\\" + tmpDispMessage;
+
 	// Too Slow Message
 	trackMessages.tooSlowMsg = tmpEntranceMessage + " train 2 slow";
 	trackMessages.tooSlowDisplayMsg = tmpTrack + "\\TRAIN TOO SLOW\\" + tmpDispMessage;
