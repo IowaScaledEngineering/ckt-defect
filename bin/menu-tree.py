@@ -7,9 +7,19 @@ class TreeNode:
         self.name = name
         self.children = []
 
+def strip_cpp_comments(text):
+    # Remove C-style multi-line comments
+    text = re.sub(r'/\*.*?\*/', '', text, flags=re.DOTALL)
+    # Remove C++ single-line comments
+    text = re.sub(r'//.*$', '', text, flags=re.MULTILINE)
+    return text
+
 def parse_menu_structure(file_path):
     with open(file_path, 'r', encoding='utf-8') as f:
         content = f.read()
+
+    # Strip all comments so commented-out menu definitions and relationships are ignored
+    content = strip_cpp_comments(content)
 
     var_to_name = {}
 

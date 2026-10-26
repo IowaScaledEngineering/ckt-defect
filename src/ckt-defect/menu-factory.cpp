@@ -772,7 +772,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	menuMessages->addChild(menuRailNameEn);
 	menuMessages->addChild(menuTemperatureEn);
 
-	mainSel->addChild(menuOperationMode);
+//	mainSel->addChild(menuOperationMode);
 
 	mainSel->addChild(menuTimingConfig);
 	menuTimingConfig->addChild(menuDetectorTimeout);
