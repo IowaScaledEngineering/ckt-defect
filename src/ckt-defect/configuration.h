@@ -90,6 +90,10 @@ struct DetectorConfiguration {
 	bool                     defectWideLoadEnable;
 	uint32_t                 defectWideLoadAxleRate;
 
+	// Random Integrity Error
+	bool                     defectIntegrityEnable;
+	uint32_t                 defectIntegrityTrainRate;
+
 	// Messages
 	bool                     entranceMessageEnable;
 	bool                     alertMessageEnable;

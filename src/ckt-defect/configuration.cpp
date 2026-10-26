@@ -78,6 +78,8 @@ LICENSE:
 #define DEFECT_HL_RATE_DEFAULT            500
 #define DEFECT_WL_EN_DEFAULT              false
 #define DEFECT_WL_RATE_DEFAULT            500
+#define DEFECT_INTEGRITY_EN_DEFAULT       true
+#define DEFECT_INTEGRITY_RATE_DEFAULT     100
 
 #define ENTRANCE_MSG_EN_DEFAULT           true
 #define ALERT_MSG_EN_DEFAULT              true
@@ -189,6 +191,9 @@ void loadConfiguration(DetectorConfiguration* cfg)
 
 	cfg->defectWideLoadEnable = preferences.getBool("wlEn", DEFECT_WL_EN_DEFAULT);
 	cfg->defectWideLoadAxleRate = preferences.getUInt("wlRate", DEFECT_WL_RATE_DEFAULT);
+
+	cfg->defectIntegrityEnable = preferences.getBool("intgEn", DEFECT_INTEGRITY_EN_DEFAULT);
+	cfg->defectIntegrityTrainRate = preferences.getUInt("intgRate", DEFECT_INTEGRITY_RATE_DEFAULT);
 
 	// Messages
 	cfg->entranceMessageEnable = preferences.getBool("entMsgEn", ENTRANCE_MSG_EN_DEFAULT);
@@ -376,6 +381,12 @@ void saveConfiguration(DetectorConfiguration* cfg)
 
 	if(cfg->defectWideLoadAxleRate != preferences.getUInt("wlRate", ~cfg->defectWideLoadAxleRate))
 		preferences.putUInt("wlRate", cfg->defectWideLoadAxleRate);
+
+	if(cfg->defectIntegrityEnable != preferences.getBool("intgEn", !cfg->defectIntegrityEnable))
+		preferences.putBool("intgEn", cfg->defectIntegrityEnable);
+
+	if(cfg->defectIntegrityTrainRate != preferences.getUInt("intgRate", ~cfg->defectIntegrityTrainRate))
+		preferences.putUInt("intgRate", cfg->defectIntegrityTrainRate);
 
 	// Messages
 	if(cfg->entranceMessageEnable != preferences.getBool("entMsgEn", !cfg->entranceMessageEnable))
@@ -571,6 +582,11 @@ void printConfiguration(DetectorConfiguration* cfg)
 	Serial.println(cfg->defectWideLoadEnable);
 	Serial.print("Wide Load Axle Rate: ");
 	Serial.println(cfg->defectWideLoadAxleRate);
+
+	Serial.print("Integrity Enable: ");
+	Serial.println(cfg->defectIntegrityEnable);
+	Serial.print("Integrity Train Rate: ");
+	Serial.println(cfg->defectIntegrityTrainRate);
 
 	Serial.print("Entrance Message Enable: ");
 	Serial.println(cfg->entranceMessageEnable);

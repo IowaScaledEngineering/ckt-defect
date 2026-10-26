@@ -16,6 +16,7 @@ std::shared_ptr<Menu> menuHighImpactWheelRate;
 std::shared_ptr<Menu> menuDraggingEquipmentRate;
 std::shared_ptr<Menu> menuHighLoadRate;
 std::shared_ptr<Menu> menuWideLoadRate;
+std::shared_ptr<Menu> menuRandomIntegrityRate;
 } // namespace
 
 void updateAllMenuVisibility(const DetectorConfiguration &cfg)
@@ -55,6 +56,12 @@ void updateAllMenuVisibility(const DetectorConfiguration &cfg)
 		if (menuWideLoadRate) menuWideLoadRate->unhide();
 	} else {
 		if (menuWideLoadRate) menuWideLoadRate->hide();
+	}
+
+	if (cfg.defectIntegrityEnable) {
+		if (menuRandomIntegrityRate) menuRandomIntegrityRate->unhide();
+	} else {
+		if (menuRandomIntegrityRate) menuRandomIntegrityRate->hide();
 	}
 }
 
@@ -440,6 +447,31 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		[&cfg, &trackMessages]() { saveConfiguration(&cfg); updateMessages(trackMessages, cfg); }
 	);
 
+	// Random Integrity
+	auto menuRandomIntegrity = std::make_shared<MenuListSelector>("Random Integrity");
+	auto menuRandomIntegrityEn = std::make_shared<MenuBoolSelector>(
+		"Random Integrity En",
+		&cfg.defectIntegrityEnable,
+		false,
+		"On", "ON",
+		"Off", "OFF"
+	);
+	menuRandomIntegrityRate = std::make_shared<MenuDigitThumbwheel>(
+		"Train Rate",
+		&cfg.defectIntegrityTrainRate,
+		false,
+		6,
+		0,
+		true,
+		[&cfg, &trackMessages]() {
+			if (cfg.defectIntegrityTrainRate == 0) {
+				cfg.defectIntegrityTrainRate = 1;
+			}
+			saveConfiguration(&cfg);
+			updateMessages(trackMessages, cfg);
+		}
+	);
+
 	// Message Bits
 	auto menuMilepostEn = std::make_shared<MenuBoolSelector>(
 		"Include Milepost",
@@ -647,6 +679,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	menuDraggingEquipmentEn->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg); updateMessages(trackMessages, cfg); });
 	menuHighLoadEn->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg); updateMessages(trackMessages, cfg); });
 	menuWideLoadEn->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg); updateMessages(trackMessages, cfg); });
+	menuRandomIntegrityEn->setSaveCallback([&cfg, &trackMessages]() { saveConfiguration(&cfg); updateAllMenuVisibility(cfg); updateMessages(trackMessages, cfg); });
 
 	// Trigger 1 and Trigger 2 mutual-exclusion callbacks
 	menuTriggerDir1->setSaveCallback([&cfg]() {
@@ -728,6 +761,9 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	menuExitMessage->addChild(menuTalkDefectOnly);
 	menuExitMessage->addChild(menuMaxDefects);
 	menuExitMessage->addChild(menuOrdinalType);
+	menuMessages->addChild(menuRandomIntegrity);
+	menuRandomIntegrity->addChild(menuRandomIntegrityEn);
+	menuRandomIntegrity->addChild(menuRandomIntegrityRate);
 	menuMessages->addChild(menuMilepostEn);
 	menuMessages->addChild(menuTrackNameEn);
 	menuMessages->addChild(menuAxleEn);

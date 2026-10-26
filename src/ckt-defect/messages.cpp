@@ -596,9 +596,9 @@ void setDefaultMessages(MessageBundle& trackMessages, const DetectorConfiguratio
 	trackMessages.exitDefectDisplayMsg = tmpTrack + "\\DEFECT DETECTED!\\" + tmpDispMessage;
 
 	// Detector Integrity Message
-	trackMessages.integrityMsg = tmpEntranceMessage + " integrity failure" + tmpMessage;
-	trackMessages.integrityDisplayMsg = tmpTrack + "\\INTEGRITY FAILURE\\" + tmpDispMessage;
-	trackMessages.integrityTrainRate = 100;
+	trackMessages.integrityMsg = tmpEntranceMessage + " integrity failure";
+	trackMessages.integrityDisplayMsg = tmpTrack + "\\INTEGRITY FAILURE\\";
+	trackMessages.integrityTrainRate = cfg.defectIntegrityTrainRate;
 
 	// Too Slow Message
 	trackMessages.tooSlowMsg = tmpEntranceMessage + " train 2 slow";

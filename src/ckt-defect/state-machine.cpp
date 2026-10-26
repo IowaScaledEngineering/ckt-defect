@@ -272,14 +272,14 @@ void DetectorStateMachine::update()
 
 		case DetectorState::ENTRANCE_DEFECT:
 			// Roll the dice
-			if(rollDice() < (PROBABILITY_MAX / msgs->integrityTrainRate))
+			if( (cfg->defectIntegrityEnable) && (rollDice() < (PROBABILITY_MAX / msgs->integrityTrainRate)) )
 			{
 				// Integrity defect
 				transitionTo(DetectorState::INTEGRITY_DEFECT_QUEUE);
 			}
 			else
 			{
-				// No defect
+				// No defect (or not enabled)
 				if(!cfg->infrastructureMode && (cfg->speedTypeEnter))
 				{
 					// Not infrastructure mode and entrance speed enabled
