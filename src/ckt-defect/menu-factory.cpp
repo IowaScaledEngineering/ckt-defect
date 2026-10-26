@@ -450,7 +450,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	// Random Integrity
 	auto menuRandomIntegrity = std::make_shared<MenuListSelector>("Random Integrity");
 	auto menuRandomIntegrityEn = std::make_shared<MenuBoolSelector>(
-		"Random Integrity En",
+		"Integrity Enable",
 		&cfg.defectIntegrityEnable,
 		false,
 		"On", "ON",
