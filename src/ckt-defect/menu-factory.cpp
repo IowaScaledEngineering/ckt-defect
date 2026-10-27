@@ -107,9 +107,9 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		"Entrance Axles",
 		&cfg.entranceAxles,
 		false,
-		0,   // min
-		10,  // max
-		1,   // step
+		ENTRANCE_AXLES_MIN,
+		ENTRANCE_AXLES_MAX,
+		1,
 		"",
 		[&cfg]() { saveConfiguration(&cfg); }
 	);
@@ -117,9 +117,9 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		"Minimum Axles",
 		&cfg.minAxles,
 		false,
-		0,   // min
-		100, // max
-		1,   // step
+		MIN_AXLES_MIN,
+		MIN_AXLES_MAX,
+		1,
 		"",
 		[&cfg]() { saveConfiguration(&cfg); }
 	);
@@ -138,9 +138,9 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		"Minimum Speed",
 		&cfg.minSpeed,
 		false,
-		0,   // min
-		50,  // max
-		1,   // step
+		MIN_SPEED_MIN,
+		MIN_SPEED_MAX,
+		1,
 		cfg.speedUnitsMph ? "mph" : "kph",
 		[&cfg]() { saveConfiguration(&cfg); }
 	);
@@ -219,9 +219,9 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		[&cfg]() { return getMinTemperature(&cfg); },
 		[&cfg](int16_t val) { setMinTemperature(&cfg, val); },
 		false,
-		-99,   // min
-		150,  // max
-		1,    // step
+		TEMPERATURE_MIN,
+		TEMPERATURE_MAX,
+		1,
 		cfg.temperatureUnitsF ? degF : degC,
 		[&cfg]() { saveConfiguration(&cfg); }
 	);
@@ -230,9 +230,9 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		[&cfg]() { return getMaxTemperature(&cfg); },
 		[&cfg](int16_t val) { setMaxTemperature(&cfg, val); },
 		false,
-		-99,   // min
-		150,  // max
-		1,    // step
+		TEMPERATURE_MIN,
+		TEMPERATURE_MAX,
+		1,
 		cfg.temperatureUnitsF ? degF : degC,
 		[&cfg]() { saveConfiguration(&cfg); }
 	);
@@ -433,9 +433,9 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		"Max Defects",
 		&cfg.maxDefects,
 		false,
-		1,   // min
-		9,   // max
-		1,   // step
+		MAX_DEFECTS_MIN,
+		MAX_DEFECTS_MAX,
+		1,
 		"defects",
 		[&cfg]() { saveConfiguration(&cfg); }
 	);
@@ -539,9 +539,9 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		"Detector Timeout",
 		&cfg.detectorTimeout,
 		false,
-		2,   // min
-		30,  // max
-		1,   // step
+		DETECTOR_TIMEOUT_MIN,
+		DETECTOR_TIMEOUT_MAX,
+		1,
 		"sec",
 		[&cfg]() { saveConfiguration(&cfg); }
 	);
@@ -549,9 +549,9 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		"Summary Disp Time",
 		&cfg.summaryDisplayTime,
 		false,
-		2,   // min
-		60,  // max
-		1,   // step
+		SUMMARY_DISP_TIME_MIN,
+		SUMMARY_DISP_TIME_MAX,
+		1,
 		"sec",
 		[&cfg]() { saveConfiguration(&cfg); }
 	);
@@ -559,9 +559,9 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		"Msg Repeat Timeout",
 		&cfg.msgRepeatTimeout,
 		false,
-		2,   // min
-		60,  // max
-		1,   // step
+		MSG_REPEAT_TIMEOUT_MIN,
+		MSG_REPEAT_TIMEOUT_MAX,
+		1,
 		"sec",
 		[&cfg]() { saveConfiguration(&cfg); }
 	);
@@ -630,9 +630,9 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		audioGetPttDelay,
 		audioSetPttDelay,
 		false,
-		0,     // min
-		3000,  // max
-		100,   // step
+		PTT_DELAY_MIN,
+		PTT_DELAY_MAX,
+		PTT_DELAY_STEP_MS,
 		"ms",
 		[&cfg]() { cfg.pttDelay = audioGetPttDelay()/100; saveConfiguration(&cfg); }
 	);
@@ -641,15 +641,16 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		[&cfg]() { return cfg.minAxleTime * 100; },
 		[&cfg](int16_t val) { cfg.minAxleTime = val / 100; },
 		false,
-		0,       // min (0 us)
-		25000,   // max (25 ms = 25000 us)
-		100,     // step (100 us)
+		MIN_AXLE_TIME_MIN,
+		MIN_AXLE_TIME_MAX,
+		MIN_AXLE_TIME_STEP_US,
 		"us",
 		[&cfg]() { 
 			axleSetMinAxleTime(cfg.minAxleTime * 100); 
 			saveConfiguration(&cfg); 
 		}
 	);
+	auto menuConfigCode = std::make_shared<MenuConfigCode>("Config Code", cfg);
 
 	// Diagnostic	
 	auto menuDiagnostics = std::make_shared<MenuListSelector>("Diagnostics");
@@ -791,6 +792,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	menuSysConfig->addChild(menuBacklightLevel);
 	menuSysConfig->addChild(menuPttDelay);
 	menuSysConfig->addChild(menuMinAxleTime);
+	menuSysConfig->addChild(menuConfigCode);
 
 	mainSel->addChild(menuDiagnostics);
 	menuDiagnostics->addChild(menuVocabStatus);

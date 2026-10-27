@@ -3,6 +3,9 @@
 src/build
 run.sh
 
+__pycache__/
+*.py[cod]
+
 .antigravitycli
 .clang-format
 

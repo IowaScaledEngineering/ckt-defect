@@ -1,0 +1,395 @@
+schema_version: 1
+format: Crockford Base32 with CRC-16-CCITT
+total_bits_min: 241
+base32_length_min: 49
+max_allowed_characters: 60
+limits:
+  ENTRANCE_AXLES_MIN: 0
+  ENTRANCE_AXLES_MAX: 10
+  MIN_AXLES_MIN: 0
+  MIN_AXLES_MAX: 100
+  MIN_SPEED_MIN: 0
+  MIN_SPEED_MAX: 50
+  SPEED_SCALE_MIN: 0
+  SPEED_SCALE_MAX: 999
+  DETECTOR_TIMEOUT_MIN: 2
+  DETECTOR_TIMEOUT_MAX: 30
+  SUMMARY_DISP_TIME_MIN: 2
+  SUMMARY_DISP_TIME_MAX: 60
+  MSG_REPEAT_TIMEOUT_MIN: 2
+  MSG_REPEAT_TIMEOUT_MAX: 60
+  TEMPERATURE_MIN: -99
+  TEMPERATURE_MAX: 150
+  MAX_DEFECTS_MIN: 1
+  MAX_DEFECTS_MAX: 9
+  PTT_DELAY_MIN: 0
+  PTT_DELAY_MAX: 3000
+  PTT_DELAY_STEP_MS: 100
+  MIN_AXLE_TIME_MIN: 0
+  MIN_AXLE_TIME_MAX: 25000
+  MIN_AXLE_TIME_STEP_US: 100
+  MILEPOST_MIN: 0
+  MILEPOST_MAX: 9999
+fields:
+- name: volumeStep
+  member: volumeStep
+  category: Audio & Display
+  cpp_type: uint8_t
+  encoding: bits
+  bits: 5
+- name: noiseStep
+  member: noiseStep
+  category: Audio & Display
+  cpp_type: uint8_t
+  encoding: bits
+  bits: 4
+- name: pttDelay
+  member: pttDelay
+  category: Audio & Display
+  cpp_type: uint8_t
+  encoding: bits
+  bits: 5
+  unit: deciseconds
+  display_unit: ms
+  multiplier: 100
+- name: popcornStep
+  member: popcornStep
+  category: Audio & Display
+  cpp_type: uint8_t
+  encoding: bits
+  bits: 4
+- name: lcdBrightness
+  member: lcdBrightness
+  category: Audio & Display
+  cpp_type: uint8_t
+  encoding: bits
+  bits: 8
+- name: milepostEnable
+  member: milepostEnable
+  category: Milepost & Tracks
+  cpp_type: bool
+  encoding: bits
+  bits: 1
+- name: milepostDisplay
+  member: milepostDisplay
+  category: Milepost & Tracks
+  cpp_type: bool
+  encoding: bits
+  bits: 1
+- name: milepost
+  member: milepost
+  category: Milepost & Tracks
+  cpp_type: uint16_t
+  encoding: bits
+  bits: 14
+  unit: decimiles
+  display_unit: MP
+  divisor: 10
+- name: trackNameEnable
+  member: trackNameEnable
+  category: Milepost & Tracks
+  cpp_type: bool
+  encoding: bits
+  bits: 1
+- name: trackNameId_0
+  member: trackNameId[0]
+  category: Milepost & Tracks
+  cpp_type: uint8_t
+  encoding: bits
+  bits: 3
+- name: trackNameId_1
+  member: trackNameId[1]
+  category: Milepost & Tracks
+  cpp_type: uint8_t
+  encoding: bits
+  bits: 3
+- name: directionEnable
+  member: directionEnable
+  category: Direction & Rail
+  cpp_type: bool
+  encoding: bits
+  bits: 1
+- name: direction1NameId
+  member: direction1NameId
+  category: Direction & Rail
+  cpp_type: uint8_t
+  encoding: bits
+  bits: 3
+- name: direction2NameId
+  member: direction2NameId
+  category: Direction & Rail
+  cpp_type: uint8_t
+  encoding: bits
+  bits: 3
+- name: triggerDirection1Only
+  member: triggerDirection1Only
+  category: Direction & Rail
+  cpp_type: bool
+  encoding: bits
+  bits: 1
+- name: triggerDirection2Only
+  member: triggerDirection2Only
+  category: Direction & Rail
+  cpp_type: bool
+  encoding: bits
+  bits: 1
+- name: railNameEnable
+  member: railNameEnable
+  category: Direction & Rail
+  cpp_type: bool
+  encoding: bits
+  bits: 1
+- name: railNameId
+  member: railNameId
+  category: Direction & Rail
+  cpp_type: uint8_t
+  encoding: bits
+  bits: 2
+- name: axleEnable
+  member: axleEnable
+  category: Axles
+  cpp_type: bool
+  encoding: bits
+  bits: 1
+- name: entranceAxles
+  member: entranceAxles
+  category: Axles
+  cpp_type: uint16_t
+  encoding: bits
+  bits: 4
+- name: minAxles
+  member: minAxles
+  category: Axles
+  cpp_type: uint16_t
+  encoding: bits
+  bits: 7
+- name: speedEnable
+  member: speedEnable
+  category: Speed
+  cpp_type: bool
+  encoding: bits
+  bits: 1
+- name: speedUnitsMph
+  member: speedUnitsMph
+  category: Speed
+  cpp_type: bool
+  encoding: bits
+  bits: 1
+- name: speedTypeEnter
+  member: speedTypeEnter
+  category: Speed
+  cpp_type: bool
+  encoding: bits
+  bits: 1
+- name: minSpeed
+  member: minSpeed
+  category: Speed
+  cpp_type: uint8_t
+  encoding: bits
+  bits: 6
+- name: speedScale
+  member: speedScale
+  category: Speed
+  cpp_type: uint16_t
+  encoding: bits
+  bits: 10
+  unit: deciscale
+  display_unit: x
+  divisor: 10
+- name: detectorTimeout
+  member: detectorTimeout
+  category: Other
+  cpp_type: uint8_t
+  encoding: bits
+  bits: 5
+  unit: seconds
+  display_unit: sec
+- name: summaryDisplayTime
+  member: summaryDisplayTime
+  category: Other
+  cpp_type: uint8_t
+  encoding: bits
+  bits: 6
+  unit: seconds
+  display_unit: sec
+- name: msgRepeatTimeout
+  member: msgRepeatTimeout
+  category: Other
+  cpp_type: uint8_t
+  encoding: bits
+  bits: 6
+  unit: seconds
+  display_unit: sec
+- name: temperatureEnable
+  member: temperatureEnable
+  category: Temperature
+  cpp_type: bool
+  encoding: bits
+  bits: 1
+- name: temperatureDisplay
+  member: temperatureDisplay
+  category: Temperature
+  cpp_type: bool
+  encoding: bits
+  bits: 1
+- name: temperatureReal
+  member: temperatureReal
+  category: Temperature
+  cpp_type: bool
+  encoding: bits
+  bits: 1
+- name: temperatureUnitsF
+  member: temperatureUnitsF
+  category: Temperature
+  cpp_type: bool
+  encoding: bits
+  bits: 1
+- name: minTemperatureC
+  member: minTemperatureC
+  category: Temperature
+  cpp_type: float
+  encoding: bits
+  bits: 8
+  offset: 100
+- name: maxTemperatureC
+  member: maxTemperatureC
+  category: Temperature
+  cpp_type: float
+  encoding: bits
+  bits: 8
+  offset: 100
+- name: defectHotJournalEnable
+  member: defectHotJournalEnable
+  category: Built-In Defects
+  cpp_type: bool
+  encoding: bits
+  bits: 1
+- name: defectHotJournalAxleRate
+  member: defectHotJournalAxleRate
+  category: Built-In Defects
+  cpp_type: uint32_t
+  encoding: varint
+  bits: 8
+- name: defectHotWheelEnable
+  member: defectHotWheelEnable
+  category: Built-In Defects
+  cpp_type: bool
+  encoding: bits
+  bits: 1
+- name: defectHotWheelAxleRate
+  member: defectHotWheelAxleRate
+  category: Built-In Defects
+  cpp_type: uint32_t
+  encoding: varint
+  bits: 8
+- name: defectHighImpactWheelEnable
+  member: defectHighImpactWheelEnable
+  category: Built-In Defects
+  cpp_type: bool
+  encoding: bits
+  bits: 1
+- name: defectHighImpactWheelAxleRate
+  member: defectHighImpactWheelAxleRate
+  category: Built-In Defects
+  cpp_type: uint32_t
+  encoding: varint
+  bits: 8
+- name: defectDraggingEquipmentEnable
+  member: defectDraggingEquipmentEnable
+  category: Built-In Defects
+  cpp_type: bool
+  encoding: bits
+  bits: 1
+- name: defectDraggingEquipmentAxleRate
+  member: defectDraggingEquipmentAxleRate
+  category: Built-In Defects
+  cpp_type: uint32_t
+  encoding: varint
+  bits: 8
+- name: defectHighLoadEnable
+  member: defectHighLoadEnable
+  category: Built-In Defects
+  cpp_type: bool
+  encoding: bits
+  bits: 1
+- name: defectHighLoadAxleRate
+  member: defectHighLoadAxleRate
+  category: Built-In Defects
+  cpp_type: uint32_t
+  encoding: varint
+  bits: 8
+- name: defectWideLoadEnable
+  member: defectWideLoadEnable
+  category: Built-In Defects
+  cpp_type: bool
+  encoding: bits
+  bits: 1
+- name: defectWideLoadAxleRate
+  member: defectWideLoadAxleRate
+  category: Built-In Defects
+  cpp_type: uint32_t
+  encoding: varint
+  bits: 8
+- name: defectIntegrityEnable
+  member: defectIntegrityEnable
+  category: Random Integrity Error
+  cpp_type: bool
+  encoding: bits
+  bits: 1
+- name: defectIntegrityTrainRate
+  member: defectIntegrityTrainRate
+  category: Random Integrity Error
+  cpp_type: uint32_t
+  encoding: varint
+  bits: 8
+- name: entranceMessageEnable
+  member: entranceMessageEnable
+  category: Messages
+  cpp_type: bool
+  encoding: bits
+  bits: 1
+- name: alertMessageEnable
+  member: alertMessageEnable
+  category: Messages
+  cpp_type: bool
+  encoding: bits
+  bits: 1
+- name: talkOnDefectOnly
+  member: talkOnDefectOnly
+  category: Exit Config
+  cpp_type: bool
+  encoding: bits
+  bits: 1
+- name: ordinalTypeId
+  member: ordinalTypeId
+  category: Exit Config
+  cpp_type: uint8_t
+  encoding: bits
+  bits: 3
+- name: maxDefects
+  member: maxDefects
+  category: Exit Config
+  cpp_type: uint8_t
+  encoding: bits
+  bits: 4
+- name: infrastructureMode
+  member: infrastructureMode
+  category: Operation Mode
+  cpp_type: bool
+  encoding: bits
+  bits: 1
+- name: vocabSelected
+  member: vocabSelected
+  category: Vocab
+  cpp_type: std::string
+  encoding: string
+  bits: 8
+- name: minAxleTime
+  member: minAxleTime
+  category: Vocab
+  cpp_type: uint8_t
+  encoding: bits
+  bits: 8
+  unit: 100us
+  display_unit: us
+  multiplier: 100

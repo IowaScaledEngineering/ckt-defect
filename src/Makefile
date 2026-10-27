@@ -6,12 +6,14 @@
 #
 #*************************************************************************
 
+export GIT_DISCOVERY_ACROSS_FILESYSTEM := 1
+
 BASE_NAME = ckt-defect
 
 ARD_ESP32_VER = 3.3.12
 
-GITREV := $(shell git rev-parse --short=6 HEAD)
-REV    := $(shell ./git-revision.sh)
+GITREV := $(shell GIT_DISCOVERY_ACROSS_FILESYSTEM=1 git rev-parse --short=6 HEAD 2>/dev/null || echo "unknown")
+REV    := $(shell GIT_DISCOVERY_ACROSS_FILESYSTEM=1 ./git-revision.sh 2>/dev/null || echo "v0.0.0")
 
 #BOARD     = esp32:esp32:esp32s2:CDCOnBoot=cdc,UploadMode=cdc,PSRAM=enabled,PartitionScheme=huge_app
 BOARD     = esp32:esp32:esp32s2:CDCOnBoot=cdc,UploadMode=cdc,PSRAM=enabled
@@ -33,17 +35,27 @@ define ESP_TOUCH_RESET
 endef
 
 help:
-	@echo "make compile.... Build $(BASE_NAME)"
-	@echo "make upload..... Flash the firmware"
-	@echo "make terminal... Open uart terminal"
+	@echo "make compile........ Build $(BASE_NAME) (runs generate-codec first)"
+	@echo "make generate-codec. Run config generator & NVM coverage verifier"
+	@echo "make export-schema.. Export version-tagged schema JSON manifest"
+	@echo "make upload......... Flash the firmware"
+	@echo "make terminal....... Open uart terminal"
 
 # https://arduino.github.io/arduino-cli/0.32/commands/arduino-cli_compile/
 
-compile:
+generate-codec:
+	@python3 tools/gen_codec.py
+
+compile: generate-codec
 	$(COMPILE)
 
-compile-verbose:
+compile-verbose: generate-codec
 	$(COMPILE) -v
+
+export-schema:
+	@mkdir -p $(BUILD_DIR)
+	@python3 -c 'import json, sys, subprocess; v = subprocess.check_output(["grep", "CONFIG_SCHEMA_VERSION", "ckt-defect/configuration.h"]).decode().split()[2]; print(json.dumps({"schema_version": int(v), "git_rev": "$(GITREV)", "version": "$(REV)"}, indent=2))' > $(BUILD_DIR)/config_schema_$(REV).json
+	@echo "Exported $(BUILD_DIR)/config_schema_$(REV).json"
 
 #upload:
 #	$(ARDUINO) upload -v --input-dir $(BUILD_DIR)  -b $(BOARD) -p $(PORT) $(BASE_NAME)

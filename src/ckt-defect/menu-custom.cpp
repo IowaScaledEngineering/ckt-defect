@@ -4,6 +4,7 @@
 #include "parser.h"
 #include "audio.h"
 #include "vocab.h"
+#include "config_codec.h"
 #include <format>
 
 void restartWithDelay(uint32_t delay_ms, Display* disp)
@@ -885,6 +886,57 @@ MenuEvent MenuMemoryStatus::update()
 	// Line 3 (Row 3): BACK button
 	disp->gotoxy(16, 3);
 	disp->print("BACK");
+
+	DisplayEvent ev;
+	if (getMenuInputEvent(&ev))
+	{
+		if (ev.type == DisplayEventType::KEY_PRESS)
+		{
+			switch (ev.keyNum)
+			{
+				case 4: // BACK
+					return MenuEvent::BACK;
+			}
+		}
+		else if (ev.type == DisplayEventType::KEY_RELEASE)
+		{
+			handleButtonRelease(ev.keyNum);
+		}
+	}
+
+	return MenuEvent::NOOP;
+}
+
+void MenuConfigCode::onEnter()
+{
+	Menu::onEnter();
+	configCode = getConfigurationString(&cfg);
+}
+
+MenuEvent MenuConfigCode::update()
+{
+	disp->backlightOn();
+
+	// Render code across lines 0, 1, 2 (Rows 0, 1, 2) - No title header
+	for (size_t row = 0; row < 3; row++)
+	{
+		std::string line;
+		size_t start = row * 20;
+		if (start < configCode.length())
+		{
+			line = configCode.substr(start, 20);
+		}
+		if (line.length() < 20)
+		{
+			line.append(20 - line.length(), ' ');
+		}
+		disp->gotoxy(0, row);
+		disp->print(line.c_str());
+	}
+
+	// Line 3 (Row 3): Clear columns 0-15 and display BACK at column 16 (Button 4 position)
+	disp->gotoxy(0, 3);
+	disp->print("                BACK");
 
 	DisplayEvent ev;
 	if (getMenuInputEvent(&ev))

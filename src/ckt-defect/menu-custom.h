@@ -137,3 +137,17 @@ public:
 	void onEnter() override { Menu::onEnter(); }
 	MenuEvent update() override;
 };
+
+class MenuConfigCode : public Menu
+{
+private:
+	const DetectorConfiguration &cfg;
+	std::string configCode;
+
+public:
+	MenuConfigCode(const std::string &name, const DetectorConfiguration &c)
+		: Menu(name), cfg(c) {}
+
+	void onEnter() override;
+	MenuEvent update() override;
+};
