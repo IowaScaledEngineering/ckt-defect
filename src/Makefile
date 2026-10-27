@@ -60,10 +60,9 @@ upload-fresh:
 	esptool.py --chip esp32s2 --port $(PORT) --baud 921600 --before default_reset --after hard_reset write_flash \
 		0x1000 $(BUILD_DIR)/ckt-defect.ino.bootloader.bin \
 		0x8000 $(BUILD_DIR)/ckt-defect.ino.partitions.bin \
-		0xe000 /home/railfan/.arduino15/packages/esp32/hardware/esp32/$(ARD_ESP32_VER)/tools/partitions/boot_app0.bin \
+		0xe000 $(BUILD_DIR)/boot_app0.bin \
 		0x10000 $(BUILD_DIR)/ckt-defect.ino.bin
 
-# For production.  Needs boot_app0.bin in $(BIN) directory.  Eliminates dependency on installed Arduino version
 firmware:
 	$(ESP_TOUCH_RESET)
 	esptool.py --chip esp32s2 --port $(PORT) --baud 921600  --before default_reset --after hard_reset write_flash  -z --flash_mode dio --flash_freq 80m --flash_size 4MB 0x1000 $(BIN)/ckt-defect.ino.bootloader.bin 0x8000 $(BIN)/ckt-defect.ino.partitions.bin 0xe000 $(BIN)/boot_app0.bin 0x10000 $(BIN)/ckt-defect.ino.bin
