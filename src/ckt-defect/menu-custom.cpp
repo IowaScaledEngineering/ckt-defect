@@ -4,7 +4,7 @@
 #include "parser.h"
 #include "audio.h"
 #include "vocab.h"
-#include "config_codec.h"
+#include "config-codec.h"
 #include <format>
 
 void restartWithDelay(uint32_t delay_ms, Display* disp)
