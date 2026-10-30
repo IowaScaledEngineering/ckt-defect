@@ -43,7 +43,7 @@ struct MessageBundle {
 	std::string exitDefectDisplayMsg;              // 
 	std::string integrityMsg;                      // Simulates a detector failure
 	std::string integrityDisplayMsg;               // 
-	uint16_t integrityTrainRate;                   // Number of trains on average for this defect
+	uint32_t integrityTrainRate;                   // Number of trains on average for this defect
 	std::string minAxleMsg;                        // If not enough axles are counted before timeout (default = integrity)
 	std::string minAxleDisplayMsg;                 // 
 	std::string tooSlowMsg;                        // If speed enabled, plays when speed is below programmed threshold

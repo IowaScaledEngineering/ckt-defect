@@ -195,7 +195,7 @@ void loop()
 	bool lcdRefresh = false;
 
 	bool sdCardPresent = false;
-	bool configFilePresent = false;
+	cfg.externalConfigPresent = false;
 	cfg.externalVocabPresent = false;
 
 	TemperatureManager temperatureMgr(&cfg);
@@ -366,7 +366,7 @@ void loop()
 		FIL configFile;
 		if (f_open(&configFile, "config.txt", FA_READ) == FR_OK)
 		{
-			configFilePresent = true;
+			cfg.externalConfigPresent = true;
 			char lineBuffer[256];
 
 			while (readLine(&configFile, lineBuffer, sizeof(lineBuffer)))

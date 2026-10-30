@@ -190,6 +190,9 @@ struct DetectorConfiguration {
 	bool                     externalVocabPresent;                // Volatile value, not stored in NVM
 	std::string              vocabSelected;                       // @string: 8
 	std::vector<std::string> vocabsAvailable;                     // Loaded at runtime, not stored in NVM
+
+	// Config Tracking
+	bool                     externalConfigPresent;               // Volatile value, not stored in NVM
 	
 	// Misc. Stuff
 	uint8_t                  minAxleTime;                         // @bits: 8 (100us increments)
