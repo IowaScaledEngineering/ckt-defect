@@ -194,7 +194,7 @@ struct DetectorConfiguration {
 	// Config Tracking
 	bool                     externalConfigPresent;               // Volatile value, not stored in NVM
 	
-	// Misc. Stuff
+	// Misc Stuff
 	uint8_t                  minAxleTime;                         // @bits: 8 (100us increments)
 };
 
