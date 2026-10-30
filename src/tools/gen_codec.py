@@ -18,7 +18,7 @@ import yaml
 
 CONFIG_H_PATH = "ckt-defect/configuration.h"
 CONFIG_CPP_PATH = "ckt-defect/configuration.cpp"
-OUTPUT_H_PATH = "ckt-defect/config_codec.h"
+OUTPUT_H_PATH = "ckt-defect/config-codec.h"
 SCHEMA_DIR = "tools/schemas"
 
 def parse_configuration_h(path):
