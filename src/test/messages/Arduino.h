@@ -8,6 +8,14 @@
 // FreeRTOS Mock Stubs
 inline uint32_t uxTaskGetStackHighWaterMark(void*) { return 4096; }
 inline uint32_t xPortGetFreeHeapSize(void) { return 128000; }
+inline uint32_t xPortGetMinimumEverFreeHeapSize(void) { return 120000; }
+
+class MockEspClass {
+public:
+    uint32_t getHeapSize() { return 320000; }
+    uint32_t getFreeHeap() { return 128000; }
+};
+inline MockEspClass ESP;
 
 // Simulating Arduino Serial Object
 class MockSerial {
