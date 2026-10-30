@@ -386,7 +386,7 @@ fields:
   bits: 8
 - name: minAxleTime
   member: minAxleTime
-  category: Vocab
+  category: Misc Stuff
   cpp_type: uint8_t
   encoding: bits
   bits: 8
