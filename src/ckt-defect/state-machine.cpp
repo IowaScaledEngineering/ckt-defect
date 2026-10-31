@@ -20,6 +20,7 @@ LICENSE:
 *************************************************************************/
 
 #include <Arduino.h>
+#include <algorithm>
 #include "common.h"
 #include "state-machine.h"
 
@@ -273,7 +274,7 @@ void DetectorStateMachine::update()
 
 		case DetectorState::ENTRANCE_DEFECT:
 			// Roll the dice
-			if( (cfg->defectIntegrityEnable) && (rollDice() < (PROBABILITY_MAX / msgs->integrityTrainRate)) )
+			if( (cfg->defectIntegrityEnable) && (rollDice() < (PROBABILITY_MAX / std::max(1U, msgs->integrityTrainRate))) )
 			{
 				// Integrity defect
 				transitionTo(DetectorState::INTEGRITY_DEFECT_QUEUE);
@@ -390,7 +391,7 @@ void DetectorStateMachine::update()
 			{
 				for (uint32_t i = 0; i < msgs->defects.size(); i++)
 				{
-					if (rollDice() < (PROBABILITY_MAX / msgs->defects[i].axleRate))
+					if (rollDice() < (PROBABILITY_MAX / std::max(1U, msgs->defects[i].axleRate)))
 					{
 						// We have a defect
 						std::string temporaryMsg;
