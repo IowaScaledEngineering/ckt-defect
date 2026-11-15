@@ -739,13 +739,13 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 			saveConfiguration(&cfg); 
 		}
 	);
-	auto menuConfigCode = std::make_shared<MenuConfigCode>("Config Code", cfg);
-
 	// Diagnostic	
 	auto menuDiagnostics = std::make_shared<MenuListSelector>("Diagnostics");
 	auto menuVocabStatus = std::make_shared<MenuVocabStatus>("Vocab Status", cfg, trackMessages);
 	auto menuVocabTest = std::make_shared<MenuVocabTest>("Vocab Test");
 	auto menuMemoryStatus = std::make_shared<MenuMemoryStatus>("Memory Status");
+	auto menuVersion = std::make_shared<MenuVersion>("Version");
+	auto menuConfigCode = std::make_shared<MenuConfigCode>("Config Code", cfg);
 	auto menuReset = std::make_shared<MenuReset>("Factory Reset", cfg);
 
 	// ==========================================
@@ -881,12 +881,13 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	menuSysConfig->addChild(menuBacklightLevel);
 	menuSysConfig->addChild(menuPttDelay);
 	menuSysConfig->addChild(menuMinAxleTime);
-	menuSysConfig->addChild(menuConfigCode);
 
 	mainSel->addChild(menuDiagnostics);
 	menuDiagnostics->addChild(menuVocabStatus);
 	menuDiagnostics->addChild(menuVocabTest);
 	menuDiagnostics->addChild(menuMemoryStatus);
+	menuDiagnostics->addChild(menuVersion);
+	menuDiagnostics->addChild(menuConfigCode);
 	menuDiagnostics->addChild(menuReset);
 
 	updateAllMenuVisibility(cfg);

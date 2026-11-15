@@ -138,6 +138,16 @@ public:
 	MenuEvent update() override;
 };
 
+class MenuVersion : public Menu
+{
+public:
+	MenuVersion(const std::string &name)
+		: Menu(name) {}
+
+	void onEnter() override { Menu::onEnter(); }
+	MenuEvent update() override;
+};
+
 class MenuConfigCode : public Menu
 {
 private:

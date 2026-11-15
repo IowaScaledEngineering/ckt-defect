@@ -887,6 +887,62 @@ MenuEvent MenuMemoryStatus::update()
 	return MenuEvent::NOOP;
 }
 
+#ifndef VERSION_STRING
+#define VERSION_STRING "unknown"
+#endif
+
+#ifndef GIT_REV
+#define GIT_REV "unknown"
+#endif
+
+MenuEvent MenuVersion::update()
+{
+	disp->backlightOn();
+
+	// Line 0 (Row 0): Menu Name
+	disp->gotoxy(0, 0);
+	disp->print(menuName);
+
+	// Line 1 (Row 1): Ver: VERSION_STRING
+	std::string verStr = "Ver: " + std::string(VERSION_STRING);
+	if (verStr.length() < 20) {
+		verStr.append(20 - verStr.length(), ' ');
+	}
+	disp->gotoxy(0, 1);
+	disp->print(verStr.c_str());
+
+	// Line 2 (Row 2): Git Rev: GIT_REV
+	std::string gitStr = "Git Rev: " + std::string(GIT_REV);
+	if (gitStr.length() < 20) {
+		gitStr.append(20 - gitStr.length(), ' ');
+	}
+	disp->gotoxy(0, 2);
+	disp->print(gitStr.c_str());
+
+	// Line 3 (Row 3): BACK button
+	disp->gotoxy(16, 3);
+	disp->print("BACK");
+
+	DisplayEvent ev;
+	if (getMenuInputEvent(&ev))
+	{
+		if (ev.type == DisplayEventType::KEY_PRESS)
+		{
+			switch (ev.keyNum)
+			{
+				case 4: // BACK
+					return MenuEvent::BACK;
+			}
+		}
+		else if (ev.type == DisplayEventType::KEY_RELEASE)
+		{
+			handleButtonRelease(ev.keyNum);
+		}
+	}
+
+	return MenuEvent::NOOP;
+}
+
 void MenuConfigCode::onEnter()
 {
 	Menu::onEnter();
