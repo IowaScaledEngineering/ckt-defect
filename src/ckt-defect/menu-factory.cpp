@@ -17,6 +17,26 @@ std::shared_ptr<Menu> menuDraggingEquipmentRate;
 std::shared_ptr<Menu> menuHighLoadRate;
 std::shared_ptr<Menu> menuWideLoadRate;
 std::shared_ptr<Menu> menuRandomIntegrityRate;
+
+// External Config Hiding References
+std::shared_ptr<Menu> menuDefects;
+std::shared_ptr<Menu> menuEntranceMessage;
+std::shared_ptr<Menu> menuAlertMessage;
+std::shared_ptr<Menu> menuTalkDefectOnly;
+std::shared_ptr<Menu> menuMilepostEn;
+std::shared_ptr<Menu> menuTrackNameEn;
+std::shared_ptr<Menu> menuAxleEn;
+std::shared_ptr<Menu> menuSpeedEn;
+std::shared_ptr<Menu> menuDirectionEn;
+std::shared_ptr<Menu> menuRailNameEn;
+std::shared_ptr<Menu> menuTemperatureEn;
+
+std::shared_ptr<Menu> menuTrackNameA;
+std::shared_ptr<Menu> menuTrackNameB;
+std::shared_ptr<Menu> menuDirectionName1;
+std::shared_ptr<Menu> menuDirectionName2;
+std::shared_ptr<Menu> menuRailName;
+std::shared_ptr<Menu> menuVocabSelect;
 } // namespace
 
 void updateAllMenuVisibility(const DetectorConfiguration &cfg)
@@ -58,10 +78,79 @@ void updateAllMenuVisibility(const DetectorConfiguration &cfg)
 		if (menuWideLoadRate) menuWideLoadRate->hide();
 	}
 
-	if (cfg.defectIntegrityEnable) {
+	if (cfg.defectIntegrityEnable && !cfg.externalIntegrityTrainRatePresent) {
 		if (menuRandomIntegrityRate) menuRandomIntegrityRate->unhide();
 	} else {
 		if (menuRandomIntegrityRate) menuRandomIntegrityRate->hide();
+	}
+
+	// External Message Overrides: Hide message and defect editing menus
+	if (cfg.externalMessagesPresent)
+	{
+		if (menuDefects) menuDefects->hide();
+		if (menuEntranceMessage) menuEntranceMessage->hide();
+		if (menuAlertMessage) menuAlertMessage->hide();
+		if (menuTalkDefectOnly) menuTalkDefectOnly->hide();
+
+		if (menuMilepostEn) menuMilepostEn->hide();
+		if (menuTrackNameEn) menuTrackNameEn->hide();
+		if (menuAxleEn) menuAxleEn->hide();
+		if (menuSpeedEn) menuSpeedEn->hide();
+		if (menuDirectionEn) menuDirectionEn->hide();
+		if (menuRailNameEn) menuRailNameEn->hide();
+		if (menuTemperatureEn) menuTemperatureEn->hide();
+	}
+	else
+	{
+		if (menuDefects) menuDefects->unhide();
+		if (menuEntranceMessage) menuEntranceMessage->unhide();
+		if (menuAlertMessage) menuAlertMessage->unhide();
+		if (menuTalkDefectOnly) menuTalkDefectOnly->unhide();
+
+		if (menuMilepostEn) menuMilepostEn->unhide();
+		if (menuTrackNameEn) menuTrackNameEn->unhide();
+		if (menuAxleEn) menuAxleEn->unhide();
+		if (menuSpeedEn) menuSpeedEn->unhide();
+		if (menuDirectionEn) menuDirectionEn->unhide();
+		if (menuRailNameEn) menuRailNameEn->unhide();
+		if (menuTemperatureEn) menuTemperatureEn->unhide();
+	}
+
+	// Hardware Names Overrides
+	if (cfg.externalTrackNamePresent[0]) {
+		if (menuTrackNameA) menuTrackNameA->hide();
+	} else {
+		if (menuTrackNameA) menuTrackNameA->unhide();
+	}
+
+	if (cfg.externalTrackNamePresent[1]) {
+		if (menuTrackNameB) menuTrackNameB->hide();
+	} else {
+		if (menuTrackNameB) menuTrackNameB->unhide();
+	}
+
+	if (cfg.externalDirection1NamePresent) {
+		if (menuDirectionName1) menuDirectionName1->hide();
+	} else {
+		if (menuDirectionName1) menuDirectionName1->unhide();
+	}
+
+	if (cfg.externalDirection2NamePresent) {
+		if (menuDirectionName2) menuDirectionName2->hide();
+	} else {
+		if (menuDirectionName2) menuDirectionName2->unhide();
+	}
+
+	if (cfg.externalRailNamePresent) {
+		if (menuRailName) menuRailName->hide();
+	} else {
+		if (menuRailName) menuRailName->unhide();
+	}
+
+	if (cfg.externalVocabSelectedPresent) {
+		if (menuVocabSelect) menuVocabSelect->hide();
+	} else {
+		if (menuVocabSelect) menuVocabSelect->unhide();
 	}
 }
 
@@ -85,7 +174,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 
 	// Track
 	auto menuTrackConfig = std::make_shared<MenuListSelector>("Track");
-	auto menuTrackNameA = std::make_shared<MenuOptionSelector>(
+	menuTrackNameA = std::make_shared<MenuOptionSelector>(
 		"Track A Name", 
 		&cfg.trackNameId[0],
 		false,
@@ -93,7 +182,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		[&cfg]() { saveConfiguration(&cfg); updateTrackNames(&cfg); }
 	);
 
-	auto menuTrackNameB = std::make_shared<MenuOptionSelector>(
+	menuTrackNameB = std::make_shared<MenuOptionSelector>(
 		"Track B Name", 
 		&cfg.trackNameId[1],
 		false,
@@ -164,14 +253,14 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 
 	// Direction
 	auto menuDirectionConfig = std::make_shared<MenuListSelector>("Direction");
-	auto menuDirectionName1 = std::make_shared<MenuOptionSelector>(
+	menuDirectionName1 = std::make_shared<MenuOptionSelector>(
 		"Direction 1 Name", 
 		&cfg.direction1NameId,
 		false,
 		directionNames,
 		[&cfg]() { saveConfiguration(&cfg); updateDirectionNames(&cfg); }
 	);
-	auto menuDirectionName2 = std::make_shared<MenuOptionSelector>(
+	menuDirectionName2 = std::make_shared<MenuOptionSelector>(
 		"Direction 2 Name", 
 		&cfg.direction2NameId,
 		false,
@@ -194,7 +283,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	);
 
 	// Rail Name
-	auto menuRailName = std::make_shared<MenuOptionSelector>(
+	menuRailName = std::make_shared<MenuOptionSelector>(
 		"Rail Names", 
 		&cfg.railNameId,
 		false,
@@ -250,7 +339,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	);
 
 	// Defect
-	auto menuDefects = std::make_shared<MenuListSelector>("Defects");
+	menuDefects = std::make_shared<MenuListSelector>("Defects");
 
 	// Hot Journal
 	auto menuHotJournal = std::make_shared<MenuListSelector>("Hot Journal");
@@ -404,14 +493,14 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 
 	// Messages
 	auto menuMessages = std::make_shared<MenuListSelector>("Messages");
-	auto menuEntranceMessage = std::make_shared<MenuBoolSelector>(
+	menuEntranceMessage = std::make_shared<MenuBoolSelector>(
 		"Entrance Message",
 		&cfg.entranceMessageEnable,
 		false, 
 		"On", "ON", 
 		"Off", "OFF"
 	);
-	auto menuAlertMessage = std::make_shared<MenuBoolSelector>(
+	menuAlertMessage = std::make_shared<MenuBoolSelector>(
 		"Live Defect Msgs",
 		&cfg.alertMessageEnable,
 		false, 
@@ -421,7 +510,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 
 	// Exit Message
 	auto menuExitMessage = std::make_shared<MenuListSelector>("Exit Message");
-	auto menuTalkDefectOnly = std::make_shared<MenuBoolSelector>(
+	menuTalkDefectOnly = std::make_shared<MenuBoolSelector>(
 		"Talk Defect Only",
 		&cfg.talkOnDefectOnly,
 		false, 
@@ -473,49 +562,49 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	);
 
 	// Message Bits
-	auto menuMilepostEn = std::make_shared<MenuBoolSelector>(
+	menuMilepostEn = std::make_shared<MenuBoolSelector>(
 		"Include Milepost",
 		&cfg.milepostEnable, 
 		false, 
 		"On", "ON", 
 		"Off", "OFF"
 	);
-	auto menuTrackNameEn = std::make_shared<MenuBoolSelector>(
+	menuTrackNameEn = std::make_shared<MenuBoolSelector>(
 		"Include Track Name",
 		&cfg.trackNameEnable, 
 		false, 
 		"On", "ON", 
 		"Off", "OFF"
 	);
-	auto menuAxleEn = std::make_shared<MenuBoolSelector>(
+	menuAxleEn = std::make_shared<MenuBoolSelector>(
 		"Include Axle Count",
 		&cfg.axleEnable, 
 		false, 
 		"On", "ON", 
 		"Off", "OFF"
 	);
-	auto menuSpeedEn = std::make_shared<MenuBoolSelector>(
+	menuSpeedEn = std::make_shared<MenuBoolSelector>(
 		"Include Speed",
 		&cfg.speedEnable, 
 		false, 
 		"On", "ON", 
 		"Off", "OFF"
 	);
-	auto menuDirectionEn = std::make_shared<MenuBoolSelector>(
+	menuDirectionEn = std::make_shared<MenuBoolSelector>(
 		"Include Direction",
 		&cfg.directionEnable, 
 		false, 
 		"On", "ON", 
 		"Off", "OFF"
 	);
-	auto menuRailNameEn = std::make_shared<MenuBoolSelector>(
+	menuRailNameEn = std::make_shared<MenuBoolSelector>(
 		"Include Rail Name",
 		&cfg.railNameEnable, 
 		false, 
 		"On", "ON", 
 		"Off", "OFF"
 	);
-	auto menuTemperatureEn = std::make_shared<MenuBoolSelector>(
+	menuTemperatureEn = std::make_shared<MenuBoolSelector>(
 		"Include Temp",
 		&cfg.temperatureEnable, 
 		false, 
@@ -596,7 +685,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		[lcd, &cfg]() { cfg.popcornStep = audioGetPopcornStep(); saveConfiguration(&cfg); }
 	);
 
-	auto menuVocabSelect = std::make_shared<MenuVocabSelect>("Vocab Select", cfg);
+	menuVocabSelect = std::make_shared<MenuVocabSelect>("Vocab Select", cfg);
 	
 	// System	
 	auto menuSysConfig = std::make_shared<MenuListSelector>("System");

@@ -214,6 +214,17 @@ void loadConfiguration(DetectorConfiguration* cfg)
 	// Misc. Stuff
 	cfg->minAxleTime = preferences.getUChar("minAxTime", MIN_AXLE_TIME_DEFAULT);
 
+	// Config Tracking (volatile defaults)
+	cfg->externalConfigPresent = false;
+	cfg->externalMessagesPresent = false;
+	for (uint32_t i = 0; i < NUM_TRACKS; i++)
+		cfg->externalTrackNamePresent[i] = false;
+	cfg->externalDirection1NamePresent = false;
+	cfg->externalDirection2NamePresent = false;
+	cfg->externalRailNamePresent = false;
+	cfg->externalVocabSelectedPresent = false;
+	cfg->externalIntegrityTrainRatePresent = false;
+
 	preferences.end();
 }
 
@@ -409,10 +420,13 @@ void saveConfiguration(DetectorConfiguration* cfg)
 	if(cfg->infrastructureMode != preferences.getBool("infra", !cfg->infrastructureMode))
 		preferences.putBool("infra", cfg->infrastructureMode);
 
-	// Vocab
-	std::string storedVocab = preferences.getString("vocab", (cfg->vocabSelected + "_").c_str()).c_str();
-	if(cfg->vocabSelected != storedVocab)
-		preferences.putString("vocab", cfg->vocabSelected.c_str());
+	// Vocab (only save if not loaded from config.txt)
+	if (!cfg->externalVocabSelectedPresent)
+	{
+		std::string storedVocab = preferences.getString("vocab", (cfg->vocabSelected + "_").c_str()).c_str();
+		if(cfg->vocabSelected != storedVocab)
+			preferences.putString("vocab", cfg->vocabSelected.c_str());
+	}
 
 	// Misc. Stuff
 	if(cfg->minAxleTime != preferences.getUChar("minAxTime", ~cfg->minAxleTime))
@@ -635,7 +649,10 @@ void updateTrackNames(DetectorConfiguration* cfg)
 {
 	for(uint32_t i=0; i<NUM_TRACKS; i++)
 	{
-		cfg->trackName[i] = trackNames[cfg->trackNameId[i]];
+		if (!cfg->externalTrackNamePresent[i])
+		{
+			cfg->trackName[i] = trackNames[cfg->trackNameId[i]];
+		}
 	}
 }
 
@@ -647,8 +664,10 @@ void updateTrackNames(DetectorConfiguration* cfg, std::string trackA, std::strin
 
 void updateDirectionNames(DetectorConfiguration* cfg)
 {
-	cfg->direction1Name = cfg->directionEnable ? directionNames[cfg->direction1NameId] : "";
-	cfg->direction2Name = cfg->directionEnable ? directionNames[cfg->direction2NameId] : "";
+	if (!cfg->externalDirection1NamePresent)
+		cfg->direction1Name = cfg->directionEnable ? directionNames[cfg->direction1NameId] : "";
+	if (!cfg->externalDirection2NamePresent)
+		cfg->direction2Name = cfg->directionEnable ? directionNames[cfg->direction2NameId] : "";
 }
 
 void updateDirectionNames(DetectorConfiguration* cfg, std::string dir1, std::string dir2)
@@ -659,7 +678,8 @@ void updateDirectionNames(DetectorConfiguration* cfg, std::string dir1, std::str
 
 void updateRailNames(DetectorConfiguration* cfg)
 {
-	cfg->railName = railNames[cfg->railNameId];
+	if (!cfg->externalRailNamePresent)
+		cfg->railName = railNames[cfg->railNameId];
 }
 
 void updateRailNames(DetectorConfiguration* cfg, std::string rail)

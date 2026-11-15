@@ -53,6 +53,8 @@ extern const std::vector<std::string> railNames;
 extern const std::vector<std::string> ordinalTypes;
 extern const std::vector<std::string> ordinalStrings;
 
+class Display;
+
 void printMemoryUsage(void);
 void printNVSStats(void);
 void toLowercase(std::string& str);
@@ -60,3 +62,4 @@ std::string centerString(const std::string& text, int width = 20);
 std::string intToString(int32_t intVal, uint32_t integerDigits, uint32_t fractionalDigits);
 std::string getOrdinalWord(const uint8_t& num);
 uint32_t rollDice(void);
+void restartWithDelay(uint32_t delay_ms, Display* disp = nullptr);

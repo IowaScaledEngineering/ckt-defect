@@ -395,8 +395,13 @@ void transformMessage(const std::string& inputMessage, std::string& outputMessag
 
 void updateMessages(MessageBundle& trackMessages, const DetectorConfiguration& cfg)
 {
-	// FIXME: Check if using SD card.  If not, then set default.
-	if(true)
+	if (!cfg.externalIntegrityTrainRatePresent)
+	{
+		trackMessages.integrityTrainRate = cfg.defectIntegrityTrainRate;
+	}
+
+	// If messages were loaded from external config.txt, skip default initialization
+	if (!cfg.externalMessagesPresent)
 	{
 		setDefaultMessages(trackMessages, cfg);
 	}

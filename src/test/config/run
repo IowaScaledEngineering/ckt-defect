@@ -1,0 +1,7 @@
+#!/bin/bash
+set -e
+SCRIPT_DIR=$(dirname "$0")
+cd "$SCRIPT_DIR"
+
+g++ -O2 -std=gnu++2b -I. -I../../ckt-defect test_config.cpp ../../ckt-defect/config-file.cpp -o test_config
+./test_config

@@ -51,105 +51,11 @@ LICENSE:
 #include "menu-factory.h"
 #include "state-machine.h"
 #include "temperature.h"
+#include "config-file.h"
 
 
 // 3 sec watchdog 
 #define TWDT_TIMEOUT_MS    3000
-
-char* rtrim(char* in)
-{
-	char* endPtr = in + strlen(in) - 1;
-	while (endPtr >= in && isspace(*endPtr))
-		*endPtr-- = 0;
-
-	return in;
-}
-
-char* ltrim(char* in)
-{
-	char* startPtr = in;
-	uint32_t bytesToMove = strlen(in);
-	while(isspace(*startPtr))
-		startPtr++;
-	bytesToMove -= (startPtr - in);
-	memmove(in, startPtr, bytesToMove);
-	in[bytesToMove] = 0;
-	return in;
-}
-
-bool configKeyValueSplit(char* key, uint32_t keySz, char* value, uint32_t valueSz, const char* configLine)
-{
-	char lineBuffer[256];
-	char* separatorPtr = NULL;
-	char* lineBufferPtr = NULL;
-	uint32_t bytesToCopy;
-
-	separatorPtr = strchr(configLine, '=');
-	if (NULL == separatorPtr)
-		return false;
-
-	memset(key, 0, keySz);
-	memset(value, 0, valueSz);
-
-	// Copy the part that's eligible to be a key into the line buffer
-	bytesToCopy = separatorPtr - configLine;
-	if (bytesToCopy > sizeof(lineBuffer)-1)
-		bytesToCopy = sizeof(lineBuffer);
-	memset(lineBuffer, 0, sizeof(lineBuffer));
-	strncpy(lineBuffer, configLine, bytesToCopy);
-
-	lineBufferPtr = ltrim(rtrim(lineBuffer));
-	if (0 == strlen(lineBufferPtr) || '#' == lineBufferPtr[0])
-		return false;
-
-	strncpy(key, lineBufferPtr, keySz);
-
-//	bytesToCopy = strlen(separatorPtr+1);
-//	if (bytesToCopy > sizeof(lineBuffer)-1)
-//		bytesToCopy = sizeof(lineBuffer);
-	memset(lineBuffer, 0, sizeof(lineBuffer));
-	// Changed to sizeof(lineBuffer)-1 below instead of bytesToCopy due to -Werror=stringop-overflow and -Werror=stringop-truncation
-	strncpy(lineBuffer, separatorPtr+1, sizeof(lineBuffer)-1);
-	lineBufferPtr = ltrim(rtrim(lineBuffer));
-	if (0 == strlen(lineBufferPtr))
-	{
-		memset(key, 0, keySz);
-		return false;
-	}
-	strncpy(value, lineBufferPtr, valueSz);
-	return true;
-}
-
-// Custom line reader replacing f_gets to avoid linker dependency on FF_USE_STRFUNC
-static bool readLine(FIL *fp, char *buffer, size_t maxLen)
-{
-	size_t idx = 0;
-	UINT bytesRead = 0;
-	char c;
-
-	while (idx < maxLen - 1)
-	{
-		if (f_read(fp, &c, 1, &bytesRead) != FR_OK || bytesRead == 0)
-		{
-			break; // EOF or error
-		}
-
-		if (c == '\r')
-		{
-			continue; // Skip carriage returns
-		}
-
-		if (c == '\n')
-		{
-			break; // End of line
-		}
-
-		buffer[idx++] = c;
-	}
-
-	buffer[idx] = '\0';
-	return (idx > 0 || bytesRead > 0);
-}
 
 hw_timer_t * timer = NULL;
 volatile bool timerTick = false;
@@ -267,44 +173,6 @@ void loop()
 	lcd->gotoxy(2,3);
 	lcd->print("www.iascaled.com");
 
-
-	// Create menus
-	auto menus = createAppMenu(cfg, lcd, data, trackMessages);
-
-	Menu::setDisplay(lcd);
-	Menu::setTimingCallback(millis); 
-	Menu::setInitialHoldDelay(1000);
-	Menu::setHoldDelay(400);
-	Menu::setLongHoldDelay(3000);
-	Menu::setFastDelay(100);
-
-	MenuManager menuManager(menus);
-
-
-	// Set up audio
-	audioSetPttEnableCallback(enableAuxRelay);
-	audioSetPttDisableCallback(disableAuxRelay);
-
-
-	// Load sound effects
-	loadSfx();
-
-	// Wait for serial to initialize
-	while(millis() < 3000)
-	{
-		esp_task_wdt_reset();
-	}
-
-	Serial.print('\n');
-	Serial.println("ISE Defect Detector");
-	Serial.print("Version: ");
-	Serial.println(VERSION_STRING);
-	Serial.print("Git Rev: ");
-	Serial.println(GIT_REV);
-
-	printMemoryUsage();
-	printNVSStats();
-
 	// Direct FatFs Mount via ESP-IDF VFS SDSPI Driver
 	sdmmc_card_t *card = NULL;
 	sdmmc_host_t host = SDSPI_HOST_DEFAULT();
@@ -359,43 +227,50 @@ void loop()
 		}
 	}
 
-/*
-	// Read config file using direct FatFs
-	if(sdCardPresent)
+	// Read external config file if SD card is present
+	if (sdCardPresent)
 	{
-		FIL configFile;
-		if (f_open(&configFile, "config.txt", FA_READ) == FR_OK)
-		{
-			cfg.externalConfigPresent = true;
-			char lineBuffer[256];
-
-			while (readLine(&configFile, lineBuffer, sizeof(lineBuffer)))
-			{
-				char keyStr[128];
-				char valueStr[128];
-				bool kvFound = configKeyValueSplit(keyStr, sizeof(keyStr), valueStr, sizeof(valueStr), lineBuffer);
-				if (!kvFound)
-					continue;
-
-				// Okay, looks like we have a valid key/value pair, see if it's something we care about
-				if (0 == strcmp(keyStr, "volumeUp"))
-				{
-					audioSetVolumeUpCoef(atoi(valueStr));
-				}
-				else if (0 == strcmp(keyStr, "volumeDown"))
-				{
-					audioSetVolumeDownCoef(atoi(valueStr));
-				}
-			}
-			f_close(&configFile);
-		}
-
+		loadExternalConfigFile("config.txt", cfg, trackMessages, lcd);
 		esp_task_wdt_reset();
 	}
-*/
 
-	// Update messages (sets default if no config file present, otherwise skips)
+	// Update messages (sets default if no config file present or no messages specified, otherwise skips)
 	updateMessages(trackMessages, cfg);
+
+	// Create menus (initialized with visibility reflecting config.txt overrides)
+	auto menus = createAppMenu(cfg, lcd, data, trackMessages);
+
+	Menu::setDisplay(lcd);
+	Menu::setTimingCallback(millis); 
+	Menu::setInitialHoldDelay(1000);
+	Menu::setHoldDelay(400);
+	Menu::setLongHoldDelay(3000);
+	Menu::setFastDelay(100);
+
+	MenuManager menuManager(menus);
+
+	// Set up audio
+	audioSetPttEnableCallback(enableAuxRelay);
+	audioSetPttDisableCallback(disableAuxRelay);
+
+	// Load sound effects
+	loadSfx();
+
+	// Wait for serial to initialize
+	while(millis() < 3000)
+	{
+		esp_task_wdt_reset();
+	}
+
+	Serial.print('\n');
+	Serial.println("ISE Defect Detector");
+	Serial.print("Version: ");
+	Serial.println(VERSION_STRING);
+	Serial.print("Git Rev: ");
+	Serial.println(GIT_REV);
+
+	printMemoryUsage();
+	printNVSStats();
 
 	// Get unique words required
 	std::vector<std::string> words = getUniqueWords(trackMessages);

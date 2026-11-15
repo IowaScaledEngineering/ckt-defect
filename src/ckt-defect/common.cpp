@@ -207,3 +207,29 @@ uint32_t rollDice(void)
 	Serial.println(dice);
 	return dice;
 }
+
+// Guarded to exclude FreeRTOS/ESP-IDF/Display calls from native host unit tests (e.g. test_messages)
+#if defined(ESP_PLATFORM) || defined(ARDUINO)
+#include "src/menu/display.h"
+
+void restartWithDelay(uint32_t delay_ms, Display* disp)
+{
+	// Display reset message and clear buttons if display reference is valid
+	if (disp)
+	{
+		disp->gotoxy(0, 1);
+		disp->print("                    ");
+		disp->gotoxy(0, 2);
+		disp->print(centerString("Restarting...", 20).c_str());
+		disp->gotoxy(0, 3);
+		disp->print("                    ");
+	}
+
+	// Non-blocking wait while yielding to watchdog/other tasks
+	vTaskDelay(pdMS_TO_TICKS(delay_ms));
+
+	// Trigger system restart
+	esp_restart();
+}
+#endif
+
