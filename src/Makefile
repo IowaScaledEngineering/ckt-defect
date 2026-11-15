@@ -34,7 +34,7 @@ define ESP_TOUCH_RESET
 	@bash -c 'sleep 0.5; echo "Done!"'
 endef
 
-.PHONY: help generate-codec compile compile-verbose export-schema upload upload-fresh release flash terminal clean
+.PHONY: help check-version generate-codec compile compile-verbose export-schema upload upload-fresh release flash terminal clean
 
 help:
 	@echo "make compile........ Build $(BASE_NAME) (runs generate-codec first)"
@@ -48,13 +48,27 @@ help:
 
 # https://arduino.github.io/arduino-cli/0.32/commands/arduino-cli_compile/
 
+check-version:
+	@INSTALLED_VER=$$($(ARDUINO) core list 2>/dev/null | awk '$$1=="esp32:esp32" {print $$2}'); \
+	if [ -z "$$INSTALLED_VER" ]; then \
+		echo "Error: ESP32 core (esp32:esp32) is not installed!"; \
+		echo "Run: $(ARDUINO) core install esp32:esp32@$(ARD_ESP32_VER)"; \
+		exit 1; \
+	elif [ "$$INSTALLED_VER" != "$(ARD_ESP32_VER)" ]; then \
+		echo "Error: ESP32 core version mismatch!"; \
+		echo "  Required: $(ARD_ESP32_VER)"; \
+		echo "  Found:    $$INSTALLED_VER"; \
+		echo "Run: $(ARDUINO) core install esp32:esp32@$(ARD_ESP32_VER)"; \
+		exit 1; \
+	fi
+
 generate-codec:
 	@python3 tools/gen_codec.py
 
-compile: generate-codec
+compile: check-version generate-codec
 	$(COMPILE)
 
-compile-verbose: generate-codec
+compile-verbose: check-version generate-codec
 	$(COMPILE) -v
 
 export-schema:
@@ -77,7 +91,7 @@ upload-fresh:
 		0xe000 $(BUILD_DIR)/boot_app0.bin \
 		0x10000 $(BUILD_DIR)/$(BASE_NAME).ino.bin
 
-release:
+release: check-version
 	esptool --chip esp32s2 merge-bin -o releases/$(BASE_NAME)-$(REV)-$(GITREV).bin --flash-mode keep --flash-freq keep --flash-size keep --format hex 0x1000 $(BUILD_DIR)/$(BASE_NAME).ino.bootloader.bin 0x8000 $(BUILD_DIR)/$(BASE_NAME).ino.partitions.bin 0xe000 $(BUILD_DIR)/boot_app0.bin 0x10000 $(BUILD_DIR)/$(BASE_NAME).ino.bin
 
 flash:
