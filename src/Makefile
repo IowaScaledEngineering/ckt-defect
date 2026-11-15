@@ -34,12 +34,11 @@ define ESP_TOUCH_RESET
 	@bash -c 'sleep 0.5; echo "Done!"'
 endef
 
-.PHONY: help check-version generate-codec compile compile-verbose export-schema upload upload-fresh release flash terminal clean
+.PHONY: help check-version generate-codec compile compile-verbose upload upload-fresh release flash terminal clean
 
 help:
 	@echo "make compile........ Build $(BASE_NAME) (runs generate-codec first)"
 	@echo "make generate-codec. Run config generator & NVM coverage verifier"
-	@echo "make export-schema.. Export version-tagged schema JSON manifest"
 	@echo "make upload......... Flash the application firmware"
 	@echo "make upload-fresh... Flash all the firmware"
 	@echo "make release........ Create merged .bin file"
@@ -70,11 +69,6 @@ compile: check-version generate-codec
 
 compile-verbose: check-version generate-codec
 	$(COMPILE) -v
-
-export-schema:
-	@mkdir -p $(BUILD_DIR)
-	@python3 -c 'import json, sys, subprocess; v = subprocess.check_output(["grep", "CONFIG_SCHEMA_VERSION", "ckt-defect/configuration.h"]).decode().split()[2]; print(json.dumps({"schema_version": int(v), "git_rev": "$(GITREV)", "version": "$(REV)"}, indent=2))' > $(BUILD_DIR)/config_schema_$(REV).json
-	@echo "Exported $(BUILD_DIR)/config_schema_$(REV).json"
 
 # Routine upload: Only flashes the sketch binary (preserves preferences/NVS)
 upload:
