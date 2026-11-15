@@ -34,11 +34,16 @@ define ESP_TOUCH_RESET
 	@bash -c 'sleep 0.5; echo "Done!"'
 endef
 
+.PHONY: help generate-codec compile compile-verbose export-schema upload upload-fresh release flash terminal clean
+
 help:
 	@echo "make compile........ Build $(BASE_NAME) (runs generate-codec first)"
 	@echo "make generate-codec. Run config generator & NVM coverage verifier"
 	@echo "make export-schema.. Export version-tagged schema JSON manifest"
-	@echo "make upload......... Flash the firmware"
+	@echo "make upload......... Flash the application firmware"
+	@echo "make upload-fresh... Flash all the firmware"
+	@echo "make release........ Create merged .bin file"
+	@echo "make flash.......... Flash merged .bin file, provide file as BIN variable"
 	@echo "make terminal....... Open uart terminal"
 
 # https://arduino.github.io/arduino-cli/0.32/commands/arduino-cli_compile/
@@ -57,27 +62,27 @@ export-schema:
 	@python3 -c 'import json, sys, subprocess; v = subprocess.check_output(["grep", "CONFIG_SCHEMA_VERSION", "ckt-defect/configuration.h"]).decode().split()[2]; print(json.dumps({"schema_version": int(v), "git_rev": "$(GITREV)", "version": "$(REV)"}, indent=2))' > $(BUILD_DIR)/config_schema_$(REV).json
 	@echo "Exported $(BUILD_DIR)/config_schema_$(REV).json"
 
-#upload:
-#	$(ARDUINO) upload -v --input-dir $(BUILD_DIR)  -b $(BOARD) -p $(PORT) $(BASE_NAME)
-
 # Routine upload: Only flashes the sketch binary (preserves preferences/NVS)
 upload:
 	$(ESP_TOUCH_RESET)
-	esptool.py --chip esp32s2 --port $(PORT) --baud 921600 --before default_reset --after hard_reset write_flash \
-		0x10000 $(BUILD_DIR)/ckt-defect.ino.bin
+	esptool --chip esp32s2 --port $(PORT) --baud 921600 --before default-reset --after hard-reset write-flash \
+		0x10000 $(BUILD_DIR)/$(BASE_NAME).ino.bin
 
 # Fresh board upload: Flashes bootloader, partition table, boot app, and sketch
 upload-fresh:
 	$(ESP_TOUCH_RESET)
-	esptool.py --chip esp32s2 --port $(PORT) --baud 921600 --before default_reset --after hard_reset write_flash \
-		0x1000 $(BUILD_DIR)/ckt-defect.ino.bootloader.bin \
-		0x8000 $(BUILD_DIR)/ckt-defect.ino.partitions.bin \
+	esptool --chip esp32s2 --port $(PORT) --baud 921600 --before default-reset --after hard-reset write-flash \
+		0x1000 $(BUILD_DIR)/$(BASE_NAME).ino.bootloader.bin \
+		0x8000 $(BUILD_DIR)/$(BASE_NAME).ino.partitions.bin \
 		0xe000 $(BUILD_DIR)/boot_app0.bin \
-		0x10000 $(BUILD_DIR)/ckt-defect.ino.bin
+		0x10000 $(BUILD_DIR)/$(BASE_NAME).ino.bin
 
-firmware:
+release:
+	esptool --chip esp32s2 merge-bin -o releases/$(BASE_NAME)-$(REV)-$(GITREV).bin --flash-mode keep --flash-freq keep --flash-size keep --format hex 0x1000 $(BUILD_DIR)/$(BASE_NAME).ino.bootloader.bin 0x8000 $(BUILD_DIR)/$(BASE_NAME).ino.partitions.bin 0xe000 $(BUILD_DIR)/boot_app0.bin 0x10000 $(BUILD_DIR)/$(BASE_NAME).ino.bin
+
+flash:
 	$(ESP_TOUCH_RESET)
-	esptool.py --chip esp32s2 --port $(PORT) --baud 921600  --before default_reset --after hard_reset write_flash  -z --flash_mode dio --flash_freq 80m --flash_size 4MB 0x1000 $(BIN)/ckt-defect.ino.bootloader.bin 0x8000 $(BIN)/ckt-defect.ino.partitions.bin 0xe000 $(BIN)/boot_app0.bin 0x10000 $(BIN)/ckt-defect.ino.bin
+	esptool --chip esp32s2 --port $(PORT) --baud 921600 --before default-reset --after hard-reset write-flash 0x0 $(BIN)
 
 terminal:
 	miniterm.py $(PORT) 115200
