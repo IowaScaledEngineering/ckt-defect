@@ -1,0 +1,176 @@
+# ==============================================================================
+# Iowa Scaled Engineering - Talking Defect Detector (ckt-defect)
+# Default SD Card Configuration File: config.txt
+#
+# Place this file in the root directory of the MicroSD card (0:config.txt).
+# This configuration file matches the detector's built-in non-SD default
+# configuration.
+#
+# When present at boot:
+#   - Settings defined here override onboard NVM / EEPROM defaults.
+#   - Some LCD menus are hidden.
+#   - If any message is defined in this file, default message generation is
+#     skipped, and any unprovided messages remain blank ("").
+#
+# Syntax Rules:
+#   - Key-value separator is '=' (whitespace around key/value is trimmed).
+#   - Keys are case-insensitive ('trackName1' == 'trackname1' == 'TRACKNAME1').
+#   - Values preserve case ('Track 1' preserves capital 'T').
+#   - Full-line comments start with '#' or ';'.
+#   - Inline comments start with ';' (anything after ';' on a line is ignored).
+#   - Allowed string characters: [a-zA-Z0-9 _-:.//\=,#?!]
+#   - In LCD display messages, '\' denotes a newline (3 lines displayed on 20x4 LCD).
+# ==============================================================================
+
+
+# ==============================================================================
+# 1. HARDWARE & LOCATION NAMES
+# ==============================================================================
+
+# Track A / Track 1 Name (String, max 16 characters)
+# Alias: trackNameA = Track 1
+trackName1 = Track 1
+
+# Track B / Track 2 Name (String, max 16 characters)
+# Alias: trackNameB = Track 2
+trackName2 = Track 2
+
+# Direction 1 Name (String, max 16 characters, e.g. Eastbound, Northbound)
+direction1Name = Eastbound
+
+# Direction 2 Name (String, max 16 characters, e.g. Westbound, Southbound)
+direction2Name = Westbound
+
+# Rail Names (String, format "Side1/Side2", e.g. Left/Right, North/South, East/West)
+railName = Left/Right
+
+
+# ==============================================================================
+# 2. SYSTEM & VOICE SETTINGS
+# ==============================================================================
+
+# Vocabulary Selection (String, max 31 characters: [a-zA-Z0-9_-])
+# Name of external vocabulary directory on the SD card (e.g. 0:vocab/<vocabSelected>).
+# If omitted or commented out, the detector uses the internal vocabulary (or NVM setting).
+# vocabSelected = default
+
+# Simulated Random Integrity Failure Rate (Integer: 1 to 999999)
+# Average rate of random simulated integrity failures (1 in N trains). Default: 100.
+integrityTrainRate = 100
+
+
+# ==============================================================================
+# 3. GLOBAL BROADCAST MESSAGES
+#
+# Supported Message Tokens:
+#   #milepost     - Formatted milepost (e.g. "3 4 6 . 9" voice, "346.9" display)
+#                   Optional formatting: #milepost:W.D (width and decimal digits)
+#   #axles, #axle - Total train axle count or defect axle (optional :W width)
+#   #track        - Track name (optional :W width)
+#   #direction    - Direction name (optional :W width)
+#   #speed        - Train speed in MPH (optional :W width)
+#   #temp         - Ambient temperature in degrees F
+#   #rail         - Rail name of defect (e.g. Left, Right)
+#   #defectlist   - Spoken aggregation of all detailMsg entries from defects
+#   #ord          - Ordinal number of defect (e.g. "first", "second")
+#   #count        - Numeric index of defect ("1", "2")
+#   #tone         - Alert chirp/beep sound effect
+# ==============================================================================
+
+# Spoken phrase when a train is first detected entering the detector
+entranceMsg = Equipment Defect Detector milepost #milepost #track #direction
+
+# Spoken exit summary broadcast when train departs with NO defects
+exitCleanMsg = Equipment Defect Detector milepost #milepost #track #direction no defects repeat no defects total axles #axles train speed #speed temperature #temp degrees detector out
+
+# 20x4 LCD text for clean exit summary ('\' denotes newline; 3 lines displayed)
+exitCleanDisplayMsg = #track\NO DEFECTS\AXLES:#axles:3  SPEED:#speed:3
+
+# Spoken exit summary broadcast when train departs WITH defects
+exitDefectMsg = Equipment Defect Detector milepost #milepost #track #direction you have a defect #defectlist total axles #axles train speed #speed temperature #temp degrees detector out
+
+# 20x4 LCD text for defect exit summary
+exitDefectDisplayMsg = #track\DEFECT DETECTED!\AXLES:#axles:3  SPEED:#speed:3
+
+# Spoken phrase when a simulated integrity failure is triggered
+integrityMsg = Equipment Defect Detector milepost #milepost #track #direction integrity failure
+
+# 20x4 LCD text when a simulated integrity failure occurs
+integrityDisplayMsg = #track\INTEGRITY FAILURE\
+
+# Spoken phrase if train departs below the minimum axle threshold
+minAxleMsg = Equipment Defect Detector milepost #milepost #track #direction integrity failure total axles #axles train speed #speed temperature #temp degrees
+
+# 20x4 LCD text for minimum axle threshold timeout
+minAxleDisplayMsg = #track\INTEGRITY FAILURE\AXLES:#axles:3  SPEED:#speed:3
+
+# Spoken phrase if train speed is below the minimum operating speed
+tooSlowMsg = Equipment Defect Detector milepost #milepost #track #direction train 2 slow
+
+# 20x4 LCD text when train speed is below threshold
+tooSlowDisplayMsg = #track\TRAIN TOO SLOW\AXLES:#axles:3  SPEED:#speed:3
+
+# Spoken phrase if a wheel/axle stops directly in front of the sensor
+detectorBlockedMsg = Equipment Defect Detector milepost #milepost #track #direction detector blocked
+
+# 20x4 LCD text when sensor is blocked
+detectorBlockedDisplayMsg = #track\DETECTOR BLOCKED\AXLES:#axles:3  SPEED:#speed:3
+
+# Spoken phrase played when total defects exceed the maximum alarm threshold
+excessAlarmsMsg = excessive alarms
+
+
+# ==============================================================================
+# 4. DEFECT DEFINITIONS ([defect])
+#
+# Each [defect] section creates a distinct defect type added to the detector.
+# The four defects below match the firmware's default built-in defect suite and rates.
+#
+# REQUIRED KEYS per [defect] block:
+#   alertMsg   - Real-time spoken phrase broadcast immediately when defect trips.
+#   displayMsg - Real-time 3-line LCD text displayed when defect trips ('\' = newline).
+#   detailMsg  - Spoken defect description phrase aggregated into #defectlist at exit.
+#   axleRate   - Simulated defect frequency: 1 in N axles (Integer: 1 to 999999).
+# ==============================================================================
+
+# Defect 1: Hot Journal (Default simulated rate: 1 in 125 axles)
+[defect]
+alertMsg   = #tone #track hot journal Axle #axle #rail Rail
+displayMsg = #track\Hot Journal\Axle #axle #rail Rail
+detailMsg  = #ord alarm hot journal Axle #axle #rail Rail
+axleRate   = 125
+
+# Defect 2: Hot Wheel (Default simulated rate: 1 in 125 axles)
+[defect]
+alertMsg   = #tone #track hot wheel Axle #axle #rail Rail
+displayMsg = #track\Hot Wheel\Axle #axle #rail Rail
+detailMsg  = #ord alarm hot wheel Axle #axle #rail Rail
+axleRate   = 125
+
+# Defect 3: High Impact Wheel (Default simulated rate: 1 in 150 axles)
+[defect]
+alertMsg   = #tone #track high impact wheel detected Axle #axle #rail Rail
+displayMsg = #track\High Impact Wheel\Axle #axle #rail Rail
+detailMsg  = #ord alarm high impact wheel detected Axle #axle #rail Rail
+axleRate   = 150
+
+# Defect 4: Dragging Equipment (Default simulated rate: 1 in 250 axles)
+[defect]
+alertMsg   = #tone #track dragging equipment near Axle #axle #rail Rail
+displayMsg = #track\Dragging Equipment\Axle #axle #rail Rail
+detailMsg  = #ord alarm dragging equipment near Axle #axle #rail Rail
+axleRate   = 250
+
+# Optional Defect: High Load (Disabled by default in firmware, rate 500)
+# [defect]
+# alertMsg   = #tone #track high load near Axle #axle #rail Rail
+# displayMsg = #track\High Load\Axle #axle #rail Rail
+# detailMsg  = #ord alarm high load Axle #axle #rail Rail
+# axleRate   = 500
+
+# Optional Defect: Wide Load (Disabled by default in firmware, rate 500)
+# [defect]
+# alertMsg   = #tone #track wide load near Axle #axle #rail Rail
+# displayMsg = #track\Wide Load\Axle #axle #rail Rail
+# detailMsg  = #ord alarm wide load Axle #axle #rail Rail
+# axleRate   = 500

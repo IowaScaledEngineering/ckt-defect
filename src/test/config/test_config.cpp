@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <cassert>
 #include <string>
 #include "configuration.h"
@@ -338,6 +339,49 @@ void testCaseInsensitivity()
 	TEST_ASSERT(msgs.defects[0].axleRate == 50, "Defect axleRate is 50");
 }
 
+void testDocConfigFile()
+{
+	std::cout << "Running testDocConfigFile...\n";
+	const char* candidatePaths[] = {
+		"doc/config.txt",
+		"../doc/config.txt",
+		"../../doc/config.txt",
+		"../../../doc/config.txt"
+	};
+
+	std::ifstream f;
+	for (const char* path : candidatePaths)
+	{
+		f.open(path);
+		if (f.is_open())
+		{
+			break;
+		}
+	}
+
+	TEST_ASSERT(f.is_open(), "Could not open doc/config.txt");
+	if (!f.is_open()) return;
+
+	DetectorConfiguration cfg;
+	MessageBundle msgs;
+	ConfigFileResult res = parseConfigurationStream(f, cfg, msgs);
+	TEST_ASSERT(res.success, "doc/config.txt failed to parse: " + res.errorTitle + " (" + res.errorDetail + ")");
+	TEST_ASSERT(cfg.trackName[0] == "Track 1", "trackName[0] match");
+	TEST_ASSERT(cfg.trackName[1] == "Track 2", "trackName[1] match");
+	TEST_ASSERT(cfg.direction1Name == "Eastbound", "direction1Name match");
+	TEST_ASSERT(cfg.direction2Name == "Westbound", "direction2Name match");
+	TEST_ASSERT(cfg.railName == "Left/Right", "railName match");
+	TEST_ASSERT(msgs.integrityTrainRate == 100, "integrityTrainRate match");
+	TEST_ASSERT(msgs.defects.size() == 4, "4 default defects loaded");
+	if (msgs.defects.size() == 4)
+	{
+		TEST_ASSERT(msgs.defects[0].axleRate == 125, "Defect 0 axleRate");
+		TEST_ASSERT(msgs.defects[1].axleRate == 125, "Defect 1 axleRate");
+		TEST_ASSERT(msgs.defects[2].axleRate == 150, "Defect 2 axleRate");
+		TEST_ASSERT(msgs.defects[3].axleRate == 250, "Defect 3 axleRate");
+	}
+}
+
 int main()
 {
 	std::cout << "========================================\n";
@@ -358,6 +402,7 @@ int main()
 	testStringTooLongError();
 	testAllOrNothingDefaults();
 	testCaseInsensitivity();
+	testDocConfigFile();
 
 	std::cout << "========================================\n";
 	std::cout << "Test Summary: " << passedTests << " passed, " << failedTests << " failed.\n";
