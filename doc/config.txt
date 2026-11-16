@@ -124,7 +124,6 @@ excessAlarmsMsg = excessive alarms
 # 4. DEFECT DEFINITIONS ([defect])
 #
 # Each [defect] section creates a distinct defect type added to the detector.
-# The four defects below match the firmware's default built-in defect suite and rates.
 #
 # REQUIRED KEYS per [defect] block:
 #   alertMsg   - Real-time spoken phrase broadcast immediately when defect trips.
