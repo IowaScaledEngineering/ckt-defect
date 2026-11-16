@@ -232,6 +232,7 @@ uint8_t audioGetVolumeDownCoef(void)
 void audioMute(void)
 {
 	unmute = false;
+	gpio_set_level(I2S_SD, 0); // Immediately disable amplifier
 }
 
 
@@ -375,7 +376,10 @@ clrTestPoint(TP3);
 				i2s_channel_disable(i2s_tx_handle);  // Disable I2S
 				i2s_channel_reconfig_std_clock(i2s_tx_handle, &clk_cfg);  // Reset sample rate
 				i2s_channel_enable(i2s_tx_handle);  // Enable I2S
-				gpio_set_level(I2S_SD, 1);             // Enable amplifier
+				if(unmute)
+				{
+					gpio_set_level(I2S_SD, 1);             // Enable amplifier
+				}
 				oldSampleRate = wavSound.wav->getSampleRate();
 				playerState = PLAYER_PLAY;
 				break;

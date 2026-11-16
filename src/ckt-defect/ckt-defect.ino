@@ -89,6 +89,84 @@ void setup()
 }
 
 
+void handleSdCardChange(DisplayLcd* lcd, const char* message)
+{
+	Serial.printf("%s - Initiating countdown to reboot\n", message);
+
+	audioMute();
+	audioStopPlaying();
+	parserTerminate();
+	audioTerminate();
+
+	if (lcd)
+	{
+		lcd->clear();
+		lcd->backlightOn();
+		lcd->gotoxy(0, 1);
+		lcd->print(centerString(message, 20).c_str());
+		lcd->gotoxy(14, 3);
+		lcd->print("REBOOT");
+	}
+
+	unsigned long startTime = millis();
+	int lastDisplayedSec = -1;
+
+	while (true)
+	{
+		esp_task_wdt_reset();
+
+		unsigned long elapsed = millis() - startTime;
+		int remainingSec = (elapsed >= 10000) ? 0 : (10 - (int)(elapsed / 1000));
+
+		if (remainingSec != lastDisplayedSec)
+		{
+			lastDisplayedSec = remainingSec;
+			if (lcd)
+			{
+				std::string line = "  Rebooting in " + std::to_string(remainingSec);
+				if (line.length() < 20)
+				{
+					line.append(20 - line.length(), ' ');
+				}
+				lcd->gotoxy(0, 2);
+				lcd->print(line.c_str());
+			}
+		}
+
+		if (elapsed >= 10000)
+		{
+			vTaskDelay(pdMS_TO_TICKS(500));
+			restartWithDelay(500, lcd);
+		}
+
+		if (lcd)
+		{
+			lcd->readKeys();
+			DisplayEvent ev;
+			if (lcd->getEvent(&ev) && ev.type == DisplayEventType::KEY_PRESS)
+			{
+				if (ev.keyNum == 4) // Button 4: REBOOT
+				{
+					restartWithDelay(500, lcd);
+				}
+			}
+		}
+
+		vTaskDelay(pdMS_TO_TICKS(20));
+	}
+}
+
+inline void handleSdCardRemoved(DisplayLcd* lcd)
+{
+	handleSdCardChange(lcd, "SD Card Removed");
+}
+
+inline void handleSdCardInserted(DisplayLcd* lcd)
+{
+	handleSdCardChange(lcd, "SD Card Inserted");
+}
+
+
 void loop()
 {
 	DetectorConfiguration cfg;
@@ -107,8 +185,8 @@ void loop()
 	TemperatureManager temperatureMgr(&cfg);
 	unsigned long temperatureUpdateTime = millis();
 
-	bool sdCardInserted = false;
-	unsigned long sdDetectTime = 0;
+	bool sdCardInserted = (gpio_get_level(SDDET) == 0);
+	unsigned long sdDetectTime = millis();
 
 	std::array<IrStateMachine, 2> irStateMachines = {
 		IrStateMachine(&cfg, &data[0]),
@@ -353,6 +431,15 @@ void loop()
 
 	printMemoryUsage();
 
+	if (sdCardPresent && gpio_get_level(SDDET) != 0)
+	{
+		handleSdCardRemoved(lcd);
+	}
+	else if (!sdCardPresent && gpio_get_level(SDDET) == 0)
+	{
+		handleSdCardInserted(lcd);
+	}
+
 	while(1)
 	{
 		esp_task_wdt_reset();
@@ -526,6 +613,7 @@ clrTestPoint(TP2);
 				{
 					Serial.println("SD Card Removed");
 					sdCardInserted = false;
+					handleSdCardRemoved(lcd);
 				}
 			}
 			else
@@ -542,6 +630,7 @@ clrTestPoint(TP2);
 				{
 					Serial.println("SD Card Inserted");
 					sdCardInserted = true;
+					handleSdCardInserted(lcd);
 				}
 			}
 			else
