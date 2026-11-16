@@ -239,7 +239,21 @@ bool validateWavFile(FIL *wavFile, const char* fileName, struct WavData *wavData
 
 bool loadExternalVocab(DisplayLcd *lcd, const std::string& vocabSelected, const std::vector<std::string>& words)
 {
-	lcd->clear();
+	if (lcd)
+	{
+		lcd->clear();
+	}
+
+	if (vocabSelected.empty())
+	{
+		Serial.println("No external vocabulary selected; using internal vocabulary.");
+		if (lcd)
+		{
+			lcd->gotoxy(0, 2);
+			lcd->print("Using Internal Vocab");
+		}
+		return false;
+	}
 
 	uint32_t totalStartTime = millis();
 	std::string vocabDirName = "0:vocab/" + vocabSelected;
@@ -254,6 +268,11 @@ bool loadExternalVocab(DisplayLcd *lcd, const std::string& vocabSelected, const 
 		Serial.println("! Failed to allocate FatFs buffer memory");
 		if (dir) free(dir);
 		if (wavFile) free(wavFile);
+		if (lcd)
+		{
+			lcd->gotoxy(0, 2);
+			lcd->print("Using Internal Vocab");
+		}
 		return false;
 	}
 
@@ -271,6 +290,11 @@ bool loadExternalVocab(DisplayLcd *lcd, const std::string& vocabSelected, const 
 		Serial.printf(" (FatFs error code: %d)\n", res);
 		free(dir);
 		free(wavFile);
+		if (lcd)
+		{
+			lcd->gotoxy(0, 2);
+			lcd->print("Using Internal Vocab");
+		}
 		return false;
 	}
 	f_closedir(dir);
@@ -341,7 +365,8 @@ bool loadExternalVocab(DisplayLcd *lcd, const std::string& vocabSelected, const 
 	lcd->gotoxy(0, 2);
 	if (loadedCount > 0)
 	{
-		lcd->print("Using " + vocabSelected);
+		std::string usingStr = "Using " + vocabSelected;
+		lcd->print(usingStr.substr(0, 20));
 	}
 	else
 	{

@@ -538,6 +538,12 @@ void freezeOnError(DisplayLcd* lcd, int lineNum, const std::string& errTitle, co
 
 	if (lcd)
 	{
+		while (millis() < 3000)
+		{
+			esp_task_wdt_reset();
+			vTaskDelay(pdMS_TO_TICKS(50));
+		}
+
 		lcd->clear();
 		lcd->gotoxy(0, 0);
 		std::string r0 = "Config Error: Line " + std::to_string(lineNum);
@@ -622,6 +628,13 @@ bool loadExternalConfigFile(const char* filepath, DetectorConfiguration& cfg, Me
 
 	if (lcd)
 	{
+		// Allow the initial splash screen to remain for its normal duration (3 seconds from boot)
+		while (millis() < 3000)
+		{
+			esp_task_wdt_reset();
+			vTaskDelay(pdMS_TO_TICKS(50));
+		}
+
 		lcd->clear();
 		lcd->gotoxy(0, 1);
 		lcd->print("  External Config   ");

@@ -273,7 +273,7 @@ void loop()
 	printNVSStats();
 
 	// Get unique words required
-	std::vector<std::string> words = getUniqueWords(trackMessages);
+	std::vector<std::string> words = getUniqueWords(trackMessages, cfg);
 
 	Serial.println("--- Unique Words Found ---");
 	for (const auto& word : words)

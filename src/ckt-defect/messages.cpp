@@ -663,7 +663,7 @@ static void extractWordsFromString(const std::string& inputStr, std::vector<std:
 	}
 }
 
-std::vector<std::string> getUniqueWords(const MessageBundle& msgs)
+std::vector<std::string> getUniqueWords(const MessageBundle& msgs, const DetectorConfiguration& cfg)
 {
 	std::vector<std::string> uniqueWords;
 	uniqueWords.reserve(32);
@@ -688,7 +688,7 @@ std::vector<std::string> getUniqueWords(const MessageBundle& msgs)
 		extractWordsFromString(str, uniqueWords);
 	}
 
-	// Track, Direction, Rail strings
+	// Built-in Track, Direction, Rail strings
 	for (const auto& str : trackNames)
 	{
 		extractWordsFromString(str, uniqueWords);
@@ -702,6 +702,15 @@ std::vector<std::string> getUniqueWords(const MessageBundle& msgs)
 		extractWordsFromString(str, uniqueWords);
 	}
 
+	// Configured Track, Direction, Rail strings from config file
+	for (uint32_t i = 0; i < NUM_TRACKS; ++i)
+	{
+		extractWordsFromString(cfg.trackName[i], uniqueWords);
+	}
+	extractWordsFromString(cfg.direction1Name, uniqueWords);
+	extractWordsFromString(cfg.direction2Name, uniqueWords);
+	extractWordsFromString(cfg.railName, uniqueWords);
+
 	// Messages (skip display since those words are never spoken)
 	extractWordsFromString(msgs.entranceMsg, uniqueWords);
 	extractWordsFromString(msgs.exitCleanMsg, uniqueWords);
@@ -710,6 +719,8 @@ std::vector<std::string> getUniqueWords(const MessageBundle& msgs)
 	//extractWordsFromString(msgs.exitDefectDisplayMsg, uniqueWords);
 	extractWordsFromString(msgs.integrityMsg, uniqueWords);
 	//extractWordsFromString(msgs.integrityDisplayMsg, uniqueWords);
+	extractWordsFromString(msgs.minAxleMsg, uniqueWords);
+	//extractWordsFromString(msgs.minAxleDisplayMsg, uniqueWords);
 	extractWordsFromString(msgs.tooSlowMsg, uniqueWords);
 	//extractWordsFromString(msgs.tooSlowDisplayMsg, uniqueWords);
 	extractWordsFromString(msgs.detectorBlockedMsg, uniqueWords);
@@ -725,4 +736,10 @@ std::vector<std::string> getUniqueWords(const MessageBundle& msgs)
 
 	uniqueWords.shrink_to_fit();
 	return uniqueWords;
+}
+
+std::vector<std::string> getUniqueWords(const MessageBundle& msgs)
+{
+	DetectorConfiguration emptyCfg{};
+	return getUniqueWords(msgs, emptyCfg);
 }

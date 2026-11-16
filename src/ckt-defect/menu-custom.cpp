@@ -532,7 +532,7 @@ MenuEvent MenuVocabStatus::update()
 
 	// Line 2 (Row 2): Words: N/M
 	size_t n = vocabGetSize();
-	size_t m = getUniqueWords(trackMessages).size();
+	size_t m = getUniqueWords(trackMessages, cfg).size();
 	std::string loadedStr = "Words: " + std::to_string(n) + "/" + std::to_string(m);
 	
 	if (loadedStr.length() < 20) {

@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <algorithm>
 #include <cmath>
 #include <cstdlib>
 
@@ -110,6 +111,65 @@ int main() {
 	} else {
 		std::cout << ANSI_RED << passed << " passed, " << failed << " failed." << ANSI_RESET << std::endl;
 	}
+
+	std::cout << "\n========================================" << std::endl;
+	std::cout << "RUNNING GET_UNIQUE_WORDS CONFIG TESTS   " << std::endl;
+	std::cout << "========================================" << std::endl;
+
+	MessageBundle testMsgs;
+	testMsgs.entranceMsg = "Equipment Defect Detector";
+
+	DetectorConfiguration customCfg;
+	customCfg.trackName[0] = "Front Range";
+	customCfg.trackName[1] = "Siding 4";
+	customCfg.direction1Name = "Outbound";
+	customCfg.direction2Name = "Inbound";
+	customCfg.railName = "Port/Starboard";
+
+	std::vector<std::string> words = getUniqueWords(testMsgs, customCfg);
+
+	auto hasWord = [&words](const std::string& target) {
+		return std::find(words.begin(), words.end(), target) != words.end();
+	};
+
+	std::vector<std::string> expectedWords = {
+		"front", "range", "siding", "4", "outbound", "inbound", "port", "starboard",
+		"equipment", "defect", "detector"
+	};
+
+	int wordTestPassed = 0;
+	int wordTestFailed = 0;
+
+	for (const auto& w : expectedWords) {
+		bool present = hasWord(w);
+		std::cout << "Check word: \"" << w << "\" -> ";
+		if (present) {
+			std::cout << ANSI_GREEN << "PASS" << ANSI_RESET << "\n";
+			wordTestPassed++;
+		} else {
+			std::cout << ANSI_RED << "FAIL" << ANSI_RESET << "\n";
+			wordTestFailed++;
+		}
+	}
+
+	// Also verify backwards compatibility overload without cfg
+	std::vector<std::string> baseWords = getUniqueWords(testMsgs);
+	bool baseHasBuiltin = (std::find(baseWords.begin(), baseWords.end(), "point") != baseWords.end());
+	std::cout << "Check base getUniqueWords without cfg -> ";
+	if (baseHasBuiltin) {
+		std::cout << ANSI_GREEN << "PASS" << ANSI_RESET << "\n";
+		wordTestPassed++;
+	} else {
+		std::cout << ANSI_RED << "FAIL" << ANSI_RESET << "\n";
+		wordTestFailed++;
+	}
+
+	std::cout << "\nUnique Words Test Summary: "
+	          << (wordTestFailed == 0 ? ANSI_GREEN : ANSI_RED)
+	          << wordTestPassed << " passed, " << wordTestFailed << " failed."
+	          << ANSI_RESET << std::endl;
+
+	if (wordTestFailed > 0) failed++;
 
 	return (failed == 0) ? 0 : 1;
 }
