@@ -546,7 +546,7 @@ void freezeOnError(DisplayLcd* lcd, int lineNum, const std::string& errTitle, co
 
 		lcd->clear();
 		lcd->gotoxy(0, 0);
-		std::string r0 = "Config Error: Line " + std::to_string(lineNum);
+		std::string r0 = "Cfg Err: Line " + std::to_string(lineNum);
 		lcd->print(r0.substr(0, 20));
 
 		lcd->gotoxy(0, 1);

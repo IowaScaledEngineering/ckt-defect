@@ -214,15 +214,12 @@ uint32_t rollDice(void)
 
 void restartWithDelay(uint32_t delay_ms, Display* disp)
 {
-	// Display reset message and clear buttons if display reference is valid
+	// Display reset message and clear screen if display reference is valid
 	if (disp)
 	{
-		disp->gotoxy(0, 1);
-		disp->print("                    ");
+		disp->clear();
 		disp->gotoxy(0, 2);
 		disp->print(centerString("Restarting...", 20).c_str());
-		disp->gotoxy(0, 3);
-		disp->print("                    ");
 	}
 
 	// Non-blocking wait while yielding to watchdog/other tasks
