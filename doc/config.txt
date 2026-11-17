@@ -60,21 +60,183 @@ integrityTrainRate = 100
 
 
 # ==============================================================================
-# 3. GLOBAL BROADCAST MESSAGES
+# 3. GLOBAL BROADCAST MESSAGES & # COMMANDS REFERENCE
 #
-# Supported Message Tokens:
-#   #milepost     - Formatted milepost (e.g. "3 4 6 . 9" voice, "346.9" display)
-#                   Optional formatting: #milepost:W.D (width and decimal digits)
-#   #axles, #axle - Total train axle count or defect axle (optional :W width)
-#   #track        - Track name (optional :W width)
-#   #direction    - Direction name (optional :W width)
-#   #speed        - Train speed in MPH (optional :W width)
-#   #temp         - Ambient temperature in degrees F
-#   #rail         - Rail name of defect (e.g. Left, Right)
-#   #defectlist   - Spoken aggregation of all detailMsg entries from defects
-#   #ord          - Ordinal number of defect (e.g. "first", "second")
-#   #count        - Numeric index of defect ("1", "2")
-#   #tone         - Alert chirp/beep sound effect
+# Message strings (both spoken voice phrases and LCD display text) support dynamic
+# '#' commands and tokens. They are divided into two main categories:
+#
+#   A. DYNAMIC STATE TOKENS: Evaluated and substituted with detector data.
+#   B. AUDIO CONTROL COMMANDS: Evaluated by the voice synthesizer during playback.
+#
+# ------------------------------------------------------------------------------
+# A. DYNAMIC STATE TOKENS
+# ------------------------------------------------------------------------------
+#
+#   #milepost[:W[.D]]
+#     Inserts the detector milepost location.
+#     - Voice: Digits are broken out with pauses (e.g. 346.9 -> "3 4 6 . 9").
+#     - Display: Formatted decimal number (e.g. "346.9").
+#     Options:
+#       :W    Total integer field width for LCD display.
+#             Positive W (+W): Right-aligned, padded with leading spaces.
+#             Negative W (-W): Left-aligned, padded with trailing spaces.
+#       .D    Number of decimal digits (default is 1).
+#     Examples:
+#       #milepost        -> "3 4 6 . 9" (voice) / "346.9" (LCD)
+#       #milepost:6.1    -> "   346.9" (LCD, 6-char width, right-aligned)
+#       #milepost:-6.1   -> "346.9   " (LCD, 6-char width, left-aligned)
+#       #milepost:4.0    -> " 347" (LCD, rounded integer, 4-char width)
+#
+#   #track[:W]
+#     Inserts the name of the active track (e.g. "Track 1", "Main 2").
+#     Options:
+#       :W    Field width constraint for LCD display.
+#             Positive W (+W): Right-aligned with leading spaces; clipped to W chars.
+#             Negative W (-W): Left-aligned with trailing spaces; clipped to |W| chars.
+#     Examples:
+#       #track           -> "Track 1"
+#       #track:8         -> " Track 1" (8 chars, right-aligned)
+#       #track:-8        -> "Track 1 " (8 chars, left-aligned)
+#       #track:4         -> "Trac" (clipped to 4 chars)
+#
+#   #direction[:W]
+#     Inserts the detected travel direction name (e.g. "Eastbound", "Westbound").
+#     If direction detection is disabled or direction is undetermined, evaluates to "".
+#     Options:
+#       :W    Field width constraint for LCD display.
+#             Positive W (+W): Right-aligned with leading spaces; clipped to W chars.
+#             Negative W (-W): Left-aligned with trailing spaces; clipped to |W| chars.
+#     Examples:
+#       #direction       -> "Eastbound"
+#       #direction:12    -> "   Eastbound"
+#       #direction:-12   -> "Eastbound   "
+#
+#   #rail[:W]
+#     Inserts the side/rail where a defect occurred.
+#     When railName is configured as "Side1/Side2" (e.g. "Left/Right", "North/South"),
+#     #rail automatically resolves to the specific side that tripped (e.g. "Left" or "Right").
+#     If railName contains no slash, the full string is used.
+#     Options:
+#       :W    Field width constraint for LCD display.
+#             Positive W (+W): Right-aligned with leading spaces; clipped to W chars.
+#             Negative W (-W): Left-aligned with trailing spaces; clipped to |W| chars.
+#     Examples:
+#       #rail            -> "Left" (or "Right")
+#       #rail:6          -> "  Left"
+#       #rail:-6         -> "Left  "
+#
+#   #axle[:W]
+#     Inserts the specific axle number where an individual defect was detected.
+#     Typically used inside defect alertMsg, displayMsg, and detailMsg.
+#     - Voice: Digits are broken out individually (e.g. axle 14 -> "1 4").
+#     - Display: Decimal integer (e.g. "14").
+#     Options:
+#       :W    Field width constraint for LCD display.
+#             Positive W (+W): Right-aligned with leading spaces (e.g. #axle:3 -> " 14").
+#             Negative W (-W): Left-aligned with trailing spaces (e.g. #axle:-3 -> "14 ").
+#
+#   #axles[:W]
+#     Inserts the total number of axles counted across the entire train.
+#     Typically used in exit broadcast messages (exitCleanMsg, exitDefectMsg, etc.).
+#     - Voice: Digits are broken out individually (e.g. 124 -> "1 2 4").
+#     - Display: Decimal integer (e.g. "124").
+#     Options:
+#       :W    Field width constraint for LCD display.
+#             Positive W (+W): Right-aligned with leading spaces (e.g. #axles:3 -> " 14").
+#             Negative W (-W): Left-aligned with trailing spaces (e.g. #axles:-3 -> "14 ").
+#     Examples:
+#       #axles:3         -> "124"
+#       #axles:4         -> " 124"
+#       #axles:-4        -> "124 "
+#
+#   #speed[:W]
+#     Inserts the calculated train speed (in MPH or KPH, per configuration).
+#     - Voice: Digits broken out individually (e.g. 45 -> "4 5").
+#     - Display: Decimal integer (e.g. "45").
+#     Options:
+#       :W    Field width constraint for LCD display (same as #axle).
+#             Positive W (+W): Right-aligned with leading spaces.
+#             Negative W (-W): Left-aligned with trailing spaces.
+#     Examples:
+#       #speed:3         -> " 45"
+#       #speed:-3        -> "45 "
+#
+#   #temp[:W]
+#     Inserts the temperature rounded to the nearest integer degree.
+#     - Voice: Spoken digits (e.g. 72 -> "7 2"; negative temperatures speak "minus 5").
+#     - Display: Decimal integer (e.g. "72" or "-5").
+#     Options:
+#       :W    Field width constraint for LCD display.
+#             Positive W (+W): Right-aligned with leading spaces.
+#             Negative W (-W): Left-aligned with trailing spaces.
+#
+#   #defectlist
+#     Aggregates and inserts all detailMsg strings from all defects tripped during the
+#     train's pass, separated by spaces.
+#     Typically used in exitDefectMsg:
+#       exitDefectMsg = ... you have a defect #defectlist total axles #axles ...
+#     If multiple defects occurred, #defectlist expands to:
+#       "<detailMsg 1> <detailMsg 2> <detailMsg3> ..."
+#
+# ------------------------------------------------------------------------------
+# B. AUDIO & SPEECH SYNTHESIS CONTROL COMMANDS
+# ------------------------------------------------------------------------------
+#
+#   #tone[=M[,N]]
+#     Generates and plays a 1 kHz sine-wave tone (e.g. alert chirp or attention beep).
+#     Options:
+#       =M    Tone duration in decisecs (tenths of a second). Default: 10 (1.0 sec).
+#       ,N    Volume attenuation factor where amplitude = 1 / (2^N). Default: 1 (1/2 volume).
+#             N=0: Full scale (loudest)
+#             N=1: 1/2 amplitude (default)
+#             N=2: 1/4 amplitude
+#             N=3: 1/8 amplitude
+#     Examples:
+#       #tone            -> 1.0 second tone at standard volume (default)
+#       #tone=5          -> 0.5 second tone at standard volume
+#       #tone=2          -> 0.2 second brief attention chirp
+#       #tone=10,0       -> 1.0 second tone at full volume (unattenuated)
+#       #tone=5,2        -> 0.5 second tone at 1/4 volume
+#
+#   #pause[=M]
+#     Inserts a period of silence into the spoken audio stream.
+#     Options:
+#       =M    Silence duration in decisecs (tenths of a second). Default: 5 (0.5 sec).
+#     Examples:
+#       #pause           -> 0.5 second pause (default)
+#       #pause=10        -> 1.0 second pause
+#       #pause=20        -> 2.0 second pause
+#
+#   #ord
+#     Speaks the ordinal word for the current defect index during #defectlist playback.
+#     The internal counter starts at 1 and auto-increments with each #ord encountered.
+#     Examples:
+#       Defect 1 -> speaks "first"
+#       Defect 2 -> speaks "second"
+#       Defect 3 -> speaks "third", etc.
+#     Typically used in defect detailMsg:
+#       detailMsg = #ord alarm hot journal Axle #axle #rail Rail
+#
+#   #count
+#     Speaks the cardinal number for the current defect index during #defectlist playback.
+#     The internal counter starts at 1 and auto-increments with each #count encountered.
+#     Examples:
+#       Defect 1 -> speaks "1"
+#       Defect 2 -> speaks "2"
+#       Defect 3 -> speaks "3", etc.
+#     Typically used in defect detailMsg:
+#       detailMsg = alarm #count hot journal Axle #axle #rail Rail
+#
+# ------------------------------------------------------------------------------
+# C. FORMATTING & ESCAPE CHARACTERS
+# ------------------------------------------------------------------------------
+#   \   (Single Backslash)
+#       Line break / newline for LCD display messages (displayMsg, *DisplayMsg).
+#       The 20x4 LCD displays up to 3 lines (rows 1, 2, 3); row 4 is reserved for menu.
+#       Example: #track\NO DEFECTS\AXLES:#axles:3  SPEED:#speed:3
+#
+#   \\  (Double Backslash)
+#       Escapes a literal backslash on the LCD screen.
 # ==============================================================================
 
 # Spoken phrase when a train is first detected entering the detector
