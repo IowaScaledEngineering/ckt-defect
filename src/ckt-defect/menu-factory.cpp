@@ -23,6 +23,7 @@ std::shared_ptr<Menu> menuDefects;
 std::shared_ptr<Menu> menuEntranceMessage;
 std::shared_ptr<Menu> menuAlertMessage;
 std::shared_ptr<Menu> menuTalkDefectOnly;
+std::shared_ptr<Menu> menuOrdinalType;
 std::shared_ptr<Menu> menuMilepostEn;
 std::shared_ptr<Menu> menuTrackNameEn;
 std::shared_ptr<Menu> menuAxleEn;
@@ -91,6 +92,7 @@ void updateAllMenuVisibility(const DetectorConfiguration &cfg)
 		if (menuEntranceMessage) menuEntranceMessage->hide();
 		if (menuAlertMessage) menuAlertMessage->hide();
 		if (menuTalkDefectOnly) menuTalkDefectOnly->hide();
+		if (menuOrdinalType) menuOrdinalType->hide();
 
 		if (menuMilepostEn) menuMilepostEn->hide();
 		if (menuTrackNameEn) menuTrackNameEn->hide();
@@ -106,6 +108,7 @@ void updateAllMenuVisibility(const DetectorConfiguration &cfg)
 		if (menuEntranceMessage) menuEntranceMessage->unhide();
 		if (menuAlertMessage) menuAlertMessage->unhide();
 		if (menuTalkDefectOnly) menuTalkDefectOnly->unhide();
+		if (menuOrdinalType) menuOrdinalType->unhide();
 
 		if (menuMilepostEn) menuMilepostEn->unhide();
 		if (menuTrackNameEn) menuTrackNameEn->unhide();
@@ -528,7 +531,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		"defects",
 		[&cfg]() { saveConfiguration(&cfg); }
 	);
-	auto menuOrdinalType = std::make_shared<MenuOptionSelector>(
+	menuOrdinalType = std::make_shared<MenuOptionSelector>(
 		"Ordinal Type", 
 		&cfg.ordinalTypeId,
 		false,
