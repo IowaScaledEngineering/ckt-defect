@@ -59,6 +59,7 @@ private:
 	DetectorConfiguration& _cfg;
 	MessageBundle& _msgs;
 	bool _inDefectSection = false;
+	bool _bomChecked = false;
 	DefectBuilder _currentDefect;
 
 	ConfigFileResult commitCurrentDefect(int lineNumber);

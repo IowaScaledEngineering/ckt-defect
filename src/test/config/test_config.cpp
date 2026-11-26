@@ -382,6 +382,66 @@ void testDocConfigFile()
 	}
 }
 
+void testUtf8BomHandling()
+{
+	std::cout << "Running testUtf8BomHandling...\n";
+
+	// 1. BOM before comment line
+	{
+		DetectorConfiguration cfg;
+		MessageBundle msgs;
+		std::string config = "\xef\xbb\xbf# UTF-8 BOM comment\ntrackName1 = Main 1\n";
+		ConfigFileResult res = parseConfigurationString(config, cfg, msgs);
+		TEST_ASSERT(res.success, "Should succeed with BOM before comment");
+		TEST_ASSERT(cfg.externalTrackNamePresent[0], "Track name 1 set with BOM comment");
+		TEST_ASSERT(cfg.trackName[0] == "Main 1", "Track name 1 matches");
+	}
+
+	// 2. BOM directly on key-value pair
+	{
+		DetectorConfiguration cfg;
+		MessageBundle msgs;
+		std::string config = "\xef\xbb\xbfTrackName1 = Main Track\n";
+		ConfigFileResult res = parseConfigurationString(config, cfg, msgs);
+		TEST_ASSERT(res.success, "Should succeed with BOM on key-value");
+		TEST_ASSERT(cfg.externalTrackNamePresent[0], "Track name 1 set with BOM key");
+		TEST_ASSERT(cfg.trackName[0] == "Main Track", "Track name matches");
+	}
+
+	// 3. BOM directly on section header
+	{
+		DetectorConfiguration cfg;
+		MessageBundle msgs;
+		std::string config = "\xef\xbb\xbf[Defect]\nalertMsg = Hot Box\ndisplayMsg = Hot Box\ndetailMsg = Hot Box\naxleRate = 100\n";
+		ConfigFileResult res = parseConfigurationString(config, cfg, msgs);
+		TEST_ASSERT(res.success, "Should succeed with BOM on section header");
+		TEST_ASSERT(msgs.defects.size() == 1, "One defect parsed with BOM section");
+		TEST_ASSERT(msgs.defects[0].alertMsg == "Hot Box", "Defect alertMsg matches");
+	}
+
+	// 4. BOM on its own blank line before content
+	{
+		DetectorConfiguration cfg;
+		MessageBundle msgs;
+		std::string config = "\xef\xbb\xbf\ntrackName1 = Siding\n";
+		ConfigFileResult res = parseConfigurationString(config, cfg, msgs);
+		TEST_ASSERT(res.success, "Should succeed with BOM on empty line");
+		TEST_ASSERT(cfg.externalTrackNamePresent[0], "Track name 1 set");
+		TEST_ASSERT(cfg.trackName[0] == "Siding", "Track name matches Siding");
+	}
+
+	// 5. BOM with leading whitespace
+	{
+		DetectorConfiguration cfg;
+		MessageBundle msgs;
+		std::string config = "  \xef\xbb\xbftrackName1 = Branch\n";
+		ConfigFileResult res = parseConfigurationString(config, cfg, msgs);
+		TEST_ASSERT(res.success, "Should succeed with BOM preceded by spaces");
+		TEST_ASSERT(cfg.externalTrackNamePresent[0], "Track name 1 set");
+		TEST_ASSERT(cfg.trackName[0] == "Branch", "Track name matches Branch");
+	}
+}
+
 int main()
 {
 	std::cout << "========================================\n";
@@ -402,6 +462,7 @@ int main()
 	testStringTooLongError();
 	testAllOrNothingDefaults();
 	testCaseInsensitivity();
+	testUtf8BomHandling();
 	testDocConfigFile();
 
 	std::cout << "========================================\n";

@@ -99,6 +99,7 @@ ConfigFileParser::ConfigFileParser(DetectorConfiguration& cfg, MessageBundle& ms
 	_cfg.externalRailNamePresent = false;
 	_cfg.externalVocabSelectedPresent = false;
 	_cfg.externalIntegrityTrainRatePresent = false;
+	_bomChecked = false;
 }
 
 bool ConfigFileParser::isValidString(const std::string& str) const
@@ -167,6 +168,24 @@ ConfigFileResult ConfigFileParser::commitCurrentDefect(int lineNumber)
 ConfigFileResult ConfigFileParser::processLine(const std::string& rawLine, int lineNumber)
 {
 	std::string line = trim(rawLine);
+
+	// Strip UTF-8 Byte Order Mark (BOM: 0xEF, 0xBB, 0xBF) if present
+	if (!_bomChecked)
+	{
+		if (line.length() >= 3 &&
+		    static_cast<unsigned char>(line[0]) == 0xEF &&
+		    static_cast<unsigned char>(line[1]) == 0xBB &&
+		    static_cast<unsigned char>(line[2]) == 0xBF)
+		{
+			line = trim(line.substr(3));
+			_bomChecked = true;
+		}
+		else if (!line.empty())
+		{
+			_bomChecked = true;
+		}
+	}
+
 	if (line.empty() || line[0] == '#' || line[0] == ';')
 		return ConfigFileResult();
 
