@@ -176,3 +176,13 @@ public:
 	void onEnter() override { Menu::onEnter(); }
 	MenuEvent update() override;
 };
+
+class MenuIoStatus : public Menu
+{
+public:
+	MenuIoStatus(const std::string &name)
+		: Menu(name) {}
+
+	void onEnter() override;
+	MenuEvent update() override;
+};

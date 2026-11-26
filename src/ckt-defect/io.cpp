@@ -45,8 +45,8 @@ void ioInit(void)
 	io_conf.pull_up_en = GPIO_PULLUP_ENABLE;
 	gpio_config(&io_conf);
 
-	// AXLE_nn_EN: output
-	io_conf.mode = GPIO_MODE_OUTPUT;
+	// AXLE_nn_EN: output with input buffer enabled
+	io_conf.mode = GPIO_MODE_INPUT_OUTPUT;
 	io_conf.pull_up_en = GPIO_PULLUP_DISABLE;
 
 	io_conf.pin_bit_mask = (1ULL << AXLE_A1_EN);
@@ -88,9 +88,9 @@ void ioInit(void)
 	io_conf.pin_bit_mask = (1ULL << TRKB);
 	gpio_config(&io_conf);
 
-	// AUX: output
+	// AUX: output with input buffer enabled
 	io_conf.pin_bit_mask = (1ULL << AUX);
-	io_conf.mode = GPIO_MODE_OUTPUT;
+	io_conf.mode = GPIO_MODE_INPUT_OUTPUT;
 	io_conf.pull_up_en = GPIO_PULLUP_DISABLE;
 	gpio_config(&io_conf);
 

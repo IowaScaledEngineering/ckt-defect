@@ -5,6 +5,7 @@
 #include "audio.h"
 #include "vocab.h"
 #include "config-codec.h"
+#include "io.h"
 #include <format>
 
 void MenuHome::onEnter()
@@ -1025,6 +1026,99 @@ MenuEvent MenuDetectorState::update()
 	// Line 3 (Row 3): Clear columns 0-15 and display BACK at column 16 (Button 4 position)
 	disp->gotoxy(0, 3);
 	disp->print("                BACK");
+
+	DisplayEvent ev;
+	if (getMenuInputEvent(&ev))
+	{
+		if (ev.type == DisplayEventType::KEY_PRESS)
+		{
+			switch (ev.keyNum)
+			{
+				case 4: // BACK
+					return MenuEvent::BACK;
+			}
+		}
+		else if (ev.type == DisplayEventType::KEY_RELEASE)
+		{
+			handleButtonRelease(ev.keyNum);
+		}
+	}
+
+	return MenuEvent::NOOP;
+}
+
+static const uint8_t SoftkeyInactive[8] =
+{
+	0b00000000,
+	0b00001110,
+	0b00010001,
+	0b00010001,
+	0b00010001,
+	0b00001110,
+	0b00000000,
+	0b00000000
+};
+
+static const uint8_t SoftkeyActive[8] =
+{
+	0b00000000,
+	0b00001110,
+	0b00011111,
+	0b00011111,
+	0b00011111,
+	0b00001110,
+	0b00000000,
+	0b00000000
+};
+
+void MenuIoStatus::onEnter()
+{
+	Menu::onEnter();
+	disp->createCustomChar(1, SoftkeyInactive);
+	disp->createCustomChar(2, SoftkeyActive);
+}
+
+MenuEvent MenuIoStatus::update()
+{
+	disp->backlightOn();
+
+	// Line 0 (Row 0): Menu Name
+	disp->gotoxy(0, 0);
+	disp->print(menuName);
+
+	// Line 1 (Row 1): Track A: A1:○ A2:○ TR:○ EN:●●
+	char charA1   = gpio_get_level(AXLE_A1) ? '\x02' : '\x01';
+	char charA2   = gpio_get_level(AXLE_A2) ? '\x02' : '\x01';
+	char charTrkA = gpio_get_level(TRKA)    ? '\x02' : '\x01';
+	char charEnA1 = gpio_get_level(AXLE_A1_EN) ? '\x02' : '\x01';
+	char charEnA2 = gpio_get_level(AXLE_A2_EN) ? '\x02' : '\x01';
+
+	char line1[21];
+	snprintf(line1, sizeof(line1), "A1:%c A2:%c TR:%c EN:%c%c",
+		charA1, charA2, charTrkA, charEnA1, charEnA2);
+	disp->gotoxy(0, 1);
+	disp->print(line1);
+
+	// Line 2 (Row 2): Track B: B1:○ B2:○ TR:○ EN:●●
+	char charB1   = gpio_get_level(AXLE_B1) ? '\x02' : '\x01';
+	char charB2   = gpio_get_level(AXLE_B2) ? '\x02' : '\x01';
+	char charTrkB = gpio_get_level(TRKB)    ? '\x02' : '\x01';
+	char charEnB1 = gpio_get_level(AXLE_B1_EN) ? '\x02' : '\x01';
+	char charEnB2 = gpio_get_level(AXLE_B2_EN) ? '\x02' : '\x01';
+
+	char line2[21];
+	snprintf(line2, sizeof(line2), "B1:%c B2:%c TR:%c EN:%c%c",
+		charB1, charB2, charTrkB, charEnB1, charEnB2);
+	disp->gotoxy(0, 2);
+	disp->print(line2);
+
+	// Line 3 (Row 3): Aux Output & Back button: AUX:○           BACK
+	char charAux = gpio_get_level(AUX) ? '\x02' : '\x01';
+
+	char line3[21];
+	snprintf(line3, sizeof(line3), "AUX:%c           BACK", charAux);
+	disp->gotoxy(0, 3);
+	disp->print(line3);
 
 	DisplayEvent ev;
 	if (getMenuInputEvent(&ev))

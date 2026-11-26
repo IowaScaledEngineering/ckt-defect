@@ -788,6 +788,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	auto menuVocabTest = std::make_shared<MenuVocabTest>("Vocab Test");
 	auto menuMemoryStatus = std::make_shared<MenuMemoryStatus>("Memory Status");
 	auto menuDetectorState = std::make_shared<MenuDetectorState>("Detector State", detectorStateMachines);
+	auto menuIoStatus = std::make_shared<MenuIoStatus>("Input/Output");
 	auto menuVersion = std::make_shared<MenuVersion>("Version");
 	auto menuConfigCode = std::make_shared<MenuConfigCode>("Config Code", cfg);
 	auto menuReset = std::make_shared<MenuReset>("Factory Reset", cfg);
@@ -929,8 +930,9 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	mainSel->addChild(menuDiagnostics);
 	menuDiagnostics->addChild(menuVocabStatus);
 	menuDiagnostics->addChild(menuVocabTest);
-	menuDiagnostics->addChild(menuMemoryStatus);
 	menuDiagnostics->addChild(menuDetectorState);
+	menuDiagnostics->addChild(menuIoStatus);
+	menuDiagnostics->addChild(menuMemoryStatus);
 	menuDiagnostics->addChild(menuVersion);
 	menuDiagnostics->addChild(menuConfigCode);
 	menuDiagnostics->addChild(menuReset);
