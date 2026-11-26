@@ -93,6 +93,7 @@ void handleSdCardChange(DisplayLcd* lcd, const char* message)
 {
 	Serial.printf("%s - Initiating countdown to reboot\n", message);
 
+	gpio_set_level(I2S_SD, 0);
 	audioMute();
 	audioStopPlaying();
 	parserTerminate();
