@@ -2,12 +2,14 @@
 
 #include <Arduino.h>
 #include <vector>
+#include <array>
 #include "src/menu/menu.h"
 #include "configuration.h"
 #include "data.h"
 #include "sound.h"
 #include "audio.h"
 #include "messages.h"
+#include "state-machine.h"
 
 
 enum class MenuHomeState {
@@ -159,5 +161,18 @@ public:
 		: Menu(name), cfg(c) {}
 
 	void onEnter() override;
+	MenuEvent update() override;
+};
+
+class MenuDetectorState : public Menu
+{
+private:
+	const std::array<DetectorStateMachine, 2> &sm;
+
+public:
+	MenuDetectorState(const std::string &name, const std::array<DetectorStateMachine, 2> &stateMachines)
+		: Menu(name), sm(stateMachines) {}
+
+	void onEnter() override { Menu::onEnter(); }
 	MenuEvent update() override;
 };

@@ -21,6 +21,10 @@ LICENSE:
 
 #pragma once
 
+#if defined(ESP_PLATFORM) || defined(ARDUINO)
+#include <Arduino.h>
+#endif
+
 #include "configuration.h"
 #include "data.h"
 #include "messages.h"
@@ -81,6 +85,7 @@ public:
 
 	StateType getCurrentState() const { return currentState; }
 	StateType getNextState() const { return nextState; }
+	const char* getStateName() const { return getStateName(currentState); }
 
 protected:
 	DetectorConfiguration* cfg;
@@ -126,6 +131,7 @@ class DetectorStateMachine : public BaseStateMachine<DetectorState> {
 public:
 	DetectorStateMachine(DetectorConfiguration* config, DataBundle* dataBundle, MessageBundle* messageBundle, uint8_t track);
 	void update() override;
+	using BaseStateMachine<DetectorState>::getStateName;
 	const char* getStateName(DetectorState state) const override;
 
 protected:

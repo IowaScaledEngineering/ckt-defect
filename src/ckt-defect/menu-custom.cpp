@@ -993,3 +993,61 @@ MenuEvent MenuConfigCode::update()
 
 	return MenuEvent::NOOP;
 }
+
+MenuEvent MenuDetectorState::update()
+{
+	disp->backlightOn();
+
+	// Line 0 (Row 0): Menu Name
+	std::string title = menuName;
+	if (title.length() > 20) {
+		title = title.substr(0, 20);
+	} else if (title.length() < 20) {
+		title.append(20 - title.length(), ' ');
+	}
+	disp->gotoxy(0, 0);
+	disp->print(title.c_str());
+
+	// Line 1 (Row 1): Track 1 State
+	std::string s1 = sm[0].getStateName(sm[0].getCurrentState());
+	if (s1.length() > 20) {
+		s1 = s1.substr(0, 20);
+	} else if (s1.length() < 20) {
+		s1.append(20 - s1.length(), ' ');
+	}
+	disp->gotoxy(0, 1);
+	disp->print(s1.c_str());
+
+	// Line 2 (Row 2): Track 2 State
+	std::string s2 = sm[1].getStateName(sm[1].getCurrentState());
+	if (s2.length() > 20) {
+		s2 = s2.substr(0, 20);
+	} else if (s2.length() < 20) {
+		s2.append(20 - s2.length(), ' ');
+	}
+	disp->gotoxy(0, 2);
+	disp->print(s2.c_str());
+
+	// Line 3 (Row 3): Clear columns 0-15 and display BACK at column 16 (Button 4 position)
+	disp->gotoxy(0, 3);
+	disp->print("                BACK");
+
+	DisplayEvent ev;
+	if (getMenuInputEvent(&ev))
+	{
+		if (ev.type == DisplayEventType::KEY_PRESS)
+		{
+			switch (ev.keyNum)
+			{
+				case 4: // BACK
+					return MenuEvent::BACK;
+			}
+		}
+		else if (ev.type == DisplayEventType::KEY_RELEASE)
+		{
+			handleButtonRelease(ev.keyNum);
+		}
+	}
+
+	return MenuEvent::NOOP;
+}

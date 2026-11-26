@@ -316,7 +316,7 @@ void loop()
 	updateMessages(trackMessages, cfg);
 
 	// Create menus (initialized with visibility reflecting config.txt overrides)
-	auto menus = createAppMenu(cfg, lcd, data, trackMessages);
+	auto menus = createAppMenu(cfg, lcd, data, trackMessages, detectorStateMachines);
 
 	Menu::setDisplay(lcd);
 	Menu::setTimingCallback(millis); 

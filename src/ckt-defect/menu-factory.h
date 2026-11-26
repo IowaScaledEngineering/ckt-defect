@@ -2,11 +2,13 @@
 #define MENU_FACTORY_H
 
 #include <memory>
+#include <array>
 #include "src/menu/menu.h"
 #include "configuration.h"
 #include "display-lcd.h"
 #include "data.h"
 #include "messages.h"
+#include "state-machine.h"
 
 /**
  * @brief Builds the hierarchical menu tree for the Defect Detector.
@@ -14,6 +16,6 @@
  * @param lcd Pointer to the initialized LCD display driver instance.
  * @return std::shared_ptr<Menu> The generic root base menu object.
  */
-std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd, DataBundle* data, MessageBundle &trackMessages);
+std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd, DataBundle* data, MessageBundle &trackMessages, const std::array<DetectorStateMachine, 2> &detectorStateMachines);
 
 #endif // MENU_FACTORY_H

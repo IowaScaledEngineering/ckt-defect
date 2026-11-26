@@ -157,7 +157,7 @@ void updateAllMenuVisibility(const DetectorConfiguration &cfg)
 	}
 }
 
-std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd, DataBundle* data, MessageBundle &trackMessages)
+std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd, DataBundle* data, MessageBundle &trackMessages, const std::array<DetectorStateMachine, 2> &detectorStateMachines)
 {
 	// Create the root home menu and main branch
 	auto home = std::make_shared<MenuHome>("Home", cfg, data);
@@ -747,6 +747,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	auto menuVocabStatus = std::make_shared<MenuVocabStatus>("Vocab Status", cfg, trackMessages);
 	auto menuVocabTest = std::make_shared<MenuVocabTest>("Vocab Test");
 	auto menuMemoryStatus = std::make_shared<MenuMemoryStatus>("Memory Status");
+	auto menuDetectorState = std::make_shared<MenuDetectorState>("Detector State", detectorStateMachines);
 	auto menuVersion = std::make_shared<MenuVersion>("Version");
 	auto menuConfigCode = std::make_shared<MenuConfigCode>("Config Code", cfg);
 	auto menuReset = std::make_shared<MenuReset>("Factory Reset", cfg);
@@ -889,6 +890,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	menuDiagnostics->addChild(menuVocabStatus);
 	menuDiagnostics->addChild(menuVocabTest);
 	menuDiagnostics->addChild(menuMemoryStatus);
+	menuDiagnostics->addChild(menuDetectorState);
 	menuDiagnostics->addChild(menuVersion);
 	menuDiagnostics->addChild(menuConfigCode);
 	menuDiagnostics->addChild(menuReset);
