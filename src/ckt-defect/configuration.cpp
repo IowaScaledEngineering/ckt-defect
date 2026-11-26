@@ -225,6 +225,7 @@ void loadConfiguration(DetectorConfiguration* cfg)
 	cfg->externalVocabSelectedPresent = false;
 	cfg->externalIntegrityTrainRatePresent = false;
 	cfg->externalIntegrityEnablePresent = false;
+	cfg->externalMaxDefectsPresent = false;
 
 	preferences.end();
 }

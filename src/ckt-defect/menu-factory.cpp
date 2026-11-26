@@ -22,10 +22,13 @@ std::shared_ptr<Menu> menuRandomIntegrityEn;
 
 // External Config Hiding References
 std::shared_ptr<Menu> menuDefects;
+std::shared_ptr<Menu> menuMessages;
 std::shared_ptr<Menu> menuEntranceMessage;
 std::shared_ptr<Menu> menuAlertMessage;
+std::shared_ptr<Menu> menuExitMessage;
 std::shared_ptr<Menu> menuTalkDefectOnly;
 std::shared_ptr<Menu> menuOrdinalType;
+std::shared_ptr<Menu> menuMaxDefects;
 std::shared_ptr<Menu> menuMilepostEn;
 std::shared_ptr<Menu> menuTrackNameEn;
 std::shared_ptr<Menu> menuAxleEn;
@@ -97,6 +100,29 @@ void updateAllMenuVisibility(const DetectorConfiguration &cfg)
 		if (menuRandomIntegrity) menuRandomIntegrity->hide();
 	} else {
 		if (menuRandomIntegrity) menuRandomIntegrity->unhide();
+	}
+
+	if (cfg.externalMaxDefectsPresent) {
+		if (menuMaxDefects) menuMaxDefects->hide();
+	} else {
+		if (menuMaxDefects) menuMaxDefects->unhide();
+	}
+
+	// Exit Message Sub-Menu: hide when all its children are overridden
+	if (cfg.externalMessagesPresent && cfg.externalMaxDefectsPresent) {
+		if (menuExitMessage) menuExitMessage->hide();
+	} else {
+		if (menuExitMessage) menuExitMessage->unhide();
+	}
+
+	// Messages Root Menu: hide when all of its children are overridden
+	bool exitHidden = (cfg.externalMessagesPresent && cfg.externalMaxDefectsPresent);
+	bool integrityHidden = (cfg.externalIntegrityEnablePresent && (cfg.externalIntegrityTrainRatePresent || !cfg.defectIntegrityEnable));
+
+	if (cfg.externalMessagesPresent && exitHidden && integrityHidden) {
+		if (menuMessages) menuMessages->hide();
+	} else {
+		if (menuMessages) menuMessages->unhide();
 	}
 
 	// External Message Overrides: Hide message and defect editing menus
@@ -509,7 +535,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	);
 
 	// Messages
-	auto menuMessages = std::make_shared<MenuListSelector>("Messages");
+	menuMessages = std::make_shared<MenuListSelector>("Messages");
 	menuEntranceMessage = std::make_shared<MenuBoolSelector>(
 		"Entrance Message",
 		&cfg.entranceMessageEnable,
@@ -526,7 +552,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	);
 
 	// Exit Message
-	auto menuExitMessage = std::make_shared<MenuListSelector>("Exit Message");
+	menuExitMessage = std::make_shared<MenuListSelector>("Exit Message");
 	menuTalkDefectOnly = std::make_shared<MenuBoolSelector>(
 		"Talk Defect Only",
 		&cfg.talkOnDefectOnly,
@@ -535,7 +561,7 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 		"Off", "OFF"
 	);
 
-	auto menuMaxDefects = std::make_shared<MenuNumberDial>(
+	menuMaxDefects = std::make_shared<MenuNumberDial>(
 		"Max Defects",
 		&cfg.maxDefects,
 		false,

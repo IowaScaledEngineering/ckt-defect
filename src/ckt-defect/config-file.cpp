@@ -116,6 +116,7 @@ ConfigFileParser::ConfigFileParser(DetectorConfiguration& cfg, MessageBundle& ms
 	_cfg.externalVocabSelectedPresent = false;
 	_cfg.externalIntegrityTrainRatePresent = false;
 	_cfg.externalIntegrityEnablePresent = false;
+	_cfg.externalMaxDefectsPresent = false;
 	_bomChecked = false;
 }
 
@@ -407,6 +408,17 @@ ConfigFileResult ConfigFileParser::processLine(const std::string& rawLine, int l
 				_cfg.defectIntegrityEnable = false;
 				_cfg.externalIntegrityEnablePresent = true;
 			}
+			return ConfigFileResult();
+		}
+		else if (key == "maxdefects")
+		{
+			if (!isNumeric(value))
+				return ConfigFileResult(lineNumber, "Invalid Integer", value);
+			int32_t maxDefVal = 0;
+			if (!parseConfigInt(value, MAX_DEFECTS_MIN, MAX_DEFECTS_MAX, maxDefVal))
+				return ConfigFileResult(lineNumber, "Out of Range", value + " (" + std::to_string(MAX_DEFECTS_MIN) + "-" + std::to_string(MAX_DEFECTS_MAX) + ")");
+			_cfg.maxDefects = static_cast<uint8_t>(maxDefVal);
+			_cfg.externalMaxDefectsPresent = true;
 			return ConfigFileResult();
 		}
 		// Global Message Keys

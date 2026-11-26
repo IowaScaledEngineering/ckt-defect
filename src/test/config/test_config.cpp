@@ -530,6 +530,52 @@ void testIntegrityEnableConfig()
 	}
 }
 
+void testMaxDefectsConfig()
+{
+	std::cout << "Running testMaxDefectsConfig...\n";
+
+	// 1. Valid maxDefects
+	{
+		DetectorConfiguration cfg;
+		MessageBundle msgs;
+		std::string config = "maxDefects = 5\n";
+		ConfigFileResult res = parseConfigurationString(config, cfg, msgs);
+		TEST_ASSERT(res.success, "maxDefects = 5 should succeed");
+		TEST_ASSERT(cfg.externalMaxDefectsPresent, "externalMaxDefectsPresent is true");
+		TEST_ASSERT(cfg.maxDefects == 5, "cfg.maxDefects is 5");
+	}
+
+	// 2. Out of range low (0 < 1)
+	{
+		DetectorConfiguration cfg;
+		MessageBundle msgs;
+		std::string config = "maxDefects = 0\n";
+		ConfigFileResult res = parseConfigurationString(config, cfg, msgs);
+		TEST_ASSERT(!res.success, "maxDefects = 0 should fail");
+		TEST_ASSERT(res.errorTitle == "Out of Range", "Title is Out of Range");
+	}
+
+	// 3. Out of range high (10 > 9)
+	{
+		DetectorConfiguration cfg;
+		MessageBundle msgs;
+		std::string config = "maxDefects = 10\n";
+		ConfigFileResult res = parseConfigurationString(config, cfg, msgs);
+		TEST_ASSERT(!res.success, "maxDefects = 10 should fail");
+		TEST_ASSERT(res.errorTitle == "Out of Range", "Title is Out of Range");
+	}
+
+	// 4. Non-numeric
+	{
+		DetectorConfiguration cfg;
+		MessageBundle msgs;
+		std::string config = "maxDefects = three\n";
+		ConfigFileResult res = parseConfigurationString(config, cfg, msgs);
+		TEST_ASSERT(!res.success, "maxDefects = three should fail");
+		TEST_ASSERT(res.errorTitle == "Invalid Integer", "Title is Invalid Integer");
+	}
+}
+
 int main()
 {
 	std::cout << "========================================\n";
@@ -552,6 +598,7 @@ int main()
 	testCaseInsensitivity();
 	testUtf8BomHandling();
 	testIntegrityEnableConfig();
+	testMaxDefectsConfig();
 	testDocConfigFile();
 
 	std::cout << "========================================\n";

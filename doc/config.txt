@@ -65,6 +65,11 @@ integrityEnable = on
 # Alias: defectIntegrityTrainRate = 100
 integrityTrainRate = 100
 
+# Maximum Defects Announced (Integer: 1 to 9, default: 3)
+# Maximum number of individual defect detail messages announced in the exit
+# broadcast (via #defectlist) before playing the excess alarms message.
+maxDefects = 3
+
 
 # ==============================================================================
 # 3. GLOBAL BROADCAST MESSAGES & # COMMANDS REFERENCE
