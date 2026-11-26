@@ -62,6 +62,7 @@ integrityEnable = on
 # Simulated Random Integrity Failure Rate (Integer: 0 to 999999)
 # Average rate of random simulated integrity failures (1 in N trains). Default: 100.
 # Setting this to 0 also disables random integrity failures.
+# Alias: defectIntegrityTrainRate = 100
 integrityTrainRate = 100
 
 

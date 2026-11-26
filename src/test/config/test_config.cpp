@@ -511,6 +511,23 @@ void testIntegrityEnableConfig()
 		TEST_ASSERT(cfg.defectIntegrityEnable == false, "defectIntegrityEnable disabled by rate 0");
 		TEST_ASSERT(msgs.integrityTrainRate == 0, "integrityTrainRate is 0");
 	}
+
+	// 5. defectIntegrityTrainRate alias
+	{
+		DetectorConfiguration cfg;
+		MessageBundle msgs;
+		std::string config = "defectIntegrityTrainRate = 250\n";
+		ConfigFileResult res = parseConfigurationString(config, cfg, msgs);
+		TEST_ASSERT(res.success, "defectIntegrityTrainRate = 250 should succeed");
+		TEST_ASSERT(cfg.externalIntegrityTrainRatePresent, "externalIntegrityTrainRatePresent set by alias");
+		TEST_ASSERT(msgs.integrityTrainRate == 250, "integrityTrainRate is 250");
+
+		std::string config2 = "defectIntegrityTrainRate = 0\n";
+		ConfigFileResult res2 = parseConfigurationString(config2, cfg, msgs);
+		TEST_ASSERT(res2.success, "defectIntegrityTrainRate = 0 should succeed");
+		TEST_ASSERT(cfg.defectIntegrityEnable == false, "defectIntegrityEnable disabled by alias rate 0");
+		TEST_ASSERT(msgs.integrityTrainRate == 0, "integrityTrainRate is 0");
+	}
 }
 
 int main()

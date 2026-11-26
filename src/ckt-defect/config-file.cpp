@@ -393,7 +393,7 @@ ConfigFileResult ConfigFileParser::processLine(const std::string& rawLine, int l
 			_cfg.externalIntegrityEnablePresent = true;
 			return ConfigFileResult();
 		}
-		else if (key == "integritytrainrate")
+		else if (key == "integritytrainrate" || key == "defectintegritytrainrate")
 		{
 			if (!isNumeric(value))
 				return ConfigFileResult(lineNumber, "Invalid Integer", value);
