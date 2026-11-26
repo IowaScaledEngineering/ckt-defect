@@ -999,14 +999,8 @@ MenuEvent MenuDetectorState::update()
 	disp->backlightOn();
 
 	// Line 0 (Row 0): Menu Name
-	std::string title = menuName;
-	if (title.length() > 20) {
-		title = title.substr(0, 20);
-	} else if (title.length() < 20) {
-		title.append(20 - title.length(), ' ');
-	}
 	disp->gotoxy(0, 0);
-	disp->print(title.c_str());
+	disp->print(menuName);
 
 	// Line 1 (Row 1): Track 1 State
 	std::string s1 = sm[0].getStateName(sm[0].getCurrentState());
