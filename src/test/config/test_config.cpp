@@ -442,6 +442,77 @@ void testUtf8BomHandling()
 	}
 }
 
+void testIntegrityEnableConfig()
+{
+	std::cout << "Running testIntegrityEnableConfig...\n";
+
+	// 1. Valid booleans true/on/yes/1
+	{
+		DetectorConfiguration cfg;
+		MessageBundle msgs;
+		std::string config = "integrityEnable = on\n";
+		ConfigFileResult res = parseConfigurationString(config, cfg, msgs);
+		TEST_ASSERT(res.success, "integrityEnable = on should succeed");
+		TEST_ASSERT(cfg.externalIntegrityEnablePresent, "externalIntegrityEnablePresent set");
+		TEST_ASSERT(cfg.defectIntegrityEnable == true, "defectIntegrityEnable is true");
+
+		std::string config2 = "defectIntegrityEnable = YES\n";
+		ConfigFileResult res2 = parseConfigurationString(config2, cfg, msgs);
+		TEST_ASSERT(res2.success, "defectIntegrityEnable = YES should succeed");
+		TEST_ASSERT(cfg.defectIntegrityEnable == true, "defectIntegrityEnable is true");
+
+		std::string config3 = "integrityEnable = 1\n";
+		ConfigFileResult res3 = parseConfigurationString(config3, cfg, msgs);
+		TEST_ASSERT(res3.success, "integrityEnable = 1 should succeed");
+		TEST_ASSERT(cfg.defectIntegrityEnable == true, "defectIntegrityEnable is true");
+	}
+
+	// 2. Valid booleans false/off/no/0
+	{
+		DetectorConfiguration cfg;
+		MessageBundle msgs;
+		std::string config = "integrityEnable = off\n";
+		ConfigFileResult res = parseConfigurationString(config, cfg, msgs);
+		TEST_ASSERT(res.success, "integrityEnable = off should succeed");
+		TEST_ASSERT(cfg.externalIntegrityEnablePresent, "externalIntegrityEnablePresent set");
+		TEST_ASSERT(cfg.defectIntegrityEnable == false, "defectIntegrityEnable is false");
+
+		std::string config2 = "integrityEnable = FALSE\n";
+		ConfigFileResult res2 = parseConfigurationString(config2, cfg, msgs);
+		TEST_ASSERT(res2.success, "integrityEnable = FALSE should succeed");
+		TEST_ASSERT(cfg.defectIntegrityEnable == false, "defectIntegrityEnable is false");
+
+		std::string config3 = "integrityEnable = 0\n";
+		ConfigFileResult res3 = parseConfigurationString(config3, cfg, msgs);
+		TEST_ASSERT(res3.success, "integrityEnable = 0 should succeed");
+		TEST_ASSERT(cfg.defectIntegrityEnable == false, "defectIntegrityEnable is false");
+	}
+
+	// 3. Invalid boolean
+	{
+		DetectorConfiguration cfg;
+		MessageBundle msgs;
+		std::string config = "integrityEnable = maybe\n";
+		ConfigFileResult res = parseConfigurationString(config, cfg, msgs);
+		TEST_ASSERT(!res.success, "integrityEnable = maybe should fail");
+		TEST_ASSERT(res.errorTitle == "Invalid Boolean", "Title is Invalid Boolean");
+	}
+
+	// 4. integrityTrainRate = 0 disables integrity defect
+	{
+		DetectorConfiguration cfg;
+		MessageBundle msgs;
+		cfg.defectIntegrityEnable = true;
+		std::string config = "integrityTrainRate = 0\n";
+		ConfigFileResult res = parseConfigurationString(config, cfg, msgs);
+		TEST_ASSERT(res.success, "integrityTrainRate = 0 should succeed");
+		TEST_ASSERT(cfg.externalIntegrityTrainRatePresent, "externalIntegrityTrainRatePresent set");
+		TEST_ASSERT(cfg.externalIntegrityEnablePresent, "externalIntegrityEnablePresent set by rate 0");
+		TEST_ASSERT(cfg.defectIntegrityEnable == false, "defectIntegrityEnable disabled by rate 0");
+		TEST_ASSERT(msgs.integrityTrainRate == 0, "integrityTrainRate is 0");
+	}
+}
+
 int main()
 {
 	std::cout << "========================================\n";
@@ -463,6 +534,7 @@ int main()
 	testAllOrNothingDefaults();
 	testCaseInsensitivity();
 	testUtf8BomHandling();
+	testIntegrityEnableConfig();
 	testDocConfigFile();
 
 	std::cout << "========================================\n";

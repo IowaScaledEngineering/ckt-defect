@@ -200,6 +200,7 @@ struct DetectorConfiguration {
 	bool                     externalRailNamePresent;             // Volatile value, not stored in NVM
 	bool                     externalVocabSelectedPresent;        // Volatile value, not stored in NVM
 	bool                     externalIntegrityTrainRatePresent;   // Volatile value, not stored in NVM
+	bool                     externalIntegrityEnablePresent;      // Volatile value, not stored in NVM
 	
 	// Misc Stuff
 	uint8_t                  minAxleTime;                         // @bits: 8 (100us increments)

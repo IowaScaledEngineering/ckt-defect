@@ -54,8 +54,14 @@ railName = Left/Right
 # If omitted or commented out, the detector uses the internal vocabulary (or NVM setting).
 # vocabSelected = default
 
-# Simulated Random Integrity Failure Rate (Integer: 1 to 999999)
+# Simulated Random Integrity Failure Enable (Boolean: on/off, true/false, yes/no, 1/0)
+# Enables or disables random simulated integrity defect failures. Default: on.
+# Alias: defectIntegrityEnable = on
+integrityEnable = on
+
+# Simulated Random Integrity Failure Rate (Integer: 0 to 999999)
 # Average rate of random simulated integrity failures (1 in N trains). Default: 100.
+# Setting this to 0 also disables random integrity failures.
 integrityTrainRate = 100
 
 

@@ -17,6 +17,8 @@ std::shared_ptr<Menu> menuDraggingEquipmentRate;
 std::shared_ptr<Menu> menuHighLoadRate;
 std::shared_ptr<Menu> menuWideLoadRate;
 std::shared_ptr<Menu> menuRandomIntegrityRate;
+std::shared_ptr<Menu> menuRandomIntegrity;
+std::shared_ptr<Menu> menuRandomIntegrityEn;
 
 // External Config Hiding References
 std::shared_ptr<Menu> menuDefects;
@@ -79,10 +81,22 @@ void updateAllMenuVisibility(const DetectorConfiguration &cfg)
 		if (menuWideLoadRate) menuWideLoadRate->hide();
 	}
 
+	if (cfg.externalIntegrityEnablePresent) {
+		if (menuRandomIntegrityEn) menuRandomIntegrityEn->hide();
+	} else {
+		if (menuRandomIntegrityEn) menuRandomIntegrityEn->unhide();
+	}
+
 	if (cfg.defectIntegrityEnable && !cfg.externalIntegrityTrainRatePresent) {
 		if (menuRandomIntegrityRate) menuRandomIntegrityRate->unhide();
 	} else {
 		if (menuRandomIntegrityRate) menuRandomIntegrityRate->hide();
+	}
+
+	if (cfg.externalIntegrityEnablePresent && (cfg.externalIntegrityTrainRatePresent || !cfg.defectIntegrityEnable)) {
+		if (menuRandomIntegrity) menuRandomIntegrity->hide();
+	} else {
+		if (menuRandomIntegrity) menuRandomIntegrity->unhide();
 	}
 
 	// External Message Overrides: Hide message and defect editing menus
@@ -540,8 +554,8 @@ std::shared_ptr<Menu> createAppMenu(DetectorConfiguration &cfg, DisplayLcd *lcd,
 	);
 
 	// Random Integrity
-	auto menuRandomIntegrity = std::make_shared<MenuListSelector>("Random Integrity");
-	auto menuRandomIntegrityEn = std::make_shared<MenuBoolSelector>(
+	menuRandomIntegrity = std::make_shared<MenuListSelector>("Random Integrity");
+	menuRandomIntegrityEn = std::make_shared<MenuBoolSelector>(
 		"Integrity Enable",
 		&cfg.defectIntegrityEnable,
 		false,

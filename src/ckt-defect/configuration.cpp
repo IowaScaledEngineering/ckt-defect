@@ -224,6 +224,7 @@ void loadConfiguration(DetectorConfiguration* cfg)
 	cfg->externalRailNamePresent = false;
 	cfg->externalVocabSelectedPresent = false;
 	cfg->externalIntegrityTrainRatePresent = false;
+	cfg->externalIntegrityEnablePresent = false;
 
 	preferences.end();
 }

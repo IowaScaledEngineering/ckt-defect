@@ -273,7 +273,7 @@ void DetectorStateMachine::update()
 
 		case DetectorState::ENTRANCE_DEFECT:
 			// Roll the dice
-			if( (cfg->defectIntegrityEnable) && (rollDice() < (PROBABILITY_MAX / (msgs->integrityTrainRate == 0 ? 1 : msgs->integrityTrainRate))) )
+			if (cfg->defectIntegrityEnable && msgs->integrityTrainRate > 0 && (rollDice() < (PROBABILITY_MAX / msgs->integrityTrainRate)))
 			{
 				// Integrity defect
 				transitionTo(DetectorState::INTEGRITY_DEFECT_QUEUE);

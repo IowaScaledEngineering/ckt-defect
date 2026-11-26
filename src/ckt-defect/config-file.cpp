@@ -85,6 +85,22 @@ bool parseConfigInt(const std::string& str, int32_t minVal, int32_t maxVal, int3
 	}
 }
 
+bool parseConfigBool(const std::string& str, bool& outVal)
+{
+	std::string s = toLower(trim(str));
+	if (s == "true" || s == "on" || s == "yes" || s == "1")
+	{
+		outVal = true;
+		return true;
+	}
+	if (s == "false" || s == "off" || s == "no" || s == "0")
+	{
+		outVal = false;
+		return true;
+	}
+	return false;
+}
+
 } // namespace
 
 ConfigFileParser::ConfigFileParser(DetectorConfiguration& cfg, MessageBundle& msgs)
@@ -99,6 +115,7 @@ ConfigFileParser::ConfigFileParser(DetectorConfiguration& cfg, MessageBundle& ms
 	_cfg.externalRailNamePresent = false;
 	_cfg.externalVocabSelectedPresent = false;
 	_cfg.externalIntegrityTrainRatePresent = false;
+	_cfg.externalIntegrityEnablePresent = false;
 	_bomChecked = false;
 }
 
@@ -367,15 +384,29 @@ ConfigFileResult ConfigFileParser::processLine(const std::string& rawLine, int l
 			_cfg.externalVocabSelectedPresent = true;
 			return ConfigFileResult();
 		}
+		else if (key == "integrityenable" || key == "defectintegrityenable")
+		{
+			bool enableVal = false;
+			if (!parseConfigBool(value, enableVal))
+				return ConfigFileResult(lineNumber, "Invalid Boolean", value);
+			_cfg.defectIntegrityEnable = enableVal;
+			_cfg.externalIntegrityEnablePresent = true;
+			return ConfigFileResult();
+		}
 		else if (key == "integritytrainrate")
 		{
 			if (!isNumeric(value))
 				return ConfigFileResult(lineNumber, "Invalid Integer", value);
 			int32_t trainRate = 0;
-			if (!parseConfigInt(value, 1, 999999, trainRate))
-				return ConfigFileResult(lineNumber, "Out of Range", value + " (1-999999)");
+			if (!parseConfigInt(value, 0, 999999, trainRate))
+				return ConfigFileResult(lineNumber, "Out of Range", value + " (0-999999)");
 			_msgs.integrityTrainRate = static_cast<uint32_t>(trainRate);
 			_cfg.externalIntegrityTrainRatePresent = true;
+			if (trainRate == 0)
+			{
+				_cfg.defectIntegrityEnable = false;
+				_cfg.externalIntegrityEnablePresent = true;
+			}
 			return ConfigFileResult();
 		}
 		// Global Message Keys
