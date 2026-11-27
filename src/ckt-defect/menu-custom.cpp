@@ -73,6 +73,25 @@ void MenuHome::onEnter()
 */
 }
 
+int MenuHome::getLastSpokenTrack() const
+{
+	int bestIdx = -1;
+	unsigned long latestTime = 0;
+
+	for (int i = 0; i < NUM_TRACKS; i++)
+	{
+		if (!data[i].lastSpokenMsg.empty())
+		{
+			if (bestIdx == -1 || data[i].lastSpokenMsgTime > latestTime)
+			{
+				bestIdx = i;
+				latestTime = data[i].lastSpokenMsgTime;
+			}
+		}
+	}
+	return bestIdx;
+}
+
 void MenuHome::renderHomeUI(const std::string& statusText, bool showLightButton, bool showRepeatButton)
 {
 	TemperatureManager* tempMgr = TemperatureManager::getInstance();
@@ -127,8 +146,9 @@ void MenuHome::renderHomeUI(const std::string& statusText, bool showLightButton,
 
 	// 5. Repeat button prompt (ONLY shown if message exists and timeout has not expired)
 	disp->gotoxy(11, 3);
-	bool repeatValid = !data->lastSpokenMsg.empty();
-	if (cfg.msgRepeatTimeout > 0 && (millis() - data->lastSpokenMsgTime) >= (cfg.msgRepeatTimeout * 1000U))
+	int trackIdx = getLastSpokenTrack();
+	bool repeatValid = (trackIdx >= 0 && !data[trackIdx].lastSpokenMsg.empty());
+	if (repeatValid && cfg.msgRepeatTimeout > 0 && (millis() - data[trackIdx].lastSpokenMsgTime) >= (cfg.msgRepeatTimeout * 1000U))
 	{
 		repeatValid = false;
 	}
@@ -266,12 +286,14 @@ MenuEvent MenuHome::update()
 			break;
 
 		case MenuHomeState::WAIT:
+		{
 			renderMessage(lastDisplayedMessage);
 
 			// Draw RPT button prompt at coords (11, 3) for button 3 during WAIT
 			// Timeout does not apply during WAIT; only check if message exists
 			disp->gotoxy(11, 3);
-			if (!data->lastSpokenMsg.empty())
+			int trackIdxWait = getLastSpokenTrack();
+			if (trackIdxWait >= 0 && !data[trackIdxWait].lastSpokenMsg.empty())
 			{
 				disp->print("RPT ");
 			}
@@ -285,11 +307,16 @@ MenuEvent MenuHome::update()
 				backlightState = false;
 				backlightDelayStartTime = millis();
 				delayBacklightOff = true;
-				data->lastSpokenMsgTime = millis(); // Set repeat timeout timestamp upon entering STANDBY
+				int trackIdx = getLastSpokenTrack();
+				if (trackIdx >= 0)
+				{
+					data[trackIdx].lastSpokenMsgTime = millis(); // Set repeat timeout timestamp upon entering STANDBY
+				}
 				state = MenuHomeState::STANDBY;
 			}
 
 			break;
+		}
 		
 		default:
 			// In case we get lost...
@@ -355,12 +382,13 @@ MenuEvent MenuHome::update()
 				case 3: // Repeat Message (STANDBY or WAIT)
 					if(MenuHomeState::STANDBY == state || MenuHomeState::WAIT == state)
 					{
-						bool repeatValid = !data->lastSpokenMsg.empty();
+						int trackIdx = getLastSpokenTrack();
+						bool repeatValid = (trackIdx >= 0 && !data[trackIdx].lastSpokenMsg.empty());
 
 						// Apply timeout check ONLY when in STANDBY mode
-						if(MenuHomeState::STANDBY == state)
+						if(MenuHomeState::STANDBY == state && repeatValid)
 						{
-							if(cfg.msgRepeatTimeout > 0 && (millis() - data->lastSpokenMsgTime) >= (cfg.msgRepeatTimeout * 1000U))
+							if(cfg.msgRepeatTimeout > 0 && (millis() - data[trackIdx].lastSpokenMsgTime) >= (cfg.msgRepeatTimeout * 1000U))
 							{
 								repeatValid = false;
 							}
@@ -369,11 +397,11 @@ MenuEvent MenuHome::update()
 						if(repeatValid)
 						{
 							ParserObject* obj = new ParserObject();
-							obj->msg = data->lastSpokenMsg;
+							obj->msg = data[trackIdx].lastSpokenMsg;
 							parserQueuePush(obj);
 
 							waitStartTime = millis(); // Reset wait timer on repeat press
-							data->lastSpokenMsgTime = millis(); // Reset repeat timeout timer
+							data[trackIdx].lastSpokenMsgTime = millis(); // Reset repeat timeout timer
 						}
 					}
 					break;

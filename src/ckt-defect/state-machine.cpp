@@ -191,6 +191,7 @@ void DetectorStateMachine::enqueueMessageInternal(const std::string& spokenMsg, 
 
 	// Save pre-transformed spoken message for RPT playback
 	data->lastSpokenMsg = obj->msg;
+	data->lastSpokenMsgTime = millis();
 
 	// Conditional display message processing
 	if (dispMsg != nullptr)

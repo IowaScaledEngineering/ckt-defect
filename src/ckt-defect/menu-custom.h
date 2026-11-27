@@ -33,6 +33,7 @@ class MenuHome : public Menu
 		MenuHomeState state;
 		void renderHomeUI(const std::string& statusText, bool showLightButton, bool showRepeatButton);
 		void renderMessage(const std::string& message);
+		int getLastSpokenTrack() const;
 		std::string dispString;
 		std::string lastDisplayedMessage;
 	public:
