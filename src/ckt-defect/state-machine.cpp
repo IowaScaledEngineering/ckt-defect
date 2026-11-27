@@ -197,6 +197,11 @@ void DetectorStateMachine::enqueueMessageInternal(const std::string& spokenMsg, 
 	if (dispMsg != nullptr)
 	{
 		transformMessage(*dispMsg, obj->displayMsg, *cfg, *data, trackNum, false);
+		data->lastDisplayMsg = obj->displayMsg;
+	}
+	else
+	{
+		data->lastDisplayMsg.clear();
 	}
 
 	parserQueuePush(obj);

@@ -34,9 +34,10 @@ struct DataBundle {
 	float speedFloatExit = 0;
 	uint8_t direction;
 
-	// Saved pre-transformed spoken message for RPT button playback
+	// Saved pre-transformed spoken message and display message for RPT playback
 	std::string lastSpokenMsg;
 	unsigned long lastSpokenMsgTime = 0;
+	std::string lastDisplayMsg;
 
 	//  Inter-state machine communication
 	bool irDetect = false;
